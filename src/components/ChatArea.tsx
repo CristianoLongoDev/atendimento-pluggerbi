@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Send, Bot, User, MoreVertical, UserPlus } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface Message {
