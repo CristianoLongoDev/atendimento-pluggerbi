@@ -184,11 +184,6 @@ const Index = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium">ID do Usuário</label>
-                      <p className="text-lg mt-1 font-mono">{profile?.id || 'Carregando...'}</p>
-                    </div>
-                    
-                    <div>
                       <label className="text-sm font-medium">ID da Conta</label>
                       {accountLoading ? (
                         <Skeleton className="h-6 w-48 mt-1" />
