@@ -111,6 +111,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </CollapsibleContent>
           </Collapsible>
 
+          {/* Separador com espaçamento maior quando conversas estão expandidas */}
+          <div className={isConversationsExpanded ? "pt-6" : "pt-2"}>
+            <Separator className="mb-3" />
+          </div>
+
           {/* Outras seções de configuração */}
           {configSections.map((section) => {
             const Icon = section.icon;
