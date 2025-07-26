@@ -91,6 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Gerar UUID para a conta
       const accountId = crypto.randomUUID();
       
+      console.log('Tentando criar conta:', { accountId, companyName });
+      
       // Criar conta no endpoint externo
       const accountResponse = await fetch('https://atendimento.pluggerbi.com/accounts', {
         method: 'POST',
@@ -103,9 +105,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }),
       });
 
+      console.log('Response status:', accountResponse.status);
+      
       if (!accountResponse.ok) {
-        throw new Error('Erro ao criar conta da empresa');
+        const errorText = await accountResponse.text();
+        console.error('Erro na resposta do servidor:', errorText);
+        throw new Error(`Erro ao criar conta da empresa: ${accountResponse.status}`);
       }
+
+      console.log('Conta criada com sucesso, criando usuário no Supabase...');
 
       // Criar usuário no Supabase
       const redirectUrl = `${window.location.origin}/`;
@@ -123,9 +131,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
       
+      if (error) {
+        console.error('Erro ao criar usuário no Supabase:', error);
+      }
+      
       return { error };
     } catch (err: any) {
-      return { error: { message: err.message } };
+      console.error('Erro geral:', err);
+      return { error: { message: err.message || 'Erro ao criar conta. Verifique sua conexão e tente novamente.' } };
     }
   };
 
