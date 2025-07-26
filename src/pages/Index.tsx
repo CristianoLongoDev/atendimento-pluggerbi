@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAccountData } from '@/hooks/useAccountData';
 import Header from '@/components/Header';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatList from '@/components/ChatList';
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Plus, Edit, Trash2 } from 'lucide-react';
 
 // Mock data
@@ -96,6 +98,7 @@ const mockMessages = [
 
 const Index = () => {
   const { profile, isAdmin } = useAuth();
+  const { accountData, loading: accountLoading } = useAccountData();
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChatId, setSelectedChatId] = useState<string | null>('1');
@@ -181,8 +184,26 @@ const Index = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
+                      <label className="text-sm font-medium">ID do Usuário</label>
+                      <p className="text-lg mt-1 font-mono">{profile?.id || 'Carregando...'}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium">ID da Conta</label>
+                      {accountLoading ? (
+                        <Skeleton className="h-6 w-48 mt-1" />
+                      ) : (
+                        <p className="text-lg mt-1 font-mono">{accountData?.id || 'Não informado'}</p>
+                      )}
+                    </div>
+                    
+                    <div>
                       <label className="text-sm font-medium">Nome da Conta</label>
-                      <p className="text-lg mt-1">Empresa Exemplo Ltda</p>
+                      {accountLoading ? (
+                        <Skeleton className="h-6 w-64 mt-1" />
+                      ) : (
+                        <p className="text-lg mt-1">{accountData?.name || 'Nome não disponível'}</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
