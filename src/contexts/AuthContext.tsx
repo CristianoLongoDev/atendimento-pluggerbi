@@ -8,7 +8,7 @@ interface AuthContextType {
   profile: any | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, role?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, companyName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
 }
@@ -86,21 +86,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, role: string = 'agent') => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-          role: role,
+  const signUp = async (email: string, password: string, fullName: string, companyName: string) => {
+    try {
+      // Gerar UUID para a conta
+      const accountId = crypto.randomUUID();
+      
+      // Criar conta no endpoint externo
+      const accountResponse = await fetch('https://atendimento.pluggerbi.com/accounts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      },
-    });
-    return { error };
+        body: JSON.stringify({
+          id: accountId,
+          name: companyName,
+        }),
+      });
+
+      if (!accountResponse.ok) {
+        throw new Error('Erro ao criar conta da empresa');
+      }
+
+      // Criar usuário no Supabase
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+            role: 'admin',
+            account_id: accountId,
+          },
+        },
+      });
+      
+      return { error };
+    } catch (err: any) {
+      return { error: { message: err.message } };
+    }
   };
 
   const signOut = async () => {
