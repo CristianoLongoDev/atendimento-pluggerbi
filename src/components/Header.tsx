@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -28,6 +29,7 @@ import {
 const Header: React.FC = () => {
   const { profile, signOut, isAdmin } = useAuth();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
@@ -76,7 +78,7 @@ const Header: React.FC = () => {
           </Badge>
         </Button>
         
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/settings')}>
           <Settings className="w-4 h-4" />
         </Button>
         
@@ -108,7 +110,7 @@ const Header: React.FC = () => {
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/settings')}>
               <Settings className="mr-2 h-4 w-4" />
               <span>Configurações</span>
             </DropdownMenuItem>
