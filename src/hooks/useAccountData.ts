@@ -31,7 +31,7 @@ export const useAccountData = () => {
         const data = await response.json();
         setAccountData({
           id: profile.account_id,
-          name: data.name || 'Nome da conta não encontrado'
+          name: data.account?.name || 'Nome da conta não encontrado'
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro desconhecido');
