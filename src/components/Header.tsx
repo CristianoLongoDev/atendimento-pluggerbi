@@ -1,19 +1,17 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Bell, 
   Settings, 
   User, 
-  Search,
   Moon,
   Sun,
   LogOut,
   MessageSquare
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from 'next-themes';
@@ -30,6 +28,9 @@ const Header: React.FC = () => {
   const { profile, signOut, isAdmin } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isSettingsPage = location.pathname === '/settings';
 
   const handleSignOut = async () => {
     await signOut();
@@ -57,14 +58,26 @@ const Header: React.FC = () => {
         </Badge>
       </div>
 
-      <div className="flex-1 max-w-md mx-8">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Buscar em todas as conversas..."
-            className="pl-10 bg-muted/50 border-0 focus:bg-background"
-          />
-        </div>
+      <div className="flex items-center space-x-2 mx-8">
+        <Button 
+          variant={!isSettingsPage ? "default" : "ghost"} 
+          size="sm" 
+          onClick={() => navigate('/')}
+          className="flex items-center space-x-2"
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>Conversas</span>
+        </Button>
+        
+        <Button 
+          variant={isSettingsPage ? "default" : "ghost"} 
+          size="sm" 
+          onClick={() => navigate('/settings')}
+          className="flex items-center space-x-2"
+        >
+          <Settings className="w-4 h-4" />
+          <span>Configurações</span>
+        </Button>
       </div>
 
       <div className="flex items-center space-x-3">
@@ -76,10 +89,6 @@ const Header: React.FC = () => {
           >
             3
           </Badge>
-        </Button>
-        
-        <Button variant="ghost" size="sm" onClick={() => navigate('/settings')}>
-          <Settings className="w-4 h-4" />
         </Button>
         
         <Button variant="ghost" size="sm" onClick={toggleTheme}>
