@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -193,10 +194,13 @@ const Settings = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <Sidebar className="w-64">
-          <SidebarContent>
+    <div className="h-screen flex flex-col bg-background">
+      <Header />
+      
+      <SidebarProvider>
+        <div className="flex-1 flex w-full">
+          <Sidebar className="w-64">
+            <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>Configurações</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -223,8 +227,9 @@ const Settings = () => {
             {renderContent()}
           </div>
         </main>
-      </div>
-    </SidebarProvider>
+        </div>
+      </SidebarProvider>
+    </div>
   );
 };
 
