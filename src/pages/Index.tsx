@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 
 // Mock data
@@ -342,6 +342,7 @@ const Index = () => {
                         <TableHead>ID</TableHead>
                         <TableHead>Nome</TableHead>
                         <TableHead>Tipo</TableHead>
+                        <TableHead>Agente Bot</TableHead>
                         <TableHead>Configuração</TableHead>
                         <TableHead>Data Criação</TableHead>
                         <TableHead>Ações</TableHead>
@@ -350,7 +351,7 @@ const Index = () => {
                     <TableBody>
                       {channels.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground">
+                          <TableCell colSpan={7} className="text-center text-muted-foreground">
                             Nenhum canal encontrado
                           </TableCell>
                         </TableRow>
@@ -366,9 +367,14 @@ const Index = () => {
                                 {channel.type}
                               </Badge>
                             </TableCell>
-                            <TableCell className="max-w-48">
+                            <TableCell>
+                              <Badge variant="secondary">
+                                {channel.config?.bot_agent || 'Não definido'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-32">
                               <code className="text-xs bg-muted p-1 rounded truncate block">
-                                {JSON.stringify(channel.config).substring(0, 50)}...
+                                {JSON.stringify(channel.config).substring(0, 30)}...
                               </code>
                             </TableCell>
                             <TableCell>
@@ -381,7 +387,7 @@ const Index = () => {
                                     <MoreHorizontal className="w-4 h-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="bg-background border z-50">
                                   <DropdownMenuItem onClick={() => handleEditChannel(channel)}>
                                     <Edit className="w-4 h-4 mr-2" />
                                     Alterar

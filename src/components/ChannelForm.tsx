@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Channel } from '@/hooks/useChannels';
 
 interface ChannelFormProps {
@@ -26,10 +26,30 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    type: channel?.type || 'whatsapp',
-    name: channel?.name || '',
-    config: channel?.config ? JSON.stringify(channel.config, null, 2) : '{\n  "phone_number": "+55"\n}'
+    type: 'whatsapp',
+    name: '',
+    botAgent: '',
+    config: '{\n  "phone_number": "+55"\n}'
   });
+
+  // Update form data when channel changes
+  useEffect(() => {
+    if (mode === 'edit' && channel) {
+      setFormData({
+        type: channel.type || 'whatsapp',
+        name: channel.name || '',
+        botAgent: channel.config?.bot_agent || '',
+        config: channel.config ? JSON.stringify(channel.config, null, 2) : '{\n  "phone_number": "+55"\n}'
+      });
+    } else if (mode === 'create') {
+      setFormData({
+        type: 'whatsapp',
+        name: '',
+        botAgent: '',
+        config: '{\n  "phone_number": "+55"\n}'
+      });
+    }
+  }, [channel, mode, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +68,11 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         });
         setLoading(false);
         return;
+      }
+
+      // Add bot_agent to config if provided
+      if (formData.botAgent) {
+        configObj.bot_agent = formData.botAgent;
       }
 
       const channelData = {
@@ -72,6 +97,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         setFormData({
           type: 'whatsapp',
           name: '',
+          botAgent: '',
           config: '{\n  "phone_number": "+55"\n}'
         });
       } else {
@@ -129,6 +155,24 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
               placeholder="Nome do canal"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="botAgent">Agente Bot</Label>
+            <Select
+              value={formData.botAgent}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, botAgent: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o agente bot" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border z-50">
+                <SelectItem value="bot-principal">Bot Principal</SelectItem>
+                <SelectItem value="bot-vendas">Bot Vendas</SelectItem>
+                <SelectItem value="bot-suporte">Bot Suporte</SelectItem>
+                <SelectItem value="bot-social">Bot Social</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
