@@ -1,0 +1,145 @@
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface Bot {
+  id: string;
+  name: string;
+  type: string;
+  system_prompt: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const useBots = () => {
+  const [bots, setBots] = useState<Bot[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('Token de acesso não encontrado');
+    }
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
+  const fetchBots = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch('https://atendimento.pluggerbi.com/bots', {
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar bots. Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setBots(data.bots || []);
+    } catch (err) {
+      console.error('Error fetching bots:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createBot = async (botData: Omit<Bot, 'id'>) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch('https://atendimento.pluggerbi.com/bots', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          id: crypto.randomUUID(),
+          ...botData
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao criar bot. Status: ${response.status}`);
+      }
+      
+      await fetchBots(); // Refresh the list
+      return { success: true };
+    } catch (err) {
+      console.error('Error creating bot:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateBot = async (id: string, botData: Partial<Bot>) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(botData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao atualizar bot. Status: ${response.status}`);
+      }
+      
+      await fetchBots(); // Refresh the list
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating bot:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteBot = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${id}`, {
+        method: 'DELETE',
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao excluir bot. Status: ${response.status}`);
+      }
+      
+      await fetchBots(); // Refresh the list
+      return { success: true };
+    } catch (err) {
+      console.error('Error deleting bot:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    bots,
+    loading,
+    error,
+    fetchBots,
+    createBot,
+    updateBot,
+    deleteBot
+  };
+};

@@ -9,6 +9,7 @@ import ChatList from '@/components/ChatList';
 import ChatArea from '@/components/ChatArea';
 import ChatInfo from '@/components/ChatInfo';
 import { ChannelForm } from '@/components/ChannelForm';
+import { BotList } from '@/components/BotList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -454,13 +455,10 @@ const Index = () => {
           </div>
         );
 
-      case 'agents':
+      case 'agent-bots':
         return (
-          <div className="flex-1 p-6 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Agentes Bots</h3>
-              <p className="text-muted-foreground">Funcionalidade em desenvolvimento</p>
-            </div>
+          <div className="flex-1 p-6">
+            <BotList />
           </div>
         );
 
