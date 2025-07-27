@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import talkativeLogo from '@/assets/talkative-logo.png';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -43,11 +44,13 @@ const Header: React.FC = () => {
     <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
-            <MessageSquare className="w-4 h-4 text-primary-foreground" />
-          </div>
+          <img 
+            src={talkativeLogo} 
+            alt="Talkative Logo" 
+            className="w-8 h-8 rounded-lg object-contain"
+          />
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            ChatHub
+            Talkative
           </h1>
         </div>
         
