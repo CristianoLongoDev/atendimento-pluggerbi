@@ -2,18 +2,23 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccountData } from '@/hooks/useAccountData';
+import { useChannels } from '@/hooks/useChannels';
 import Header from '@/components/Header';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatList from '@/components/ChatList';
 import ChatArea from '@/components/ChatArea';
 import ChatInfo from '@/components/ChatInfo';
+import { ChannelForm } from '@/components/ChannelForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Plus, Edit, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 
 // Mock data
 const mockChats = [
@@ -99,10 +104,20 @@ const mockMessages = [
 const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
+  const { channels, loading: channelsLoading, createChannel, updateChannel, deleteChannel } = useChannels();
+  const { toast } = useToast();
+  
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChatId, setSelectedChatId] = useState<string | null>('1');
   const [selectedSection, setSelectedSection] = useState('conversations');
+  
+  // Channel management states
+  const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
+  const [editingChannel, setEditingChannel] = useState(null);
+  const [channelFormMode, setChannelFormMode] = useState<'create' | 'edit'>('create');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [channelToDelete, setChannelToDelete] = useState<string | null>(null);
   
   const selectedChat = mockChats.find(chat => chat.id === selectedChatId);
   
@@ -119,12 +134,6 @@ const Index = () => {
     { id: '2', name: 'Agent User', email: 'agent@empresa.com', role: 'Agente', status: 'Ativo', createdAt: '2024-02-20' },
   ];
 
-  const mockChannels = [
-    { id: '1', name: 'WhatsApp Business', botName: 'Bot Principal', status: 'Ativo', createdAt: '2024-01-10' },
-    { id: '2', name: 'Instagram Direct', botName: 'Bot Social', status: 'Ativo', createdAt: '2024-02-15' },
-    { id: '3', name: 'Facebook Messenger', botName: 'Bot Principal', status: 'Inativo', createdAt: '2024-03-01' },
-  ];
-
   const handleSendMessage = (message: string) => {
     console.log('Sending message:', message);
     // Implement message sending logic
@@ -133,6 +142,52 @@ const Index = () => {
   const handleTransferToHuman = () => {
     console.log('Transferring to human');
     // Implement transfer logic
+  };
+
+  // Channel management handlers
+  const handleCreateChannel = () => {
+    setChannelFormMode('create');
+    setEditingChannel(null);
+    setIsChannelFormOpen(true);
+  };
+
+  const handleEditChannel = (channel: any) => {
+    setChannelFormMode('edit');
+    setEditingChannel(channel);
+    setIsChannelFormOpen(true);
+  };
+
+  const handleDeleteChannel = (channelId: string) => {
+    setChannelToDelete(channelId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteChannel = async () => {
+    if (channelToDelete) {
+      const result = await deleteChannel(channelToDelete);
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Canal excluído com sucesso"
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: result.error || "Erro ao excluir canal",
+          variant: "destructive"
+        });
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setChannelToDelete(null);
+  };
+
+  const handleChannelSubmit = async (channelData: any) => {
+    if (channelFormMode === 'edit' && editingChannel) {
+      return await updateChannel(channelData.id, channelData);
+    } else {
+      return await createChannel(channelData);
+    }
   };
 
   const renderMainContent = () => {
@@ -264,7 +319,7 @@ const Index = () => {
           <div className="flex-1 p-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold">Canais de Atendimento</h3>
-              <Button>
+              <Button onClick={handleCreateChannel}>
                 <Plus className="w-4 h-4 mr-2" />
                 Incluir Novo
               </Button>
@@ -272,45 +327,111 @@ const Index = () => {
             
             <Card>
               <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Nome Canal</TableHead>
-                      <TableHead>Nome Bot</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Data Criação</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockChannels.map((channel) => (
-                      <TableRow key={channel.id}>
-                        <TableCell>{channel.id}</TableCell>
-                        <TableCell>{channel.name}</TableCell>
-                        <TableCell>{channel.botName}</TableCell>
-                        <TableCell>
-                          <Badge variant={channel.status === 'Ativo' ? 'default' : 'secondary'}>
-                            {channel.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{channel.createdAt}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                {channelsLoading ? (
+                  <div className="p-6">
+                    <div className="space-y-3">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Configuração</TableHead>
+                        <TableHead>Data Criação</TableHead>
+                        <TableHead>Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {channels.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground">
+                            Nenhum canal encontrado
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        channels.map((channel) => (
+                          <TableRow key={channel.id}>
+                            <TableCell className="font-mono text-xs">
+                              {channel.id.substring(0, 8)}...
+                            </TableCell>
+                            <TableCell>{channel.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {channel.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-48">
+                              <code className="text-xs bg-muted p-1 rounded truncate block">
+                                {JSON.stringify(channel.config).substring(0, 50)}...
+                              </code>
+                            </TableCell>
+                            <TableCell>
+                              {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditChannel(channel)}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Alterar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteChannel(channel.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
+
+            <ChannelForm
+              open={isChannelFormOpen}
+              onOpenChange={setIsChannelFormOpen}
+              onSubmit={handleChannelSubmit}
+              channel={editingChannel}
+              mode={channelFormMode}
+            />
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir este canal? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={confirmDeleteChannel}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         );
 
