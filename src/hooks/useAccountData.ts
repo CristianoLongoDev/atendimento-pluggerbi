@@ -13,7 +13,11 @@ export const useAccountData = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('useAccountData - profile:', profile);
+    console.log('useAccountData - account_id:', profile?.account_id);
+    
     if (!profile?.account_id) {
+      console.log('useAccountData - No account_id found');
       return;
     }
 
@@ -22,18 +26,25 @@ export const useAccountData = () => {
       setError(null);
       
       try {
-        const response = await fetch(`https://atendimento.pluggerbi.com/accounts/${profile.account_id}`);
+        const url = `https://atendimento.pluggerbi.com/accounts/${profile.account_id}`;
+        console.log('useAccountData - Fetching from URL:', url);
+        
+        const response = await fetch(url);
+        console.log('useAccountData - Response status:', response.status);
         
         if (!response.ok) {
-          throw new Error('Erro ao buscar dados da conta');
+          throw new Error(`Erro ao buscar dados da conta. Status: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('useAccountData - Response data:', data);
+        
         setAccountData({
           id: profile.account_id,
           name: data.account?.name || 'Nome da conta não encontrado'
         });
       } catch (err) {
+        console.error('useAccountData - Error:', err);
         setError(err instanceof Error ? err.message : 'Erro desconhecido');
         setAccountData({
           id: profile.account_id,
