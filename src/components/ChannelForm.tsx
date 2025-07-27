@@ -29,6 +29,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     type: 'whatsapp',
     name: '',
     botAgent: '',
+    status: 1,
     config: '{\n  "phone_number": "+55"\n}'
   });
 
@@ -39,6 +40,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
         botAgent: channel.config?.bot_agent || '',
+        status: channel.status || 1,
         config: channel.config ? JSON.stringify(channel.config, null, 2) : '{\n  "phone_number": "+55"\n}'
       });
     } else if (mode === 'create') {
@@ -46,6 +48,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         type: 'whatsapp',
         name: '',
         botAgent: '',
+        status: 1,
         config: '{\n  "phone_number": "+55"\n}'
       });
     }
@@ -87,6 +90,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       const channelData = {
         type: formData.type,
         name: formData.name,
+        status: formData.status,
         config: configObj
       };
 
@@ -107,6 +111,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           type: 'whatsapp',
           name: '',
           botAgent: '',
+          status: 1,
           config: '{\n  "phone_number": "+55"\n}'
         });
       } else {
@@ -181,6 +186,22 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
                 <SelectItem value="bot-vendas">Bot Vendas</SelectItem>
                 <SelectItem value="bot-suporte">Bot Suporte</SelectItem>
                 <SelectItem value="bot-social">Bot Social</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={formData.status.toString()}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, status: parseInt(value) }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o status" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border z-50">
+                <SelectItem value="1">Ativo</SelectItem>
+                <SelectItem value="0">Desabilitado</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -337,26 +337,27 @@ const Index = () => {
                   </div>
                 ) : (
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Agente Bot</TableHead>
-                        <TableHead>Configuração</TableHead>
-                        <TableHead>Data Criação</TableHead>
-                        <TableHead>Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                     <TableHeader>
+                       <TableRow>
+                         <TableHead>ID</TableHead>
+                         <TableHead>Nome</TableHead>
+                         <TableHead>Tipo</TableHead>
+                         <TableHead>Agente Bot</TableHead>
+                         <TableHead>Status</TableHead>
+                         <TableHead>Configuração</TableHead>
+                         <TableHead>Data Criação</TableHead>
+                         <TableHead>Ações</TableHead>
+                       </TableRow>
+                     </TableHeader>
                     <TableBody>
-                      {channels.filter(channel => channel.active !== 0).length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground">
-                            Nenhum canal encontrado
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        channels.filter(channel => channel.active !== 0).map((channel) => (
+                       {channels.length === 0 ? (
+                         <TableRow>
+                           <TableCell colSpan={8} className="text-center text-muted-foreground">
+                             Nenhum canal encontrado
+                           </TableCell>
+                         </TableRow>
+                       ) : (
+                         channels.map((channel) => (
                           <TableRow key={channel.id}>
                             <TableCell className="font-mono text-xs">
                               {channel.id.substring(0, 8)}...
@@ -367,12 +368,17 @@ const Index = () => {
                                 {channel.type}
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <Badge variant="secondary">
-                                {channel.config?.bot_agent || 'Não definido'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-32">
+                             <TableCell>
+                               <Badge variant="secondary">
+                                 {channel.config?.bot_agent || 'Não definido'}
+                               </Badge>
+                             </TableCell>
+                             <TableCell>
+                               <Badge variant={channel.status === 1 ? "default" : "destructive"}>
+                                 {channel.status === 1 ? 'Ativo' : 'Desabilitado'}
+                               </Badge>
+                             </TableCell>
+                             <TableCell className="max-w-32">
                               <code className="text-xs bg-muted p-1 rounded truncate block">
                                 {JSON.stringify(channel.config).substring(0, 30)}...
                               </code>
