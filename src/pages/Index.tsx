@@ -124,7 +124,7 @@ const Index = () => {
     if (selectedSection === 'channels') {
       fetchChannels();
     }
-  }, [selectedSection, fetchChannels]);
+  }, [selectedSection]); // Remove fetchChannels dependency to avoid infinite loop
   
   const selectedChat = mockChats.find(chat => chat.id === selectedChatId);
   
