@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccountData } from '@/hooks/useAccountData';
 import { useChannels } from '@/hooks/useChannels';
@@ -104,7 +104,7 @@ const mockMessages = [
 const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
-  const { channels, loading: channelsLoading, createChannel, updateChannel, deleteChannel } = useChannels();
+  const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
   const { toast } = useToast();
   
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -315,6 +315,13 @@ const Index = () => {
         );
 
       case 'channels':
+        // Use effect hook to fetch channels when this section is selected
+        useEffect(() => {
+          if (selectedSection === 'channels') {
+            fetchChannels();
+          }
+        }, [selectedSection, fetchChannels]);
+        
         return (
           <div className="flex-1 p-6">
             <div className="flex justify-between items-center mb-6">

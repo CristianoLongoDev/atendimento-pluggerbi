@@ -135,9 +135,7 @@ export const useChannels = () => {
     }
   };
 
-  useEffect(() => {
-    fetchChannels();
-  }, []);
+  // Removed automatic fetchChannels on mount to allow manual control
 
   return {
     channels,
