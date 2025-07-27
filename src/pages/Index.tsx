@@ -119,6 +119,13 @@ const Index = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [channelToDelete, setChannelToDelete] = useState<string | null>(null);
   
+  // Fetch channels when entering channels section
+  useEffect(() => {
+    if (selectedSection === 'channels') {
+      fetchChannels();
+    }
+  }, [selectedSection, fetchChannels]);
+  
   const selectedChat = mockChats.find(chat => chat.id === selectedChatId);
   
   const filteredChats = mockChats.filter(chat => {
@@ -315,13 +322,6 @@ const Index = () => {
         );
 
       case 'channels':
-        // Use effect hook to fetch channels when this section is selected
-        useEffect(() => {
-          if (selectedSection === 'channels') {
-            fetchChannels();
-          }
-        }, [selectedSection, fetchChannels]);
-        
         return (
           <div className="flex-1 p-6">
             <div className="flex justify-between items-center mb-6">
