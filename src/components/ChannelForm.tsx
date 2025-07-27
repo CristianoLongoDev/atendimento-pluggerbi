@@ -56,6 +56,17 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     setLoading(true);
 
     try {
+      // Validate required fields
+      if (!formData.botAgent) {
+        toast({
+          title: "Erro",
+          description: "Agente Bot é obrigatório",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       // Validate JSON config
       let configObj;
       try {
@@ -70,10 +81,8 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         return;
       }
 
-      // Add bot_agent to config if provided
-      if (formData.botAgent) {
-        configObj.bot_agent = formData.botAgent;
-      }
+      // Add bot_agent to config
+      configObj.bot_agent = formData.botAgent;
 
       const channelData = {
         type: formData.type,
@@ -158,10 +167,11 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="botAgent">Agente Bot</Label>
+            <Label htmlFor="botAgent">Agente Bot *</Label>
             <Select
               value={formData.botAgent}
               onValueChange={(value) => setFormData(prev => ({ ...prev, botAgent: value }))}
+              required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o agente bot" />
