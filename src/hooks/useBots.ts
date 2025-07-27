@@ -27,20 +27,25 @@ export const useBots = () => {
   };
 
   const fetchBots = async () => {
+    console.log('fetchBots - Starting to fetch bots');
     setLoading(true);
     setError(null);
     
     try {
       const headers = await getAuthHeaders();
+      console.log('fetchBots - Headers:', headers);
       const response = await fetch('https://atendimento.pluggerbi.com/bots', {
         headers
       });
+      
+      console.log('fetchBots - Response status:', response.status);
       
       if (!response.ok) {
         throw new Error(`Erro ao buscar bots. Status: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('fetchBots - Response data:', data);
       setBots(data.bots || []);
     } catch (err) {
       console.error('Error fetching bots:', err);

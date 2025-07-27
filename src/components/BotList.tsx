@@ -20,6 +20,7 @@ export const BotList: React.FC = () => {
   const [botToDelete, setBotToDelete] = useState<Bot | null>(null);
 
   React.useEffect(() => {
+    console.log('BotList - Component mounted, calling fetchBots');
     fetchBots();
   }, []);
 
