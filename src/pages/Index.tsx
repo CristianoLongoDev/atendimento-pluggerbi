@@ -349,14 +349,14 @@ const Index = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {channels.length === 0 ? (
+                      {channels.filter(channel => channel.active !== 0).length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={7} className="text-center text-muted-foreground">
                             Nenhum canal encontrado
                           </TableCell>
                         </TableRow>
                       ) : (
-                        channels.map((channel) => (
+                        channels.filter(channel => channel.active !== 0).map((channel) => (
                           <TableRow key={channel.id}>
                             <TableCell className="font-mono text-xs">
                               {channel.id.substring(0, 8)}...
