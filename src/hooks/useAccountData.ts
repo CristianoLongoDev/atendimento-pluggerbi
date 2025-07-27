@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AccountData {
   id: string;
@@ -26,10 +27,21 @@ export const useAccountData = () => {
       setError(null);
       
       try {
+        // Obter o token de acesso atual
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          throw new Error('Token de acesso não encontrado');
+        }
+
         const url = `https://atendimento.pluggerbi.com/accounts/${profile.account_id}`;
         console.log('useAccountData - Fetching from URL:', url);
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         console.log('useAccountData - Response status:', response.status);
         
         if (!response.ok) {
