@@ -120,7 +120,15 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   };
 
   const removeTag = (valueToRemove: string) => {
-    setPermittedTags(prev => prev.filter(tag => tag.value !== valueToRemove));
+    setPermittedTags(prev => {
+      const filtered = prev.filter(tag => tag.value !== valueToRemove);
+      // Se o valor removido era o default e ainda há outros valores, define o primeiro como default
+      const removedWasDefault = prev.find(tag => tag.value === valueToRemove)?.isDefault;
+      if (removedWasDefault && filtered.length > 0) {
+        filtered[0].isDefault = true;
+      }
+      return filtered;
+    });
   };
 
   const setTagAsDefault = (value: string) => {
@@ -185,6 +193,16 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   };
 
   const handleSaveParameter = async () => {
+    // Validar se valores permitidos foram configurados corretamente
+    if (enablePermittedValues && permittedTags.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Quando usar valores permitidos, deve informar ao menos 1 valor",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Converter tags para JSON e encontrar valor padrão
     let permittedValuesJson = undefined;
     let defaultValue = undefined;
