@@ -97,7 +97,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 
   const resetParameterForm = () => {
     setParameterForm({
-      parameter_id: '',
+      parameter_id: generateParameterId(), // Gera automaticamente
       name: '',
       type: 'string',
       permited_values: '',
@@ -218,7 +218,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       // If creating a new function, just add to local state
       const newParameter: FunctionParameter = {
         function_id: formData.id,
-        parameter_id: parameterForm.parameter_id || generateParameterId(),
+        parameter_id: parameterForm.parameter_id,
         name: parameterForm.name,
         type: parameterForm.type,
         permited_values: permittedValuesJson,
@@ -257,7 +257,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         result = await updateParameter(botId, formData.id, editingParameterId, parameterData);
       } else {
         result = await createParameter(botId, formData.id, {
-          parameter_id: parameterForm.parameter_id || generateParameterId(),
+          parameter_id: parameterForm.parameter_id,
           ...parameterData,
         });
       }
@@ -459,9 +459,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                         <Label>ID do Parâmetro</Label>
                         <Input
                           value={parameterForm.parameter_id}
-                          onChange={(e) => setParameterForm(prev => ({ ...prev, parameter_id: e.target.value }))}
-                          disabled={!!editingParameterId}
-                          placeholder="Será gerado automaticamente se vazio"
+                          disabled={true}
+                          placeholder="Gerado automaticamente"
                         />
                       </div>
                       <div className="space-y-2">
@@ -471,6 +470,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                           onChange={(e) => setParameterForm(prev => ({ ...prev, name: e.target.value }))}
                           required
                           placeholder="ex: categoria"
+                          autoFocus
                         />
                       </div>
                     </div>
