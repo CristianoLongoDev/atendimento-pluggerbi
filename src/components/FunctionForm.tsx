@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useFunctions, BotFunction } from '@/hooks/useFunctions';
 import { useFunctionParameters, FunctionParameter } from '@/hooks/useFunctionParameters';
-import { Plus, Edit, Trash2, X, Star, StarOff } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Star, StarOff, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface FunctionFormProps {
@@ -40,6 +40,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     description: '',
   });
   const [loading, setLoading] = useState(false);
+  const [parametersLoading, setParametersLoading] = useState(false);
   const [localParameters, setLocalParameters] = useState<FunctionParameter[]>([]);
   const [deletedParameterIds, setDeletedParameterIds] = useState<string[]>([]);
   const [originalParameters, setOriginalParameters] = useState<FunctionParameter[]>([]);
@@ -93,9 +94,12 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 
   const loadParameters = async (functionId: string) => {
     try {
+      setParametersLoading(true);
       await fetchParameters(botId, functionId);
     } catch (error) {
       console.error('Error loading parameters:', error);
+    } finally {
+      setParametersLoading(false);
     }
   };
 
@@ -719,11 +723,16 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
               )}
 
               {/* Parameters List */}
-              {displayParameters.length > 0 && (
+              {parametersLoading ? (
+                <div className="flex items-center justify-center py-8 space-x-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Carregando parâmetros...</span>
+                </div>
+              ) : displayParameters.length > 0 ? (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">Parâmetros Cadastrados</h4>
                   {displayParameters.map((param) => (
-                    <div key={param.parameter_id} className="p-3 border rounded-lg bg-muted/30">
+                    <div key={param.parameter_id} className="p-3 border rounded-lg bg-muted/30 animate-fade-in">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                            <div className="flex items-center gap-2">
@@ -772,14 +781,12 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                     </div>
                   ))}
                 </div>
-              )}
-
-              {displayParameters.length === 0 && !showParameterForm && (
+              ) : !showParameterForm ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>Nenhum parâmetro cadastrado</p>
                   <p className="text-sm">Clique em "Incluir Parâmetro" para adicionar</p>
                 </div>
-              )}
+              ) : null}
             </CardContent>
           </Card>
 
