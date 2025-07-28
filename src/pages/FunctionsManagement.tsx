@@ -172,7 +172,6 @@ const FunctionsManagement = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Nome</TableHead>
                     <TableHead>Descrição</TableHead>
                     <TableHead>Atualizado em</TableHead>
                     <TableHead className="w-[100px]">Ações</TableHead>
@@ -182,7 +181,6 @@ const FunctionsManagement = () => {
                   {functions.map((func) => (
                     <TableRow key={func.function_id}>
                       <TableCell className="font-medium">{func.function_id}</TableCell>
-                      <TableCell>{func.function_id}</TableCell>
                       <TableCell>{func.description || '-'}</TableCell>
                       <TableCell>
                         {func.updated_at ? new Date(func.updated_at).toLocaleDateString('pt-BR') : '-'}
