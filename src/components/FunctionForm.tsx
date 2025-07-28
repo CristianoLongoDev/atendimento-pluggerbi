@@ -371,13 +371,25 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         
         console.log('Modified parameters:', modifiedParametersData);
         for (const param of modifiedParametersData) {
-          const updateResult = await updateParameter(botId, formData.id, param.parameter_id, {
+          // Remover campos null/undefined do payload
+          const updatePayload: any = {
             description: param.description,
             type: param.type,
-            permited_values: param.permited_values,
-            default_value: param.default_value,
-            format: param.format,
-          });
+          };
+          
+          if (param.permited_values !== null && param.permited_values !== undefined) {
+            updatePayload.permited_values = param.permited_values;
+          }
+          if (param.default_value !== null && param.default_value !== undefined) {
+            updatePayload.default_value = param.default_value;
+          }
+          if (param.format !== null && param.format !== undefined) {
+            updatePayload.format = param.format;
+          }
+          
+          console.log('Update payload for parameter:', param.parameter_id, updatePayload);
+          
+          const updateResult = await updateParameter(botId, formData.id, param.parameter_id, updatePayload);
           
           if (!updateResult.success) {
             toast({
