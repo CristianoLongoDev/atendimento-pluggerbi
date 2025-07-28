@@ -348,9 +348,12 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         }
       } else {
         // Modo de edição
+        console.log('Edit mode - updating function with:', formData);
         result = await updateFunction(botId, formData.id, {
           description: formData.description || undefined,
         });
+        
+        console.log('Update function result:', result);
 
         if (!result.success) {
           toast({
@@ -362,8 +365,11 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         }
 
         // Processar parâmetros deletados em batch
+        console.log('Deleted parameter IDs:', deletedParameterIds);
         if (deletedParameterIds.length > 0) {
+          console.log('Deleting parameters:', deletedParameterIds);
           const deleteResult = await deleteParametersBatch(botId, formData.id, deletedParameterIds);
+          console.log('Delete parameters result:', deleteResult);
           if (!deleteResult.success) {
             toast({
               title: "Aviso",
