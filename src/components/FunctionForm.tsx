@@ -363,14 +363,15 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             {mode === 'create' ? 'Nova Função' : 'Editar Função'}
           </DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-6 p-1">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="id">ID da Função</Label>
@@ -660,7 +661,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
               {loading ? 'Salvando...' : mode === 'create' ? 'Criar' : 'Salvar'}
             </Button>
           </div>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
