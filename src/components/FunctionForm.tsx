@@ -308,7 +308,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       if (mode === 'create') {
         // 1. Primeiro criar a função
         result = await createFunction(botId, {
-          id: formData.id,
+          function_id: formData.id,
           description: formData.description || undefined,
         });
         

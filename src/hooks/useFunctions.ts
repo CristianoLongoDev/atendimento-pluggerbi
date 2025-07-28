@@ -11,7 +11,7 @@ export interface BotFunction {
 }
 
 interface CreateFunctionData {
-  id: string;
+  function_id: string;
   description?: string;
 }
 
