@@ -234,10 +234,19 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         p.parameter_id === editingParameterId ? newParameter : p
       ));
       
-      // Marcar como modificado se não é novo
-      const isExistingParameter = originalParameters.some(p => p.parameter_id === editingParameterId);
-      if (isExistingParameter) {
-        setModifiedParameters(prev => new Set([...prev, editingParameterId]));
+      // Verificar se este parâmetro existia originalmente (por qualquer parameter_id original)
+      const originalParam = originalParameters.find(p => p.parameter_id === editingParameterId);
+      if (originalParam) {
+        // Se o parameter_id mudou, precisamos:
+        // 1. Marcar o parameter_id antigo para deletar
+        // 2. Marcar o novo parameter como modificado (que será tratado como novo)
+        if (originalParam.parameter_id !== newParameter.parameter_id) {
+          setDeletedParameterIds(prev => [...prev, editingParameterId]);
+          // Não marcar como modificado - deixar ser tratado como novo
+        } else {
+          // Se apenas outros campos mudaram, marcar como modificado
+          setModifiedParameters(prev => new Set([...prev, editingParameterId]));
+        }
       }
     } else {
       // Adicionar novo parâmetro ao estado local
@@ -408,10 +417,15 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           }
         }
 
-        // 4. Criar novos parâmetros em batch
-        const newParameters = localParameters.filter(param => 
-          !originalParameters.some(orig => orig.parameter_id === param.parameter_id)
-        );
+        // 4. Criar novos parâmetros em batch (apenas os que realmente são novos)
+        const newParameters = localParameters.filter(param => {
+          // Um parâmetro é considerado novo se:
+          // 1. Não estava na lista original de parâmetros
+          // 2. E não foi marcado como modificado (que significa que era uma alteração de um existente)
+          const wasOriginal = originalParameters.some(orig => orig.parameter_id === param.parameter_id);
+          const wasModified = modifiedParameters.has(param.parameter_id);
+          return !wasOriginal && !wasModified;
+        });
         
         console.log('New parameters:', newParameters);
         if (newParameters.length > 0) {
