@@ -160,6 +160,7 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
               <SelectContent>
                 <SelectItem value="first_contact">Primeiro Contato</SelectItem>
                 <SelectItem value="every_time">Sempre</SelectItem>
+                <SelectItem value="email_not_informed">Email não informado</SelectItem>
               </SelectContent>
             </Select>
           </div>
