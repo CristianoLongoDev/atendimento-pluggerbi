@@ -213,7 +213,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       defaultValue = defaultTag?.value;
     }
 
-    if (!formData.id && mode === 'create') {
+    if (mode === 'create') {
       // If creating a new function, just add to local state
       const newParameter: FunctionParameter = {
         function_id: formData.id,
