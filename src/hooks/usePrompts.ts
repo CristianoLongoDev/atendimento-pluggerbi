@@ -88,11 +88,22 @@ export const usePrompts = () => {
     
     try {
       const headers = await getAuthHeaders();
+      console.log('=== UPDATE PROMPT DEBUG ===');
+      console.log('URL:', `https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}`);
+      console.log('Headers:', headers);
+      console.log('Body:', JSON.stringify(promptData, null, 2));
+      
       const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(promptData)
       });
+      
+      console.log('Response Status:', response.status);
+      console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+      
+      const responseText = await response.text();
+      console.log('Response Body:', responseText);
       
       if (!response.ok) {
         throw new Error(`Erro ao atualizar prompt. Status: ${response.status}`);
