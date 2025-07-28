@@ -56,16 +56,6 @@ const Header: React.FC = () => {
           </h1>
         </div>
         
-        <div className="flex items-center space-x-2 ml-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-            <Bot className="h-4 w-4 mr-2" />
-            Bots
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/prompts')}>
-            <FileText className="h-4 w-4 mr-2" />
-            Prompts
-          </Button>
-        </div>
         
         <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-800">
           <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
