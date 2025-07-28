@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Prompt, usePrompts } from '@/hooks/usePrompts';
 
@@ -23,7 +24,8 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
   const [formData, setFormData] = useState({
     id: '',
     prompt: '',
-    description: ''
+    description: '',
+    display_rule: 'first_contact'
   });
 
   useEffect(() => {
@@ -31,13 +33,15 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
       setFormData({
         id: prompt.id || '',
         prompt: prompt.prompt || '',
-        description: prompt.description || ''
+        description: prompt.description || '',
+        display_rule: (prompt as any).display_rule || 'first_contact'
       });
     } else if (mode === 'create') {
       setFormData({
         id: '',
         prompt: '',
-        description: ''
+        description: '',
+        display_rule: 'first_contact'
       });
     }
   }, [mode, prompt, open]);
@@ -71,13 +75,15 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
           bot_id: botId,
           id: formData.id.trim(),
           prompt: formData.prompt.trim(),
-          description: formData.description.trim() || undefined
-        });
+          description: formData.description.trim() || undefined,
+          display_rule: formData.display_rule
+        } as any);
       } else {
         result = await updatePrompt(botId, prompt!.id, {
           prompt: formData.prompt.trim(),
-          description: formData.description.trim() || undefined
-        });
+          description: formData.description.trim() || undefined,
+          display_rule: formData.display_rule
+        } as any);
       }
 
       if (result.success) {
@@ -89,7 +95,8 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
         setFormData({
           id: '',
           prompt: '',
-          description: ''
+          description: '',
+          display_rule: 'first_contact'
         });
         // Call onSuccess callback to refresh the list
         onSuccess?.();
@@ -142,6 +149,19 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Descrição opcional do prompt"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="display_rule">Regra Exibição</Label>
+            <Select value={formData.display_rule} onValueChange={(value) => handleInputChange('display_rule', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a regra de exibição" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="first_contact">Primeiro Contato</SelectItem>
+                <SelectItem value="every_time">Sempre</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
