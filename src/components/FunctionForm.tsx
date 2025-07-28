@@ -288,6 +288,16 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     setLoading(true);
 
     try {
+      // Validar se há pelo menos 1 parâmetro
+      if (localParameters.length === 0) {
+        toast({
+          title: "Erro",
+          description: "É necessário informar pelo menos 1 parâmetro para a função.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       let result;
       
       if (mode === 'create') {
