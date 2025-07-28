@@ -16,7 +16,6 @@ export interface FunctionParameter {
 
 interface CreateParameterData {
   parameter_id: string;
-  name: string;
   description?: string;
   type: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array';
   permited_values?: string;
@@ -25,7 +24,6 @@ interface CreateParameterData {
 }
 
 interface UpdateParameterData {
-  name?: string;
   description?: string;
   type?: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array';
   permited_values?: string;

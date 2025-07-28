@@ -45,7 +45,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [editingParameterId, setEditingParameterId] = useState<string | null>(null);
   const [parameterForm, setParameterForm] = useState({
     parameter_id: '',
-    name: '',
     description: '',
     type: 'string' as 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array',
     permited_values: '',
@@ -95,8 +94,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 
   const resetParameterForm = () => {
     setParameterForm({
-      parameter_id: generateParameterId(), // Gera automaticamente
-      name: '',
+      parameter_id: '',
       description: '',
       type: 'string',
       permited_values: '',
@@ -157,7 +155,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const handleEditParameter = (parameter: FunctionParameter) => {
     setParameterForm({
       parameter_id: parameter.parameter_id,
-      name: parameter.name,
       description: parameter.description || '',
       type: parameter.type,
       permited_values: parameter.permited_values || '',
@@ -219,7 +216,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       const newParameter: FunctionParameter = {
         function_id: formData.id,
         parameter_id: parameterForm.parameter_id,
-        name: parameterForm.name,
+        name: '',
         description: parameterForm.description,
         type: parameterForm.type,
         permited_values: permittedValuesJson,
@@ -247,7 +244,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     try {
       let result;
       const parameterData = {
-        name: parameterForm.name,
         description: parameterForm.description,
         type: parameterForm.type,
         permited_values: permittedValuesJson,
@@ -338,7 +334,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           for (const param of localParameters) {
             await createParameter(botId, formData.id, {
               parameter_id: param.parameter_id,
-              name: param.name,
               description: param.description,
               type: param.type,
               permited_values: param.permited_values,
@@ -445,25 +440,15 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>ID do Parâmetro</Label>
-                        <Input
-                          value={parameterForm.parameter_id}
-                          disabled={true}
-                          placeholder="Gerado automaticamente"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Nome</Label>
-                        <Input
-                          value={parameterForm.name}
-                          onChange={(e) => setParameterForm(prev => ({ ...prev, name: e.target.value }))}
-                          required
-                          placeholder="ex: categoria"
-                          autoFocus
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label>ID do Parâmetro</Label>
+                      <Input
+                        value={parameterForm.parameter_id}
+                        onChange={(e) => setParameterForm(prev => ({ ...prev, parameter_id: e.target.value }))}
+                        required
+                        placeholder="ex: categoria"
+                        autoFocus
+                      />
                     </div>
 
                      <div className="space-y-2">
