@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useFunctions, BotFunction } from '@/hooks/useFunctions';
 import { useFunctionParameters, FunctionParameter } from '@/hooks/useFunctionParameters';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Star, StarOff } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface FunctionFormProps {
   open: boolean;
@@ -51,6 +52,11 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     default_value: '',
     format: '' as '' | 'email' | 'uri' | 'date' | 'date-time',
   });
+
+  // Estados para o sistema de tags
+  const [enablePermittedValues, setEnablePermittedValues] = useState(false);
+  const [permittedTags, setPermittedTags] = useState<Array<{value: string, isDefault: boolean}>>([]);
+  const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     if (mode === 'edit' && botFunction) {
@@ -98,6 +104,37 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       default_value: '',
       format: '',
     });
+    setEnablePermittedValues(false);
+    setPermittedTags([]);
+    setTagInput('');
+  };
+
+  // Funções para gerenciar tags
+  const addTag = () => {
+    const value = tagInput.trim();
+    if (value && !permittedTags.some(tag => tag.value === value)) {
+      const isFirst = permittedTags.length === 0;
+      setPermittedTags(prev => [...prev, { value, isDefault: isFirst }]);
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (valueToRemove: string) => {
+    setPermittedTags(prev => prev.filter(tag => tag.value !== valueToRemove));
+  };
+
+  const setTagAsDefault = (value: string) => {
+    setPermittedTags(prev => prev.map(tag => ({
+      ...tag,
+      isDefault: tag.value === value
+    })));
+  };
+
+  const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
   };
 
   const generateParameterId = () => {
@@ -119,6 +156,24 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       default_value: parameter.default_value || '',
       format: parameter.format || '',
     });
+
+    // Carregar tags dos valores permitidos se existirem
+    if (parameter.permited_values) {
+      try {
+        const parsedValues = JSON.parse(parameter.permited_values);
+        if (Array.isArray(parsedValues)) {
+          const tags = parsedValues.map((value: string) => ({
+            value,
+            isDefault: value === parameter.default_value
+          }));
+          setPermittedTags(tags);
+          setEnablePermittedValues(true);
+        }
+      } catch (error) {
+        console.log('Valores permitidos não são um JSON válido');
+      }
+    }
+
     setEditingParameterId(parameter.parameter_id);
     setShowParameterForm(true);
   };
@@ -130,6 +185,17 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   };
 
   const handleSaveParameter = async () => {
+    // Converter tags para JSON e encontrar valor padrão
+    let permittedValuesJson = undefined;
+    let defaultValue = undefined;
+    
+    if (enablePermittedValues && permittedTags.length > 0) {
+      const tagValues = permittedTags.map(tag => tag.value);
+      permittedValuesJson = JSON.stringify(tagValues);
+      const defaultTag = permittedTags.find(tag => tag.isDefault);
+      defaultValue = defaultTag?.value;
+    }
+
     if (!formData.id && mode === 'create') {
       // If creating a new function, just add to local state
       const newParameter: FunctionParameter = {
@@ -137,8 +203,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         parameter_id: parameterForm.parameter_id || generateParameterId(),
         name: parameterForm.name,
         type: parameterForm.type,
-        permited_values: parameterForm.permited_values || undefined,
-        default_value: parameterForm.default_value || undefined,
+        permited_values: permittedValuesJson,
+        default_value: defaultValue,
         format: parameterForm.format || undefined,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -164,8 +230,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       const parameterData = {
         name: parameterForm.name,
         type: parameterForm.type,
-        permited_values: parameterForm.permited_values || undefined,
-        default_value: parameterForm.default_value || undefined,
+        permited_values: permittedValuesJson,
+        default_value: defaultValue,
         format: parameterForm.format || undefined,
       };
 
@@ -433,23 +499,85 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Valores Permitidos (JSON)</Label>
-                      <Textarea
-                        value={parameterForm.permited_values}
-                        onChange={(e) => setParameterForm(prev => ({ ...prev, permited_values: e.target.value }))}
-                        placeholder='ex: ["eletronicos", "roupas", "casa"]'
-                        rows={2}
-                      />
-                    </div>
+                    {/* Sistema de Tags para Valores Permitidos */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="enablePermittedValues"
+                          checked={enablePermittedValues}
+                          onCheckedChange={(checked) => {
+                            setEnablePermittedValues(!!checked);
+                            if (!checked) {
+                              setPermittedTags([]);
+                            }
+                          }}
+                        />
+                        <Label htmlFor="enablePermittedValues">
+                          Configurar valores de retorno permitidos
+                        </Label>
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label>Valor Padrão</Label>
-                      <Input
-                        value={parameterForm.default_value}
-                        onChange={(e) => setParameterForm(prev => ({ ...prev, default_value: e.target.value }))}
-                        placeholder="ex: eletronicos"
-                      />
+                      {enablePermittedValues && (
+                        <div className="space-y-3">
+                          <div className="flex gap-2">
+                            <Input
+                              value={tagInput}
+                              onChange={(e) => setTagInput(e.target.value)}
+                              onKeyDown={handleTagInputKeyPress}
+                              placeholder="Digite um valor e pressione Enter"
+                              className="flex-1"
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={addTag}
+                              disabled={!tagInput.trim()}
+                            >
+                              Adicionar
+                            </Button>
+                          </div>
+
+                          {permittedTags.length > 0 && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium">Valores configurados:</Label>
+                              <div className="flex flex-wrap gap-2">
+                                {permittedTags.map((tag) => (
+                                  <div 
+                                    key={tag.value} 
+                                    className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
+                                  >
+                                    <span>{tag.value}</span>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-4 w-4 p-0 hover:bg-secondary-foreground/10"
+                                      onClick={() => setTagAsDefault(tag.value)}
+                                      title={tag.isDefault ? "Valor padrão atual" : "Definir como padrão"}
+                                    >
+                                      {tag.isDefault ? (
+                                        <Star className="h-3 w-3 fill-current text-yellow-500" />
+                                      ) : (
+                                        <StarOff className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-4 w-4 p-0 hover:bg-destructive/10 text-destructive"
+                                      onClick={() => removeTag(tag.value)}
+                                      title="Remover valor"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2">
