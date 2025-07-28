@@ -135,6 +135,29 @@ export const useFunctionParameters = () => {
     }
   };
 
+  const createParametersBatch = async (botId: string, functionId: string, parametersData: CreateParameterData[]) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(parametersData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { success: true, data: data.parameters };
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Erro ao criar parâmetros em lote' 
+      };
+    }
+  };
+
   return {
     parameters,
     loading,
@@ -143,5 +166,6 @@ export const useFunctionParameters = () => {
     createParameter,
     updateParameter,
     deleteParameter,
+    createParametersBatch,
   };
 };

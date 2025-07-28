@@ -33,7 +33,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 }) => {
   const { toast } = useToast();
   const { createFunction, updateFunction } = useFunctions();
-  const { fetchParameters, createParameter, updateParameter, deleteParameter, parameters } = useFunctionParameters();
+  const { fetchParameters, createParameter, updateParameter, deleteParameter, parameters, createParametersBatch } = useFunctionParameters();
   
   const [formData, setFormData] = useState({
     id: '',
@@ -324,21 +324,39 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       let result;
       
       if (mode === 'create') {
+        // 1. Primeiro criar a função
         result = await createFunction(botId, {
           id: formData.id,
           description: formData.description || undefined,
         });
         
-        // If function was created successfully and we have local parameters, create them
-        if (result.success && localParameters.length > 0) {
-          for (const param of localParameters) {
-            await createParameter(botId, formData.id, {
-              parameter_id: param.parameter_id,
-              description: param.description,
-              type: param.type,
-              permited_values: param.permited_values,
-              default_value: param.default_value,
-              format: param.format,
+        if (!result.success) {
+          toast({
+            title: "Erro",
+            description: result.error,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // 2. Se a função foi criada com sucesso e temos parâmetros locais, criar todos em batch
+        if (localParameters.length > 0) {
+          const parametersData = localParameters.map(param => ({
+            parameter_id: param.parameter_id,
+            description: param.description,
+            type: param.type,
+            permited_values: param.permited_values,
+            default_value: param.default_value,
+            format: param.format,
+          }));
+
+          const parametersResult = await createParametersBatch(botId, formData.id, parametersData);
+          
+          if (!parametersResult.success) {
+            toast({
+              title: "Aviso",
+              description: "Função criada mas houve erro ao salvar parâmetros: " + parametersResult.error,
+              variant: "destructive",
             });
           }
         }
@@ -606,7 +624,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                            <div className="flex items-center gap-2">
-                             <h5 className="font-medium">{param.name}</h5>
+                             <h5 className="font-medium">{param.parameter_id}</h5>
                              <Badge variant="secondary">{param.type}</Badge>
                              {param.format && (
                                <Badge variant="outline">{param.format}</Badge>
