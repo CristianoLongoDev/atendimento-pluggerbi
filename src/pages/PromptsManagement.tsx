@@ -114,28 +114,19 @@ const PromptsManagement = () => {
           <CardTitle>Seleção de Bot</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="w-full max-w-sm">
-              <Select value={selectedBotId} onValueChange={handleBotSelect}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um bot" />
-                </SelectTrigger>
-                <SelectContent>
-                  {bots.map((bot) => (
-                    <SelectItem key={bot.id} value={bot.id}>
-                      {bot.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {selectedBotId && (
-              <Button onClick={handleCreate} className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Novo Prompt
-              </Button>
-            )}
+          <div className="w-full max-w-sm">
+            <Select value={selectedBotId} onValueChange={handleBotSelect}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um bot" />
+              </SelectTrigger>
+              <SelectContent>
+                {bots.map((bot) => (
+                  <SelectItem key={bot.id} value={bot.id}>
+                    {bot.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -143,7 +134,15 @@ const PromptsManagement = () => {
       {selectedBotId && (
         <Card>
           <CardHeader>
-            <CardTitle>Prompts do Bot</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Prompts do Bot</CardTitle>
+              {prompts.length > 0 && (
+                <Button onClick={handleCreate} className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Novo Prompt
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {promptsLoading ? (
