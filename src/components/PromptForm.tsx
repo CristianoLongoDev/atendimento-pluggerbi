@@ -30,7 +30,7 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
 
   useEffect(() => {
     if (mode === 'edit' && prompt) {
-      const ruleDisplay = (prompt as any).rule_display || 'first contact';
+      const ruleDisplay = prompt.rule_display || 'first contact';
       setFormData({
         id: prompt.id || '',
         prompt: prompt.prompt || '',
@@ -78,13 +78,13 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
           prompt: formData.prompt.trim(),
           description: formData.description.trim() || undefined,
           rule_display: formData.display_rule.split('_').join(' ')
-        } as any);
+        });
       } else {
         result = await updatePrompt(botId, prompt!.id, {
           prompt: formData.prompt.trim(),
           description: formData.description.trim() || undefined,
           rule_display: formData.display_rule.split('_').join(' ')
-        } as any);
+        });
       }
 
       if (result.success) {
