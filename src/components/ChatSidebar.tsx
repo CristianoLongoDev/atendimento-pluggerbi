@@ -94,9 +94,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     return (
                       <Button
                         key={filter.id}
-                        variant={selectedSection === 'conversations' && selectedFilter === filter.id ? "secondary" : "ghost"}
+                        variant={selectedSection === 'conversations' && selectedFilter === filter.id ? "default" : "ghost"}
                         className="w-full justify-start text-sm"
-                        onClick={() => onFilterChange(filter.id)}
+                        onClick={() => {
+                          onFilterChange(filter.id);
+                          // Automaticamente selecionar conversas ao clicar em um filtro
+                          if (selectedSection !== 'conversations') {
+                            onSectionChange('conversations');
+                            setIsConversationsExpanded(true);
+                          }
+                        }}
                       >
                         <Icon className="w-4 h-4 mr-3" />
                         {filter.label}
