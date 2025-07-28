@@ -75,7 +75,7 @@ const FunctionsManagement = () => {
   const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
 
-    const result = await deleteFunction(selectedBotId, itemToDelete.id);
+    const result = await deleteFunction(selectedBotId, itemToDelete.name);
     
     if (result.success) {
       toast({
