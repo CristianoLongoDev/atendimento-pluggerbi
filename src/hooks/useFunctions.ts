@@ -12,12 +12,10 @@ export interface BotFunction {
 
 interface CreateFunctionData {
   id: string;
-  name: string;
   description?: string;
 }
 
 interface UpdateFunctionData {
-  name?: string;
   description?: string;
 }
 

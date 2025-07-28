@@ -37,7 +37,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   
   const [formData, setFormData] = useState({
     id: '',
-    name: '',
     description: '',
   });
   const [loading, setLoading] = useState(false);
@@ -47,6 +46,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [parameterForm, setParameterForm] = useState({
     parameter_id: '',
     name: '',
+    description: '',
     type: 'string' as 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array',
     permited_values: '',
     default_value: '',
@@ -62,7 +62,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     if (mode === 'edit' && botFunction) {
       setFormData({
         id: botFunction.id,
-        name: botFunction.name,
         description: botFunction.description || '',
       });
       // Load parameters for existing function
@@ -70,7 +69,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     } else {
       setFormData({
         id: '',
-        name: '',
         description: '',
       });
       setLocalParameters([]);
@@ -99,6 +97,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     setParameterForm({
       parameter_id: generateParameterId(), // Gera automaticamente
       name: '',
+      description: '',
       type: 'string',
       permited_values: '',
       default_value: '',
@@ -159,6 +158,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     setParameterForm({
       parameter_id: parameter.parameter_id,
       name: parameter.name,
+      description: parameter.description || '',
       type: parameter.type,
       permited_values: parameter.permited_values || '',
       default_value: parameter.default_value || '',
@@ -220,6 +220,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         function_id: formData.id,
         parameter_id: parameterForm.parameter_id,
         name: parameterForm.name,
+        description: parameterForm.description,
         type: parameterForm.type,
         permited_values: permittedValuesJson,
         default_value: defaultValue,
@@ -247,6 +248,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       let result;
       const parameterData = {
         name: parameterForm.name,
+        description: parameterForm.description,
         type: parameterForm.type,
         permited_values: permittedValuesJson,
         default_value: defaultValue,
@@ -328,7 +330,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       if (mode === 'create') {
         result = await createFunction(botId, {
           id: formData.id,
-          name: formData.name,
           description: formData.description || undefined,
         });
         
@@ -338,6 +339,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
             await createParameter(botId, formData.id, {
               parameter_id: param.parameter_id,
               name: param.name,
+              description: param.description,
               type: param.type,
               permited_values: param.permited_values,
               default_value: param.default_value,
@@ -347,7 +349,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         }
       } else {
         result = await updateFunction(botId, formData.id, {
-          name: formData.name,
           description: formData.description || undefined,
         });
       }
@@ -403,16 +404,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                required
-                placeholder="ex: Buscar Produto"
-              />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Descrição</Label>
@@ -475,48 +466,58 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Tipo</Label>
-                        <Select 
-                          value={parameterForm.type} 
-                          onValueChange={(value) => setParameterForm(prev => ({ ...prev, type: value as any }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="string">String</SelectItem>
-                            <SelectItem value="number">Number</SelectItem>
-                            <SelectItem value="integer">Integer</SelectItem>
-                            <SelectItem value="boolean">Boolean</SelectItem>
-                            <SelectItem value="object">Object</SelectItem>
-                            <SelectItem value="array">Array</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Formato</Label>
-                        <Select 
-                          value={parameterForm.format || "none"} 
-                          onValueChange={(value) => setParameterForm(prev => ({ 
-                            ...prev, 
-                            format: value === "none" ? "" : value as any 
-                          }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Nenhum" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhum</SelectItem>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="uri">URI</SelectItem>
-                            <SelectItem value="date">Date</SelectItem>
-                            <SelectItem value="date-time">Date-Time</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                     <div className="space-y-2">
+                       <Label>Descrição</Label>
+                       <Textarea
+                         value={parameterForm.description}
+                         onChange={(e) => setParameterForm(prev => ({ ...prev, description: e.target.value }))}
+                         placeholder="Descreva o objetivo deste parâmetro..."
+                         rows={2}
+                       />
+                     </div>
+
+                     <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                         <Label>Tipo</Label>
+                         <Select 
+                           value={parameterForm.type} 
+                           onValueChange={(value) => setParameterForm(prev => ({ ...prev, type: value as any }))}
+                         >
+                           <SelectTrigger>
+                             <SelectValue />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="string">String</SelectItem>
+                             <SelectItem value="number">Number</SelectItem>
+                             <SelectItem value="integer">Integer</SelectItem>
+                             <SelectItem value="boolean">Boolean</SelectItem>
+                             <SelectItem value="object">Object</SelectItem>
+                             <SelectItem value="array">Array</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="space-y-2">
+                         <Label>Formato</Label>
+                         <Select 
+                           value={parameterForm.format || "none"} 
+                           onValueChange={(value) => setParameterForm(prev => ({ 
+                             ...prev, 
+                             format: value === "none" ? "" : value as any 
+                           }))}
+                         >
+                           <SelectTrigger>
+                             <SelectValue placeholder="Nenhum" />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="none">Nenhum</SelectItem>
+                             <SelectItem value="email">Email</SelectItem>
+                             <SelectItem value="uri">URI</SelectItem>
+                             <SelectItem value="date">Date</SelectItem>
+                             <SelectItem value="date-time">Date-Time</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                     </div>
 
                     {/* Sistema de Tags para Valores Permitidos */}
                     <div className="space-y-4">
@@ -619,23 +620,28 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                     <div key={param.parameter_id} className="p-3 border rounded-lg bg-muted/30">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h5 className="font-medium">{param.name}</h5>
-                            <Badge variant="secondary">{param.type}</Badge>
-                            {param.format && (
-                              <Badge variant="outline">{param.format}</Badge>
-                            )}
-                          </div>
-                          {param.default_value && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Padrão: {param.default_value}
-                            </p>
-                          )}
-                          {param.permited_values && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Valores: {param.permited_values}
-                            </p>
-                          )}
+                           <div className="flex items-center gap-2">
+                             <h5 className="font-medium">{param.name}</h5>
+                             <Badge variant="secondary">{param.type}</Badge>
+                             {param.format && (
+                               <Badge variant="outline">{param.format}</Badge>
+                             )}
+                           </div>
+                           {param.description && (
+                             <p className="text-sm text-muted-foreground mt-1">
+                               {param.description}
+                             </p>
+                           )}
+                           {param.default_value && (
+                             <p className="text-sm text-muted-foreground mt-1">
+                               Padrão: {param.default_value}
+                             </p>
+                           )}
+                           {param.permited_values && (
+                             <p className="text-xs text-muted-foreground mt-1">
+                               Valores: {param.permited_values}
+                             </p>
+                           )}
                         </div>
                         <div className="flex gap-1">
                           <Button 
