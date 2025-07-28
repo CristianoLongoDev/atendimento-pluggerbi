@@ -327,7 +327,12 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         
         // 1. Atualizar função (apenas description)
         console.log('Edit mode - updating function with:', formData);
+        console.log('Bot ID:', botId);
+        console.log('Function ID:', formData.id);
+        
         const cleanDescription = formData.description?.trim();
+        console.log('Clean description:', cleanDescription);
+        console.log('Update payload:', { description: cleanDescription || undefined });
         
         result = await updateFunction(botId, formData.id, {
           description: cleanDescription || undefined,

@@ -82,6 +82,10 @@ export const useFunctions = () => {
   const updateFunction = async (botId: string, functionId: string, functionData: UpdateFunctionData) => {
     try {
       const headers = await getAuthHeaders();
+      console.log('updateFunction - Headers:', headers);
+      console.log('updateFunction - URL:', `https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`);
+      console.log('updateFunction - Body:', JSON.stringify(functionData));
+      
       const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
         method: 'PUT',
         headers,
