@@ -413,14 +413,17 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                       <div className="space-y-2">
                         <Label>Formato</Label>
                         <Select 
-                          value={parameterForm.format} 
-                          onValueChange={(value) => setParameterForm(prev => ({ ...prev, format: value as any }))}
+                          value={parameterForm.format || "none"} 
+                          onValueChange={(value) => setParameterForm(prev => ({ 
+                            ...prev, 
+                            format: value === "none" ? "" : value as any 
+                          }))}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Nenhum" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Nenhum</SelectItem>
+                            <SelectItem value="none">Nenhum</SelectItem>
                             <SelectItem value="email">Email</SelectItem>
                             <SelectItem value="uri">URI</SelectItem>
                             <SelectItem value="date">Date</SelectItem>
