@@ -158,6 +158,28 @@ export const useFunctionParameters = () => {
     }
   };
 
+  const deleteParametersBatch = async (botId: string, functionId: string, parameterIds: string[]) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
+        method: 'DELETE',
+        headers,
+        body: JSON.stringify({ parameter_ids: parameterIds }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Erro ao excluir parâmetros em lote' 
+      };
+    }
+  };
+
   return {
     parameters,
     loading,
@@ -167,5 +189,6 @@ export const useFunctionParameters = () => {
     updateParameter,
     deleteParameter,
     createParametersBatch,
+    deleteParametersBatch,
   };
 };

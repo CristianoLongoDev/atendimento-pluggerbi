@@ -33,7 +33,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 }) => {
   const { toast } = useToast();
   const { createFunction, updateFunction } = useFunctions();
-  const { fetchParameters, createParameter, updateParameter, deleteParameter, parameters, createParametersBatch } = useFunctionParameters();
+  const { fetchParameters, createParameter, updateParameter, deleteParameter, parameters, createParametersBatch, deleteParametersBatch } = useFunctionParameters();
   
   const [formData, setFormData] = useState({
     id: '',
@@ -41,6 +41,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [localParameters, setLocalParameters] = useState<FunctionParameter[]>([]);
+  const [deletedParameterIds, setDeletedParameterIds] = useState<string[]>([]);
+  const [originalParameters, setOriginalParameters] = useState<FunctionParameter[]>([]);
   const [showParameterForm, setShowParameterForm] = useState(false);
   const [editingParameterId, setEditingParameterId] = useState<string | null>(null);
   const [parameterForm, setParameterForm] = useState({
@@ -71,6 +73,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         description: '',
       });
       setLocalParameters([]);
+      setOriginalParameters([]);
+      setDeletedParameterIds([]);
     }
     setShowParameterForm(false);
     setEditingParameterId(null);
@@ -81,6 +85,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   useEffect(() => {
     if (mode === 'edit' && parameters.length > 0) {
       setLocalParameters(parameters);
+      setOriginalParameters(parameters);
     }
   }, [parameters, mode]);
 
@@ -286,34 +291,15 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   };
 
   const handleDeleteParameter = async (parameterId: string) => {
-    if (!formData.id && mode === 'create') {
+    if (mode === 'create') {
       // If creating a new function, just remove from local state
       setLocalParameters(prev => prev.filter(p => p.parameter_id !== parameterId));
       return;
     }
 
-    try {
-      const result = await deleteParameter(botId, formData.id, parameterId);
-      if (result.success) {
-        toast({
-          title: "Sucesso",
-          description: "Parâmetro excluído!",
-        });
-        loadParameters(formData.id);
-      } else {
-        toast({
-          title: "Erro",
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao excluir parâmetro",
-        variant: "destructive",
-      });
-    }
+    // For edit mode, add to deleted list and remove from local parameters
+    setDeletedParameterIds(prev => [...prev, parameterId]);
+    setLocalParameters(prev => prev.filter(p => p.parameter_id !== parameterId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -361,9 +347,56 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           }
         }
       } else {
+        // Modo de edição
         result = await updateFunction(botId, formData.id, {
           description: formData.description || undefined,
         });
+
+        if (!result.success) {
+          toast({
+            title: "Erro",
+            description: result.error,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Processar parâmetros deletados em batch
+        if (deletedParameterIds.length > 0) {
+          const deleteResult = await deleteParametersBatch(botId, formData.id, deletedParameterIds);
+          if (!deleteResult.success) {
+            toast({
+              title: "Aviso",
+              description: "Função atualizada mas houve erro ao excluir parâmetros: " + deleteResult.error,
+              variant: "destructive",
+            });
+          }
+        }
+
+        // Processar novos parâmetros em batch
+        const newParameters = localParameters.filter(param => 
+          !originalParameters.some(orig => orig.parameter_id === param.parameter_id)
+        );
+
+        if (newParameters.length > 0) {
+          const parametersData = newParameters.map(param => ({
+            parameter_id: param.parameter_id,
+            description: param.description,
+            type: param.type,
+            permited_values: param.permited_values,
+            default_value: param.default_value,
+            format: param.format,
+          }));
+
+          const createResult = await createParametersBatch(botId, formData.id, parametersData);
+          if (!createResult.success) {
+            toast({
+              title: "Aviso", 
+              description: "Função atualizada mas houve erro ao criar novos parâmetros: " + createResult.error,
+              variant: "destructive",
+            });
+          }
+        }
       }
 
       if (result.success) {
