@@ -325,28 +325,36 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       } else {
         // Modo de edição - 2 operações separadas
         
-        // 1. Atualizar função (apenas description)
-        console.log('Edit mode - updating function with:', formData);
-        console.log('Bot ID:', botId);
-        console.log('Function ID:', formData.id);
+        // 1. Atualizar função (apenas description) - só se realmente mudou
+        console.log('Edit mode - checking if function needs update');
+        console.log('Original function:', botFunction);
+        console.log('Current form data:', formData);
         
         const cleanDescription = formData.description?.trim();
+        const originalDescription = botFunction?.description?.trim();
+        
         console.log('Clean description:', cleanDescription);
-        console.log('Update payload:', { description: cleanDescription || undefined });
+        console.log('Original description:', originalDescription);
         
-        result = await updateFunction(botId, formData.id, {
-          description: cleanDescription || undefined,
-        });
-        
-        console.log('Update function result:', result);
-
-        if (!result.success) {
-          toast({
-            title: "Erro",
-            description: result.error,
-            variant: "destructive",
+        if (cleanDescription !== originalDescription) {
+          console.log('Function description changed, updating...');
+          result = await updateFunction(botId, formData.id, {
+            description: cleanDescription || undefined,
           });
-          return;
+          
+          console.log('Update function result:', result);
+
+          if (!result.success) {
+            toast({
+              title: "Erro",
+              description: result.error,
+              variant: "destructive",
+            });
+            return;
+          }
+        } else {
+          console.log('Function description unchanged, skipping update');
+          result = { success: true }; // Simulate success since no update needed
         }
 
         // 2. Excluir parâmetros removidos
