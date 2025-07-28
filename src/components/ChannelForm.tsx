@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Channel } from '@/hooks/useChannels';
+import { useBots } from '@/hooks/useBots';
 
 interface ChannelFormProps {
   open: boolean;
@@ -24,6 +25,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   mode
 }) => {
   const { toast } = useToast();
+  const { bots, fetchBots } = useBots();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: 'whatsapp',
@@ -32,6 +34,13 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     status: 1,
     config: '{\n  "phone_number": "+55"\n}'
   });
+
+  // Fetch bots when component opens
+  useEffect(() => {
+    if (open) {
+      fetchBots();
+    }
+  }, [open, fetchBots]);
 
   // Update form data when channel changes
   useEffect(() => {
@@ -182,10 +191,11 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
                 <SelectValue placeholder="Selecione o agente bot" />
               </SelectTrigger>
               <SelectContent className="bg-background border z-50">
-                <SelectItem value="bot-principal">Bot Principal</SelectItem>
-                <SelectItem value="bot-vendas">Bot Vendas</SelectItem>
-                <SelectItem value="bot-suporte">Bot Suporte</SelectItem>
-                <SelectItem value="bot-social">Bot Social</SelectItem>
+                {bots.map((bot) => (
+                  <SelectItem key={bot.id} value={bot.id}>
+                    {bot.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
