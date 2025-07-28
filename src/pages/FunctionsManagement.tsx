@@ -75,7 +75,7 @@ const FunctionsManagement = () => {
   const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
 
-    const result = await deleteFunction(selectedBotId, itemToDelete.name);
+    const result = await deleteFunction(selectedBotId, itemToDelete.function_id);
     
     if (result.success) {
       toast({
@@ -180,9 +180,9 @@ const FunctionsManagement = () => {
                 </TableHeader>
                 <TableBody>
                   {functions.map((func) => (
-                    <TableRow key={func.id}>
-                      <TableCell className="font-medium">{func.id}</TableCell>
-                      <TableCell>{func.name}</TableCell>
+                    <TableRow key={func.function_id}>
+                      <TableCell className="font-medium">{func.function_id}</TableCell>
+                      <TableCell>{func.function_id}</TableCell>
                       <TableCell>{func.description || '-'}</TableCell>
                       <TableCell>
                         {func.updated_at ? new Date(func.updated_at).toLocaleDateString('pt-BR') : '-'}

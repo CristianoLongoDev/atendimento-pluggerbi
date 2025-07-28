@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface BotFunction {
   bot_id: string;
-  id: string;
+  function_id: string;
   name: string;
   description?: string;
   created_at: string;

@@ -62,11 +62,11 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   useEffect(() => {
     if (mode === 'edit' && botFunction) {
       setFormData({
-        id: botFunction.id,
+        id: botFunction.function_id,
         description: botFunction.description || '',
       });
       // Load parameters for existing function
-      loadParameters(botFunction.id);
+      loadParameters(botFunction.function_id);
     } else {
       setFormData({
         id: '',
