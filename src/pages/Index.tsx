@@ -358,9 +358,9 @@ const Index = () => {
                   <Table>
                      <TableHeader>
                        <TableRow>
+                         <TableHead>ID</TableHead>
                          <TableHead>Nome</TableHead>
                          <TableHead>Tipo</TableHead>
-                         <TableHead>Agente Bot</TableHead>
                          <TableHead>Status</TableHead>
                          <TableHead>Configuração</TableHead>
                          <TableHead>Data Criação</TableHead>
@@ -377,17 +377,15 @@ const Index = () => {
                        ) : (
                          channels.map((channel) => (
                           <TableRow key={channel.id}>
+                            <TableCell className="font-mono text-xs">
+                              {channel.id.substring(0, 8)}...
+                            </TableCell>
                             <TableCell>{channel.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline">
                                 {channel.type}
                               </Badge>
                             </TableCell>
-                             <TableCell>
-                               <Badge variant="secondary">
-                                 {channel.config?.bot_agent || 'Não definido'}
-                               </Badge>
-                             </TableCell>
                              <TableCell>
                                <Badge variant={channel.status === 1 ? "default" : "destructive"}>
                                  {channel.status === 1 ? 'Ativo' : 'Desabilitado'}
