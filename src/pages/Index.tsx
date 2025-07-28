@@ -358,7 +358,6 @@ const Index = () => {
                   <Table>
                      <TableHeader>
                        <TableRow>
-                         <TableHead>ID</TableHead>
                          <TableHead>Nome</TableHead>
                          <TableHead>Tipo</TableHead>
                          <TableHead>Agente Bot</TableHead>
@@ -371,16 +370,13 @@ const Index = () => {
                     <TableBody>
                        {channels.length === 0 ? (
                          <TableRow>
-                           <TableCell colSpan={8} className="text-center text-muted-foreground">
+                           <TableCell colSpan={7} className="text-center text-muted-foreground">
                              Nenhum canal encontrado
                            </TableCell>
                          </TableRow>
                        ) : (
                          channels.map((channel) => (
                           <TableRow key={channel.id}>
-                            <TableCell className="font-mono text-xs">
-                              {channel.id.substring(0, 8)}...
-                            </TableCell>
                             <TableCell>{channel.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline">
