@@ -370,7 +370,7 @@ const Index = () => {
                     <TableBody>
                        {channels.length === 0 ? (
                          <TableRow>
-                           <TableCell colSpan={7} className="text-center text-muted-foreground">
+                           <TableCell colSpan={6} className="text-center text-muted-foreground">
                              Nenhum canal encontrado
                            </TableCell>
                          </TableRow>
@@ -387,8 +387,8 @@ const Index = () => {
                               </Badge>
                             </TableCell>
                              <TableCell>
-                               <Badge variant={channel.status === 1 ? "default" : "destructive"}>
-                                 {channel.status === 1 ? 'Ativo' : 'Desabilitado'}
+                               <Badge variant={channel.active ? "default" : "destructive"}>
+                                 {channel.active ? 'Ativo' : 'Desabilitado'}
                                </Badge>
                              </TableCell>
                              <TableCell className="max-w-32">

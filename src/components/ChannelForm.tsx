@@ -48,8 +48,8 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       setFormData({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
-        botAgent: channel.config?.bot_agent || '',
-        status: channel.status || 1,
+        botAgent: channel.bot_id || '',
+        status: channel.active ? 1 : 0,
         config: channel.config ? JSON.stringify(channel.config, null, 2) : '{\n  "phone_number": "+55"\n}'
       });
     } else if (mode === 'create') {
@@ -93,13 +93,11 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         return;
       }
 
-      // Add bot_agent to config
-      configObj.bot_agent = formData.botAgent;
-
       const channelData = {
         type: formData.type,
         name: formData.name,
-        status: formData.status,
+        bot_id: formData.botAgent,
+        active: formData.status === 1,
         config: configObj
       };
 
