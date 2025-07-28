@@ -349,8 +349,10 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       } else {
         // Modo de edição
         console.log('Edit mode - updating function with:', formData);
+        
+        const cleanDescription = formData.description?.trim();
         result = await updateFunction(botId, formData.id, {
-          description: formData.description || undefined,
+          description: cleanDescription || undefined,
         });
         
         console.log('Update function result:', result);
