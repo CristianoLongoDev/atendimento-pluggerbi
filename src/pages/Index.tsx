@@ -11,6 +11,7 @@ import ChatInfo from '@/components/ChatInfo';
 import { ChannelForm } from '@/components/ChannelForm';
 import { BotList } from '@/components/BotList';
 import PromptsManagement from '@/pages/PromptsManagement';
+import FunctionsManagement from '@/pages/FunctionsManagement';
 import PageHeader from '@/components/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -486,15 +487,7 @@ const Index = () => {
       case 'roles':
         return (
           <div className="flex-1 p-6">
-            <PageHeader 
-              title="Funções e Permissões" 
-              description="Configure e gerencie as funções e permissões dos usuários" 
-            />
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <p className="text-muted-foreground">Funcionalidade em desenvolvimento</p>
-              </div>
-            </div>
+            <FunctionsManagement />
           </div>
         );
 
