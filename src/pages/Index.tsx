@@ -10,6 +10,7 @@ import ChatArea from '@/components/ChatArea';
 import ChatInfo from '@/components/ChatInfo';
 import { ChannelForm } from '@/components/ChannelForm';
 import { BotList } from '@/components/BotList';
+import PromptsManagement from '@/pages/PromptsManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -464,11 +465,8 @@ const Index = () => {
 
       case 'prompts':
         return (
-          <div className="flex-1 p-6 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Prompts</h3>
-              <p className="text-muted-foreground">Funcionalidade em desenvolvimento</p>
-            </div>
+          <div className="flex-1 p-6">
+            <PromptsManagement />
           </div>
         );
 
