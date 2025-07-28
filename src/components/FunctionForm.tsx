@@ -347,10 +347,12 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           }
         }
       } else {
-        // Modo de edição
-        console.log('Edit mode - updating function with:', formData);
+        // Modo de edição - 2 operações separadas
         
+        // 1. Atualizar função (apenas description)
+        console.log('Edit mode - updating function with:', formData);
         const cleanDescription = formData.description?.trim();
+        
         result = await updateFunction(botId, formData.id, {
           description: cleanDescription || undefined,
         });
@@ -366,7 +368,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           return;
         }
 
-        // Processar parâmetros deletados em batch
+        // 2. Excluir parâmetros removidos (operação separada)
         console.log('Deleted parameter IDs:', deletedParameterIds);
         if (deletedParameterIds.length > 0) {
           console.log('Deleting parameters:', deletedParameterIds);
@@ -381,7 +383,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           }
         }
 
-        // Processar novos parâmetros em batch
+        // 3. Criar novos parâmetros em batch
         const newParameters = localParameters.filter(param => 
           !originalParameters.some(orig => orig.parameter_id === param.parameter_id)
         );
