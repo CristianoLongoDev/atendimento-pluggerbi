@@ -173,8 +173,7 @@ const PromptsManagement = () => {
                   <TableRow>
                     <TableHead>ID</TableHead>
                     <TableHead>Descrição</TableHead>
-                    <TableHead>Prompt</TableHead>
-                    <TableHead>Criado em</TableHead>
+                    <TableHead>Atualizado em</TableHead>
                     <TableHead className="w-[100px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -183,9 +182,8 @@ const PromptsManagement = () => {
                     <TableRow key={prompt.id}>
                       <TableCell className="font-medium">{prompt.id}</TableCell>
                       <TableCell>{prompt.description || '-'}</TableCell>
-                      <TableCell className="max-w-xs truncate">{prompt.prompt}</TableCell>
                       <TableCell>
-                        {prompt.created_at ? new Date(prompt.created_at).toLocaleDateString('pt-BR') : '-'}
+                        {prompt.updated_at ? new Date(prompt.updated_at).toLocaleDateString('pt-BR') : '-'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
