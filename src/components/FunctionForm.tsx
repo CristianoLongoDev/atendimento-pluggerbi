@@ -147,9 +147,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     }
   };
 
-  const generateParameterId = () => {
-    return crypto.randomUUID();
-  };
 
   const handleAddParameter = () => {
     setEditingParameterId(null);
@@ -221,7 +218,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       const newParameter: FunctionParameter = {
         function_id: formData.id,
         parameter_id: parameterForm.parameter_id,
-        name: '',
         description: parameterForm.description,
         type: parameterForm.type,
         permited_values: permittedValuesJson,

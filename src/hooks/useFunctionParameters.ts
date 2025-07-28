@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface FunctionParameter {
   function_id: string;
   parameter_id: string;
-  name: string;
+  name?: string;
   description?: string;
   type: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array';
   permited_values?: string;
