@@ -94,7 +94,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     return (
                       <Button
                         key={filter.id}
-                        variant={selectedFilter === filter.id ? "secondary" : "ghost"}
+                        variant={selectedSection === 'conversations' && selectedFilter === filter.id ? "secondary" : "ghost"}
                         className="w-full justify-start text-sm"
                         onClick={() => onFilterChange(filter.id)}
                       >
