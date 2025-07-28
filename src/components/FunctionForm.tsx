@@ -43,6 +43,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [localParameters, setLocalParameters] = useState<FunctionParameter[]>([]);
   const [deletedParameterIds, setDeletedParameterIds] = useState<string[]>([]);
   const [originalParameters, setOriginalParameters] = useState<FunctionParameter[]>([]);
+  const [modifiedParameters, setModifiedParameters] = useState<Set<string>>(new Set()); // Track modified parameters
   const [showParameterForm, setShowParameterForm] = useState(false);
   const [editingParameterId, setEditingParameterId] = useState<string | null>(null);
   const [parameterForm, setParameterForm] = useState({
@@ -74,6 +75,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       });
       setLocalParameters([]);
       setOriginalParameters([]);
+      setModifiedParameters(new Set());
       setDeletedParameterIds([]);
     }
     setShowParameterForm(false);
@@ -213,89 +215,63 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       defaultValue = defaultTag?.value;
     }
 
-    if (mode === 'create') {
-      // If creating a new function, just add to local state
-      const newParameter: FunctionParameter = {
-        function_id: formData.id,
-        parameter_id: parameterForm.parameter_id,
-        description: parameterForm.description,
-        type: parameterForm.type,
-        permited_values: permittedValuesJson,
-        default_value: defaultValue,
-        format: parameterForm.format || undefined,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+    // Sempre trabalhar apenas com estado local durante edição
+    const newParameter: FunctionParameter = {
+      function_id: formData.id,
+      parameter_id: parameterForm.parameter_id,
+      description: parameterForm.description,
+      type: parameterForm.type,
+      permited_values: permittedValuesJson,
+      default_value: defaultValue,
+      format: parameterForm.format || undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-      if (editingParameterId) {
-        setLocalParameters(prev => prev.map(p => 
-          p.parameter_id === editingParameterId ? newParameter : p
-        ));
-      } else {
-        setLocalParameters(prev => [...prev, newParameter]);
+    if (editingParameterId) {
+      // Atualizar parâmetro existente no estado local
+      setLocalParameters(prev => prev.map(p => 
+        p.parameter_id === editingParameterId ? newParameter : p
+      ));
+      
+      // Marcar como modificado se não é novo
+      const isExistingParameter = originalParameters.some(p => p.parameter_id === editingParameterId);
+      if (isExistingParameter) {
+        setModifiedParameters(prev => new Set([...prev, editingParameterId]));
       }
-
-      setShowParameterForm(false);
-      setEditingParameterId(null);
-      resetParameterForm();
-      return;
+    } else {
+      // Adicionar novo parâmetro ao estado local
+      setLocalParameters(prev => [...prev, newParameter]);
     }
 
-    // For existing functions, save to API
-    try {
-      let result;
-      const parameterData = {
-        description: parameterForm.description,
-        type: parameterForm.type,
-        permited_values: permittedValuesJson,
-        default_value: defaultValue,
-        format: parameterForm.format || undefined,
-      };
-
-      if (editingParameterId) {
-        result = await updateParameter(botId, formData.id, editingParameterId, parameterData);
-      } else {
-        result = await createParameter(botId, formData.id, {
-          parameter_id: parameterForm.parameter_id,
-          ...parameterData,
-        });
-      }
-
-      if (result.success) {
-        toast({
-          title: "Sucesso",
-          description: editingParameterId ? "Parâmetro atualizado!" : "Parâmetro criado!",
-        });
-        loadParameters(formData.id);
-        setShowParameterForm(false);
-        setEditingParameterId(null);
-        resetParameterForm();
-      } else {
-        toast({
-          title: "Erro",
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao salvar parâmetro",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Sucesso", 
+      description: editingParameterId ? "Parâmetro atualizado localmente!" : "Parâmetro adicionado localmente!",
+    });
+    
+    setShowParameterForm(false);
+    setEditingParameterId(null);
+    resetParameterForm();
   };
 
   const handleDeleteParameter = async (parameterId: string) => {
-    if (mode === 'create') {
-      // If creating a new function, just remove from local state
-      setLocalParameters(prev => prev.filter(p => p.parameter_id !== parameterId));
-      return;
+    // Sempre trabalhar apenas com estado local durante edição
+    const isExistingParameter = originalParameters.some(p => p.parameter_id === parameterId);
+    
+    if (isExistingParameter) {
+      // Se é um parâmetro que existia originalmente, adicionar à lista de deletados
+      setDeletedParameterIds(prev => [...prev, parameterId]);
     }
-
-    // For edit mode, add to deleted list and remove from local parameters
-    setDeletedParameterIds(prev => [...prev, parameterId]);
+    
+    // Remover do estado local
     setLocalParameters(prev => prev.filter(p => p.parameter_id !== parameterId));
+    
+    // Remover da lista de modificados se estava lá
+    setModifiedParameters(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(parameterId);
+      return newSet;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -368,7 +344,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           return;
         }
 
-        // 2. Excluir parâmetros removidos (operação separada)
+        // 2. Excluir parâmetros removidos
         console.log('Deleted parameter IDs:', deletedParameterIds);
         if (deletedParameterIds.length > 0) {
           console.log('Deleting parameters:', deletedParameterIds);
@@ -383,11 +359,36 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           }
         }
 
-        // 3. Criar novos parâmetros em batch
+        // 3. Atualizar parâmetros modificados
+        const modifiedParametersData = localParameters.filter(param => 
+          modifiedParameters.has(param.parameter_id)
+        );
+        
+        console.log('Modified parameters:', modifiedParametersData);
+        for (const param of modifiedParametersData) {
+          const updateResult = await updateParameter(botId, formData.id, param.parameter_id, {
+            description: param.description,
+            type: param.type,
+            permited_values: param.permited_values,
+            default_value: param.default_value,
+            format: param.format,
+          });
+          
+          if (!updateResult.success) {
+            toast({
+              title: "Aviso",
+              description: `Erro ao atualizar parâmetro ${param.parameter_id}: ${updateResult.error}`,
+              variant: "destructive",
+            });
+          }
+        }
+
+        // 4. Criar novos parâmetros em batch
         const newParameters = localParameters.filter(param => 
           !originalParameters.some(orig => orig.parameter_id === param.parameter_id)
         );
-
+        
+        console.log('New parameters:', newParameters);
         if (newParameters.length > 0) {
           const parametersData = newParameters.map(param => ({
             parameter_id: param.parameter_id,
