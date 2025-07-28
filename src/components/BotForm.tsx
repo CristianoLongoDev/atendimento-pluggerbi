@@ -27,7 +27,7 @@ export const BotForm: React.FC<BotFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    type: 'suporte',
+    type: 'suporte_integracao_movidesk',
     system_prompt: ''
   });
 
@@ -36,13 +36,13 @@ export const BotForm: React.FC<BotFormProps> = ({
     if (mode === 'edit' && bot) {
       setFormData({
         name: bot.name || '',
-        type: bot.type || 'suporte',
+        type: bot.type || 'suporte_integracao_movidesk',
         system_prompt: bot.system_prompt || ''
       });
     } else if (mode === 'create') {
       setFormData({
         name: '',
-        type: 'suporte',
+        type: 'suporte_integracao_movidesk',
         system_prompt: ''
       });
     }
@@ -85,7 +85,7 @@ export const BotForm: React.FC<BotFormProps> = ({
         onOpenChange(false);
         setFormData({
           name: '',
-          type: 'suporte',
+          type: 'suporte_integracao_movidesk',
           system_prompt: ''
         });
       } else {
@@ -137,7 +137,7 @@ export const BotForm: React.FC<BotFormProps> = ({
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="suporte">Suporte Integração Movidesk</SelectItem>
+                <SelectItem value="suporte_integracao_movidesk">Suporte Integração Movidesk</SelectItem>
               </SelectContent>
             </Select>
           </div>
