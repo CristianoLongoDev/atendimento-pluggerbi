@@ -323,6 +323,9 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
 
         // 2. Se a função foi criada com sucesso e temos parâmetros locais, criar todos em batch
         if (localParameters.length > 0) {
+          console.log('Creating parameters for function:', formData.id);
+          console.log('Local parameters:', localParameters);
+          
           const parametersData = localParameters.map(param => ({
             parameter_id: param.parameter_id,
             description: param.description,
@@ -332,6 +335,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
             format: param.format,
           }));
 
+          console.log('Parameters data to send:', parametersData);
           const parametersResult = await createParametersBatch(botId, formData.id, parametersData);
           
           if (!parametersResult.success) {
