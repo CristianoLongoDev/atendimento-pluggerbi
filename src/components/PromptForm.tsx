@@ -76,13 +76,13 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
           id: formData.id.trim(),
           prompt: formData.prompt.trim(),
           description: formData.description.trim() || undefined,
-          display_rule: formData.display_rule
+          rule_display: formData.display_rule
         } as any);
       } else {
         result = await updatePrompt(botId, prompt!.id, {
           prompt: formData.prompt.trim(),
           description: formData.description.trim() || undefined,
-          display_rule: formData.display_rule
+          rule_display: formData.display_rule
         } as any);
       }
 
