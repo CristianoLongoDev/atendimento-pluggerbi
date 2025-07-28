@@ -366,11 +366,17 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           result = { success: true }; // Simulate success since no update needed
         }
 
-        // 2. Excluir parâmetros removidos
+        // 2. Excluir parâmetros removidos (apenas os que realmente existem no servidor)
+        const existingDeletedIds = deletedParameterIds.filter(id => 
+          originalParameters.some(p => p.parameter_id === id)
+        );
+        
         console.log('Deleted parameter IDs:', deletedParameterIds);
-        if (deletedParameterIds.length > 0) {
-          console.log('Deleting parameters:', deletedParameterIds);
-          const deleteResult = await deleteParametersBatch(botId, formData.id, deletedParameterIds);
+        console.log('Existing deleted IDs to send:', existingDeletedIds);
+        
+        if (existingDeletedIds.length > 0) {
+          console.log('Deleting parameters:', existingDeletedIds);
+          const deleteResult = await deleteParametersBatch(botId, formData.id, existingDeletedIds);
           console.log('Delete parameters result:', deleteResult);
           if (!deleteResult.success) {
             toast({
@@ -450,6 +456,10 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       }
 
       if (result.success) {
+        // Limpar estados após sucesso
+        setDeletedParameterIds([]);
+        setModifiedParameters(new Set());
+        
         toast({
           title: "Sucesso",
           description: mode === 'create' ? "Função criada com sucesso!" : "Função atualizada com sucesso!",
