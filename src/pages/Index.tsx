@@ -11,6 +11,7 @@ import ChatInfo from '@/components/ChatInfo';
 import { ChannelForm } from '@/components/ChannelForm';
 import { BotList } from '@/components/BotList';
 import PromptsManagement from '@/pages/PromptsManagement';
+import PageHeader from '@/components/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -239,13 +240,11 @@ const Index = () => {
                 <TabsTrigger value="users">Usuários</TabsTrigger>
               </TabsList>
               <TabsContent value="account" className="space-y-4">
+                <PageHeader 
+                  title="Informações da Conta" 
+                  description="Visualize e gerencie as configurações da sua conta" 
+                />
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Informações da Conta</CardTitle>
-                    <CardDescription>
-                      Informações gerais da sua conta
-                    </CardDescription>
-                  </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
                       <label className="text-sm font-medium">ID da Conta</label>
@@ -270,7 +269,12 @@ const Index = () => {
               
               <TabsContent value="users" className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Usuários</h3>
+                  <div>
+                    <PageHeader 
+                      title="Usuários" 
+                      description="Gerencie os usuários com acesso ao sistema" 
+                    />
+                  </div>
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
                     Cadastrar Usuário
@@ -327,7 +331,12 @@ const Index = () => {
         return (
           <div className="flex-1 p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Canais de Atendimento</h3>
+              <div>
+                <PageHeader 
+                  title="Canais de Atendimento" 
+                  description="Configure e gerencie os canais de comunicação com seus clientes" 
+                />
+              </div>
               <Button onClick={handleCreateChannel}>
                 <Plus className="w-4 h-4 mr-2" />
                 Incluir Novo
@@ -459,6 +468,10 @@ const Index = () => {
       case 'agent-bots':
         return (
           <div className="flex-1 p-6">
+            <PageHeader 
+              title="Agentes IA" 
+              description="Configure e gerencie seus bots de atendimento inteligente" 
+            />
             <BotList />
           </div>
         );
@@ -472,10 +485,15 @@ const Index = () => {
 
       case 'roles':
         return (
-          <div className="flex-1 p-6 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Funções</h3>
-              <p className="text-muted-foreground">Funcionalidade em desenvolvimento</p>
+          <div className="flex-1 p-6">
+            <PageHeader 
+              title="Funções e Permissões" 
+              description="Configure e gerencie as funções e permissões dos usuários" 
+            />
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <p className="text-muted-foreground">Funcionalidade em desenvolvimento</p>
+              </div>
             </div>
           </div>
         );

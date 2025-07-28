@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBots } from '@/hooks/useBots';
 import { usePrompts, Prompt } from '@/hooks/usePrompts';
 import PromptForm from '@/components/PromptForm';
+import PageHeader from '@/components/PageHeader';
 import { Plus, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 
 const PromptsManagement = () => {
@@ -27,6 +28,13 @@ const PromptsManagement = () => {
   useEffect(() => {
     fetchBots();
   }, []);
+
+  // Auto-select first bot when bots are loaded
+  useEffect(() => {
+    if (bots.length > 0 && !selectedBotId) {
+      setSelectedBotId(bots[0].id);
+    }
+  }, [bots, selectedBotId]);
 
   useEffect(() => {
     if (selectedBotId) {
@@ -96,9 +104,10 @@ const PromptsManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Gerenciar Prompts</h1>
-      </div>
+      <PageHeader 
+        title="Gerenciar Prompts" 
+        description="Configure e gerencie os prompts personalizados para seus bots de atendimento" 
+      />
 
       <Card>
         <CardHeader>
