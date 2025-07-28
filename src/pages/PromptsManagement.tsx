@@ -81,6 +81,8 @@ const PromptsManagement = () => {
         title: "Sucesso",
         description: "Prompt excluído com sucesso!",
       });
+      // Refresh the list after successful deletion
+      fetchPrompts(selectedBotId);
     } else {
       toast({
         title: "Erro",
@@ -222,6 +224,7 @@ const PromptsManagement = () => {
         prompt={selectedPrompt}
         mode={formMode}
         botId={selectedBotId}
+        onSuccess={() => fetchPrompts(selectedBotId)}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

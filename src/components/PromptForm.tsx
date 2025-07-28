@@ -13,9 +13,10 @@ interface PromptFormProps {
   prompt?: Prompt | null;
   mode: 'create' | 'edit';
   botId: string;
+  onSuccess?: () => void;
 }
 
-const PromptForm = ({ open, onOpenChange, prompt, mode, botId }: PromptFormProps) => {
+const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: PromptFormProps) => {
   const { toast } = useToast();
   const { createPrompt, updatePrompt } = usePrompts();
   const [loading, setLoading] = useState(false);
@@ -90,6 +91,8 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId }: PromptFormProps
           prompt: '',
           description: ''
         });
+        // Call onSuccess callback to refresh the list
+        onSuccess?.();
       } else {
         toast({
           title: "Erro",
