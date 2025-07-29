@@ -44,6 +44,13 @@ export const useChannels = () => {
       }
       
       const data = await response.json();
+      console.log('fetchChannels - API Response:', data);
+      console.log('fetchChannels - Channels data:', data.channels);
+      
+      if (data.channels && data.channels.length > 0) {
+        console.log('fetchChannels - First channel example:', data.channels[0]);
+      }
+      
       setChannels(data.channels || []);
     } catch (err) {
       console.error('Error fetching channels:', err);
