@@ -25,7 +25,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   mode
 }) => {
   const { toast } = useToast();
-  const { bots, fetchBots } = useBots();
+  const { bots, fetchBots, error: botsError } = useBots();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: 'whatsapp',
@@ -79,8 +79,8 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     setLoading(true);
 
     try {
-      // Validate required fields
-      if (!formData.botAgent) {
+      // Bot is optional if bots API is not available
+      if (!formData.botAgent && !botsError) {
         toast({
           title: "Erro",
           description: "Agente Bot é obrigatório",
@@ -192,14 +192,20 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="botAgent">Agente Bot *</Label>
+            <Label htmlFor="botAgent">Agente Bot {!botsError && '*'}</Label>
             <Select
               value={formData.botAgent}
               onValueChange={(value) => setFormData(prev => ({ ...prev, botAgent: value }))}
-              required
+              disabled={loading || (bots.length === 0 && !botsError)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o agente bot" />
+                <SelectValue placeholder={
+                  botsError 
+                    ? "Bots indisponíveis (opcional)" 
+                    : bots.length === 0 
+                    ? "Carregando bots..." 
+                    : "Selecione o agente bot"
+                } />
               </SelectTrigger>
               <SelectContent className="bg-background border z-50">
                 {bots.map((bot) => (
@@ -209,6 +215,9 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
+            {botsError && (
+              <p className="text-sm text-muted-foreground">Bots indisponíveis no momento. Você pode criar o canal e associar um bot depois.</p>
+            )}
           </div>
 
           <div className="space-y-2">
