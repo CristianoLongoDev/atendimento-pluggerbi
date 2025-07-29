@@ -25,7 +25,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   mode
 }) => {
   const { toast } = useToast();
-  const { bots, fetchBots, error: botsError } = useBots();
+  const { bots, fetchBots } = useBots();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: 'whatsapp',
@@ -79,8 +79,8 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     setLoading(true);
 
     try {
-      // Bot is optional if bots API is not available
-      if (!formData.botAgent && !botsError) {
+      // Validate bot agent is required
+      if (!formData.botAgent) {
         toast({
           title: "Erro",
           description: "Agente Bot é obrigatório",
@@ -192,17 +192,15 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="botAgent">Agente Bot {!botsError && '*'}</Label>
+            <Label htmlFor="botAgent">Agente Bot *</Label>
             <Select
               value={formData.botAgent}
               onValueChange={(value) => setFormData(prev => ({ ...prev, botAgent: value }))}
-              disabled={loading || (bots.length === 0 && !botsError)}
+              disabled={loading}
             >
               <SelectTrigger>
                 <SelectValue placeholder={
-                  botsError 
-                    ? "Bots indisponíveis (opcional)" 
-                    : bots.length === 0 
+                  bots.length === 0 
                     ? "Carregando bots..." 
                     : "Selecione o agente bot"
                 } />
@@ -215,9 +213,6 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
-            {botsError && (
-              <p className="text-sm text-muted-foreground">Bots indisponíveis no momento. Você pode criar o canal e associar um bot depois.</p>
-            )}
           </div>
 
           <div className="space-y-2">
