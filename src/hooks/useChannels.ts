@@ -89,10 +89,13 @@ export const useChannels = () => {
     
     try {
       const headers = await getAuthHeaders();
+      // Remove the id field from the body since it's already in the URL
+      const { id: _, ...dataToSend } = channelData as any;
+      
       const response = await fetch(`https://atendimento.pluggerbi.com/channels/${id}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify(channelData)
+        body: JSON.stringify(dataToSend)
       });
       
       if (!response.ok) {
