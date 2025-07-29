@@ -386,7 +386,7 @@ const Index = () => {
                                </Badge>
                              </TableCell>
                               <TableCell>
-                                <Badge variant={channel.active ? "default" : "destructive"}>
+                                <Badge variant={channel.active ? "success" : "destructive"}>
                                   {channel.active ? 'Ativo' : 'Desabilitado'}
                                 </Badge>
                               </TableCell>
