@@ -32,7 +32,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     name: '',
     botAgent: '',
     status: 1,
-    config: '{\n  "phone_number": "+55"\n}'
+    whatsappPhone: ''
   });
 
   // Fetch bots when component opens
@@ -50,7 +50,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         name: channel.name || '',
         botAgent: channel.bot_id || '',
         status: channel.active ? 1 : 0,
-        config: channel.config ? JSON.stringify(channel.config, null, 2) : '{\n  "phone_number": "+55"\n}'
+        whatsappPhone: (channel as any).whatsapp_phone_number || ''
       });
     } else if (mode === 'create') {
       setFormData({
@@ -58,7 +58,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         name: '',
         botAgent: '',
         status: 1,
-        config: '{\n  "phone_number": "+55"\n}'
+        whatsappPhone: ''
       });
     }
   }, [channel, mode, open]);
@@ -79,27 +79,28 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         return;
       }
 
-      // Validate JSON config
-      let configObj;
-      try {
-        configObj = JSON.parse(formData.config);
-      } catch (err) {
+      // Validate WhatsApp phone number if type is whatsapp
+      if (formData.type === 'whatsapp' && !formData.whatsappPhone) {
         toast({
           title: "Erro",
-          description: "Configuração deve ser um JSON válido",
+          description: "Telefone Remetente é obrigatório para WhatsApp",
           variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
-      const channelData = {
+      const channelData: any = {
         type: formData.type,
         name: formData.name,
         bot_id: formData.botAgent,
-        active: formData.status === 1,
-        config: configObj
+        active: formData.status === 1
       };
+
+      // Add whatsapp_phone_number only for WhatsApp type
+      if (formData.type === 'whatsapp') {
+        channelData.whatsapp_phone_number = formData.whatsappPhone;
+      }
 
       let result;
       if (mode === 'edit' && channel) {
@@ -119,7 +120,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           name: '',
           botAgent: '',
           status: 1,
-          config: '{\n  "phone_number": "+55"\n}'
+          whatsappPhone: ''
         });
       } else {
         toast({
@@ -154,8 +155,9 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
             <Select
               value={formData.type}
               onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+              disabled={mode === 'edit'}
             >
-              <SelectTrigger>
+              <SelectTrigger className={mode === 'edit' ? 'opacity-50 cursor-not-allowed' : ''}>
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -214,17 +216,18 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="config">Configuração (JSON)</Label>
-            <Textarea
-              id="config"
-              value={formData.config}
-              onChange={(e) => setFormData(prev => ({ ...prev, config: e.target.value }))}
-              placeholder="Configuração em formato JSON"
-              className="h-32 font-mono text-sm"
-              required
-            />
-          </div>
+          {formData.type === 'whatsapp' && (
+            <div className="space-y-2">
+              <Label htmlFor="whatsappPhone">Telefone Remetente *</Label>
+              <Input
+                id="whatsappPhone"
+                value={formData.whatsappPhone}
+                onChange={(e) => setFormData(prev => ({ ...prev, whatsappPhone: e.target.value }))}
+                placeholder="+5511999999999"
+                required
+              />
+            </div>
+          )}
 
           <div className="flex justify-end space-x-2">
             <Button
