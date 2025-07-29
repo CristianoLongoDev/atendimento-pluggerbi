@@ -13,10 +13,14 @@ export interface BotFunction {
 interface CreateFunctionData {
   function_id: string;
   description?: string;
+  rule_display?: string;
+  prompt_id?: string | null;
 }
 
 interface UpdateFunctionData {
   description?: string;
+  rule_display?: string;
+  prompt_id?: string | null;
 }
 
 export const useFunctions = () => {

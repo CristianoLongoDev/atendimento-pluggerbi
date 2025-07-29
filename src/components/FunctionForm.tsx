@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useFunctions, BotFunction } from '@/hooks/useFunctions';
 import { useFunctionParameters, FunctionParameter } from '@/hooks/useFunctionParameters';
+import { usePrompts } from '@/hooks/usePrompts';
 import { Plus, Edit, Trash2, X, Star, StarOff, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -34,10 +35,13 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const { toast } = useToast();
   const { createFunction, updateFunction } = useFunctions();
   const { fetchParameters, createParameter, updateParameter, deleteParameter, parameters, createParametersBatch, deleteParametersBatch } = useFunctionParameters();
+  const { prompts, fetchPrompts } = usePrompts();
   
   const [formData, setFormData] = useState({
     id: '',
     description: '',
+    ruleDisplay: 'always' as 'always' | 'with_prompt' | 'always_after_second_message',
+    promptId: null as string | null,
   });
   const [loading, setLoading] = useState(false);
   const [parametersLoading, setParametersLoading] = useState(false);
@@ -66,6 +70,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: botFunction.function_id,
         description: botFunction.description || '',
+        ruleDisplay: 'always',
+        promptId: null,
       });
       // Load parameters for existing function
       loadParameters(botFunction.function_id);
@@ -73,6 +79,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: '',
         description: '',
+        ruleDisplay: 'always',
+        promptId: null,
       });
       setLocalParameters([]);
       setOriginalParameters([]);
@@ -83,6 +91,13 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     setEditingParameterId(null);
     resetParameterForm();
   }, [mode, botFunction, open]);
+
+  // Fetch prompts when form opens
+  useEffect(() => {
+    if (open && botId) {
+      fetchPrompts(botId);
+    }
+  }, [open, botId, fetchPrompts]);
 
   // Update local parameters when parameters from hook change
   useEffect(() => {
@@ -309,6 +324,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         result = await createFunction(botId, {
           function_id: formData.id,
           description: formData.description || undefined,
+          rule_display: formData.ruleDisplay,
+          prompt_id: formData.ruleDisplay === 'with_prompt' ? formData.promptId : null,
         });
         
         if (!result.success) {
@@ -363,6 +380,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           console.log('Function description changed, updating...');
           result = await updateFunction(botId, formData.id, {
             description: cleanDescription || undefined,
+            rule_display: formData.ruleDisplay,
+            prompt_id: formData.ruleDisplay === 'with_prompt' ? formData.promptId : null,
           });
           
           console.log('Update function result:', result);
@@ -535,6 +554,48 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                 rows={3}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ruleDisplay">Regra Exibição</Label>
+              <Select 
+                value={formData.ruleDisplay} 
+                onValueChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  ruleDisplay: value as any,
+                  promptId: value !== 'with_prompt' ? null : prev.promptId
+                }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="always">Exibir sempre</SelectItem>
+                  <SelectItem value="with_prompt">Junto com um prompt</SelectItem>
+                  <SelectItem value="always_after_second_message">Exibir sempre a partir da segunda mensagem</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.ruleDisplay === 'with_prompt' && (
+              <div className="space-y-2">
+                <Label htmlFor="promptId">Prompt</Label>
+                <Select 
+                  value={formData.promptId || ''} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, promptId: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um prompt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {prompts.map((prompt) => (
+                      <SelectItem key={prompt.id} value={prompt.id}>
+                        {prompt.prompt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <Separator />
