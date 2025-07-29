@@ -358,29 +358,28 @@ const Index = () => {
                   <Table>
                      <TableHeader>
                        <TableRow>
-                         <TableHead>ID</TableHead>
-                         <TableHead>Nome</TableHead>
-                         <TableHead>Tipo</TableHead>
-                         <TableHead>Status</TableHead>
-                         <TableHead>Configuração</TableHead>
-                         <TableHead>Data Criação</TableHead>
-                         <TableHead>Ações</TableHead>
+                         <TableHead className="font-medium">ID</TableHead>
+                         <TableHead className="font-medium">Nome</TableHead>
+                         <TableHead className="font-medium">Tipo</TableHead>
+                         <TableHead className="font-medium">Status</TableHead>
+                         <TableHead className="font-medium">Data Criação</TableHead>
+                         <TableHead className="w-[100px] font-medium">Ações</TableHead>
                        </TableRow>
                      </TableHeader>
                     <TableBody>
                        {channels.length === 0 ? (
                          <TableRow>
-                           <TableCell colSpan={6} className="text-center text-muted-foreground">
+                           <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                              Nenhum canal encontrado
                            </TableCell>
                          </TableRow>
                        ) : (
                          channels.map((channel) => (
                            <TableRow key={channel.id}>
-                             <TableCell className="font-mono text-xs">
+                             <TableCell className="font-mono text-sm">
                                {channel.id ? channel.id.substring(0, 8) + '...' : '-'}
                              </TableCell>
-                             <TableCell>{channel.name}</TableCell>
+                             <TableCell className="font-medium">{channel.name}</TableCell>
                              <TableCell>
                                <Badge variant="outline">
                                  {channel.type}
@@ -391,31 +390,26 @@ const Index = () => {
                                   {channel.active ? 'Ativo' : 'Desabilitado'}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="max-w-32">
-                               <code className="text-xs bg-muted p-1 rounded truncate block">
-                                 {channel.config ? JSON.stringify(channel.config).substring(0, 30) + '...' : '-'}
-                               </code>
-                             </TableCell>
-                             <TableCell>
+                             <TableCell className="text-sm text-muted-foreground">
                                {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
                              </TableCell>
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal className="w-4 h-4" />
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="bg-background border z-50">
                                   <DropdownMenuItem onClick={() => handleEditChannel(channel)}>
-                                    <Edit className="w-4 h-4 mr-2" />
+                                    <Edit className="mr-2 h-4 w-4" />
                                     Alterar
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => handleDeleteChannel(channel.id)}
                                     className="text-destructive focus:text-destructive"
                                   >
-                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    <Trash2 className="mr-2 h-4 w-4" />
                                     Excluir
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>

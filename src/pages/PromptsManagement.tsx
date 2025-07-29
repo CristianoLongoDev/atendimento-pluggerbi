@@ -171,20 +171,22 @@ const PromptsManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Regra Exibição</TableHead>
-                    <TableHead>Atualizado em</TableHead>
-                    <TableHead className="w-[100px]">Ações</TableHead>
+                    <TableHead className="font-medium">ID</TableHead>
+                    <TableHead className="font-medium">Descrição</TableHead>
+                    <TableHead className="font-medium">Regra Exibição</TableHead>
+                    <TableHead className="font-medium">Atualizado em</TableHead>
+                    <TableHead className="w-[100px] font-medium">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {prompts.map((prompt) => (
                     <TableRow key={prompt.id}>
-                      <TableCell className="font-medium">{prompt.id}</TableCell>
-                      <TableCell>{prompt.description || '-'}</TableCell>
-                      <TableCell>{prompt.rule_display || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {prompt.id ? prompt.id.substring(0, 8) + '...' : '-'}
+                      </TableCell>
+                      <TableCell className="font-medium">{prompt.description || '-'}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{prompt.rule_display || '-'}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
                         {prompt.updated_at ? new Date(prompt.updated_at).toLocaleDateString('pt-BR') : '-'}
                       </TableCell>
                       <TableCell>
