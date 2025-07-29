@@ -22,7 +22,8 @@ export const useAccountData = () => {
       return;
     }
 
-    const fetchAccountData = async () => {
+    const fetchAccountDataInternal = async (retryCount = 0) => {
+      console.log('useAccountData - Starting fetch, retry:', retryCount);
       setLoading(true);
       setError(null);
       
@@ -40,7 +41,8 @@ export const useAccountData = () => {
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          signal: AbortSignal.timeout(10000) // 10 second timeout
         });
         console.log('useAccountData - Response status:', response.status);
         
@@ -55,9 +57,19 @@ export const useAccountData = () => {
           id: profile.account_id,
           name: data.account?.name || 'Nome da conta não encontrado'
         });
+        setError(null); // Clear any previous errors
       } catch (err) {
         console.error('useAccountData - Error:', err);
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+        
+        // Retry up to 2 times for network errors
+        if (retryCount < 2 && (errorMessage.includes('Failed to fetch') || errorMessage.includes('timeout'))) {
+          console.log(`Retrying fetchAccountData in 2 seconds... (attempt ${retryCount + 1}/2)`);
+          setTimeout(() => fetchAccountDataInternal(retryCount + 1), 2000);
+          return;
+        }
+        
+        setError(errorMessage);
         setAccountData({
           id: profile.account_id,
           name: 'Erro ao carregar nome da conta'
@@ -67,7 +79,7 @@ export const useAccountData = () => {
       }
     };
 
-    fetchAccountData();
+    fetchAccountDataInternal();
   }, [profile?.account_id]);
 
   return { accountData, loading, error };
