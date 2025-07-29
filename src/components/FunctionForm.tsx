@@ -589,7 +589,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
                   <SelectContent>
                     {prompts.map((prompt) => (
                       <SelectItem key={prompt.id} value={prompt.id}>
-                        {prompt.prompt}
+                        {prompt.description || prompt.prompt}
                       </SelectItem>
                     ))}
                   </SelectContent>
