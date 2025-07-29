@@ -223,7 +223,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
                 id="whatsappPhone"
                 value={formData.whatsappPhone}
                 onChange={(e) => setFormData(prev => ({ ...prev, whatsappPhone: e.target.value }))}
-                placeholder="+5511999999999"
+                placeholder="5511999999999"
                 required
               />
             </div>
