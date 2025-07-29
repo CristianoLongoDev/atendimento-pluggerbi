@@ -376,29 +376,29 @@ const Index = () => {
                          </TableRow>
                        ) : (
                          channels.map((channel) => (
-                          <TableRow key={channel.id}>
-                            <TableCell className="font-mono text-xs">
-                              {channel.id.substring(0, 8)}...
-                            </TableCell>
-                            <TableCell>{channel.name}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {channel.type}
-                              </Badge>
-                            </TableCell>
+                           <TableRow key={channel.id}>
+                             <TableCell className="font-mono text-xs">
+                               {channel.id ? channel.id.substring(0, 8) + '...' : '-'}
+                             </TableCell>
+                             <TableCell>{channel.name}</TableCell>
                              <TableCell>
-                               <Badge variant={channel.active ? "default" : "destructive"}>
-                                 {channel.active ? 'Ativo' : 'Desabilitado'}
+                               <Badge variant="outline">
+                                 {channel.type}
                                </Badge>
                              </TableCell>
-                             <TableCell className="max-w-32">
-                              <code className="text-xs bg-muted p-1 rounded truncate block">
-                                {JSON.stringify(channel.config).substring(0, 30)}...
-                              </code>
-                            </TableCell>
-                            <TableCell>
-                              {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
-                            </TableCell>
+                              <TableCell>
+                                <Badge variant={channel.active ? "default" : "destructive"}>
+                                  {channel.active ? 'Ativo' : 'Desabilitado'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-32">
+                               <code className="text-xs bg-muted p-1 rounded truncate block">
+                                 {channel.config ? JSON.stringify(channel.config).substring(0, 30) + '...' : '-'}
+                               </code>
+                             </TableCell>
+                             <TableCell>
+                               {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
+                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
