@@ -26,16 +26,18 @@ export const useBots = () => {
     };
   };
 
-  const fetchBots = async () => {
-    console.log('fetchBots - Starting to fetch bots');
+  const fetchBotsInternal = async (retryCount = 0) => {
+    console.log('fetchBots - Starting to fetch bots, retry:', retryCount);
     setLoading(true);
     setError(null);
     
     try {
       const headers = await getAuthHeaders();
-      console.log('fetchBots - Headers:', headers);
+      console.log('fetchBots - Headers obtained successfully');
+      
       const response = await fetch('https://atendimento.pluggerbi.com/bots', {
-        headers
+        headers,
+        signal: AbortSignal.timeout(10000) // 10 second timeout
       });
       
       console.log('fetchBots - Response status:', response.status);
@@ -47,13 +49,25 @@ export const useBots = () => {
       const data = await response.json();
       console.log('fetchBots - Response data:', data);
       setBots(data.bots || []);
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Error fetching bots:', err);
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      
+      // Retry up to 2 times for network errors
+      if (retryCount < 2 && (errorMessage.includes('Failed to fetch') || errorMessage.includes('timeout'))) {
+        console.log(`Retrying fetchBots in 2 seconds... (attempt ${retryCount + 1}/2)`);
+        setTimeout(() => fetchBotsInternal(retryCount + 1), 2000);
+        return;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  const fetchBots = () => fetchBotsInternal(0);
 
   const createBot = async (botData: Omit<Bot, 'id'>) => {
     setLoading(true);
