@@ -173,6 +173,7 @@ const PromptsManagement = () => {
                   <TableRow>
                     <TableHead>ID</TableHead>
                     <TableHead>Descrição</TableHead>
+                    <TableHead>Regra Exibição</TableHead>
                     <TableHead>Atualizado em</TableHead>
                     <TableHead className="w-[100px]">Ações</TableHead>
                   </TableRow>
@@ -182,6 +183,7 @@ const PromptsManagement = () => {
                     <TableRow key={prompt.id}>
                       <TableCell className="font-medium">{prompt.id}</TableCell>
                       <TableCell>{prompt.description || '-'}</TableCell>
+                      <TableCell>{prompt.rule_display || '-'}</TableCell>
                       <TableCell>
                         {prompt.updated_at ? new Date(prompt.updated_at).toLocaleDateString('pt-BR') : '-'}
                       </TableCell>

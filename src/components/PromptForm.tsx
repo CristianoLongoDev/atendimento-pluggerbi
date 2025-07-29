@@ -39,7 +39,7 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
       });
     } else if (mode === 'create') {
       setFormData({
-        id: '',
+        id: crypto.randomUUID(),
         prompt: '',
         description: '',
         display_rule: 'first_contact'
