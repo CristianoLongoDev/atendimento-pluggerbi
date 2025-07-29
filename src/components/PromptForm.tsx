@@ -136,8 +136,8 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
               id="id"
               value={formData.id}
               onChange={(e) => handleInputChange('id', e.target.value)}
-              placeholder="Digite o ID do prompt"
-              disabled={mode === 'edit'}
+              placeholder="ID gerado automaticamente"
+              disabled={true}
               required
             />
           </div>
@@ -149,6 +149,7 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Descrição opcional do prompt"
+              autoFocus
             />
           </div>
 
