@@ -136,37 +136,6 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="client_id">Client ID</Label>
-              <Input
-                id="client_id"
-                value={formData.client_id || ''}
-                onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                placeholder={isEditMode ? "Insira o novo Client ID" : "Digite o Client ID"}
-                required={!isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deixe em branco para manter o Client ID atual
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="client_secret">Client Secret</Label>
-              <Input
-                id="client_secret"
-                type="password"
-                value={formData.client_secret || ''}
-                onChange={(e) => setFormData({ ...formData, client_secret: e.target.value })}
-                placeholder={isEditMode ? "Insira o novo Client Secret" : "Digite o Client Secret"}
-                required={!isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deixe em branco para manter o Client Secret atual
-                </p>
-              )}
-            </div>
-            <div>
               <Label htmlFor="phone_number">Número do Telefone</Label>
               <Input
                 id="phone_number"
@@ -175,7 +144,13 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 placeholder="+5511999999999"
                 maxLength={50}
                 required
+                disabled={isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  O número do telefone não pode ser alterado após a criação
+                </p>
+              )}
             </div>
           </div>
         );
