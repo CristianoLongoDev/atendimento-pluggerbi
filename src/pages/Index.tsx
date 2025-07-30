@@ -458,10 +458,6 @@ const Index = () => {
       case 'agent-bots':
         return (
           <div className="flex-1 p-6">
-            <PageHeader 
-              title="Agentes IA" 
-              description="Configure e gerencie seus bots de atendimento inteligente" 
-            />
             <BotList />
           </div>
         );
