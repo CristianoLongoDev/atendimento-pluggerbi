@@ -38,7 +38,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [formData, setFormData] = useState({
     id: '',
     description: '',
-    ruleDisplay: 'always' as 'always' | 'with_prompt' | 'always_after_second_message',
   });
   const [loading, setLoading] = useState(false);
   const [parametersLoading, setParametersLoading] = useState(false);
@@ -67,7 +66,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: botFunction.function_id,
         description: botFunction.description || '',
-        ruleDisplay: 'always',
       });
       // Load parameters for existing function
       loadParameters(botFunction.function_id);
@@ -75,7 +73,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: '',
         description: '',
-        ruleDisplay: 'always',
       });
       setLocalParameters([]);
       setOriginalParameters([]);
@@ -313,7 +310,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         result = await createFunction(botId, {
           function_id: formData.id,
           description: formData.description || undefined,
-          rule_display: formData.ruleDisplay,
         });
         
         if (!result.success) {
@@ -368,7 +364,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           console.log('Function description changed, updating...');
           result = await updateFunction(botId, formData.id, {
             description: cleanDescription || undefined,
-            rule_display: formData.ruleDisplay,
           });
           
           console.log('Update function result:', result);
@@ -542,25 +537,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="ruleDisplay">Regra Exibição</Label>
-              <Select 
-                value={formData.ruleDisplay} 
-                onValueChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  ruleDisplay: value as any
-                }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="always">Exibir sempre</SelectItem>
-                  <SelectItem value="with_prompt">Junto com um prompt</SelectItem>
-                  <SelectItem value="always_after_second_message">Exibir sempre a partir da segunda mensagem</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
           </div>
 

@@ -13,12 +13,10 @@ export interface BotFunction {
 interface CreateFunctionData {
   function_id: string;
   description?: string;
-  rule_display?: string;
 }
 
 interface UpdateFunctionData {
   description?: string;
-  rule_display?: string;
 }
 
 export const useFunctions = () => {
