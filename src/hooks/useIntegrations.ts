@@ -46,7 +46,9 @@ export const useIntegrations = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Integrations fetched:', data);
-        setIntegrations(Array.isArray(data) ? data : []);
+        // A API retorna os dados dentro da propriedade "integrations"
+        const integrationsList = data.integrations || [];
+        setIntegrations(Array.isArray(integrationsList) ? integrationsList : []);
       } else {
         console.error('Failed to fetch integrations:', response.statusText);
         setIntegrations([]);
