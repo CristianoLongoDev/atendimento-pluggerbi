@@ -157,6 +157,64 @@ export const usePrompts = () => {
     }
   };
 
+  const fetchPromptFunctions = async (botId: string, promptId: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions`, {
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar funções do prompt. Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return { success: true, functions: data.functions || [] };
+    } catch (err) {
+      console.error('Error fetching prompt functions:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+    }
+  };
+
+  const addFunctionToPrompt = async (botId: string, promptId: string, functionId: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ function_id: functionId })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao adicionar função ao prompt. Status: ${response.status}`);
+      }
+      
+      return { success: true };
+    } catch (err) {
+      console.error('Error adding function to prompt:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+    }
+  };
+
+  const removeFunctionFromPrompt = async (botId: string, promptId: string, functionId: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions/${functionId}`, {
+        method: 'DELETE',
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao remover função do prompt. Status: ${response.status}`);
+      }
+      
+      return { success: true };
+    } catch (err) {
+      console.error('Error removing function from prompt:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+    }
+  };
+
   return {
     prompts,
     loading,
@@ -164,6 +222,9 @@ export const usePrompts = () => {
     fetchPrompts,
     createPrompt,
     updatePrompt,
-    deletePrompt
+    deletePrompt,
+    fetchPromptFunctions,
+    addFunctionToPrompt,
+    removeFunctionFromPrompt
   };
 };

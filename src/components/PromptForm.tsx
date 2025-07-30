@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Prompt, usePrompts } from '@/hooks/usePrompts';
+import { useFunctions } from '@/hooks/useFunctions';
+import { X } from 'lucide-react';
 
 interface PromptFormProps {
   open: boolean;
@@ -19,7 +22,8 @@ interface PromptFormProps {
 
 const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: PromptFormProps) => {
   const { toast } = useToast();
-  const { createPrompt, updatePrompt } = usePrompts();
+  const { createPrompt, updatePrompt, fetchPromptFunctions, addFunctionToPrompt, removeFunctionFromPrompt } = usePrompts();
+  const { functions, fetchFunctions } = useFunctions();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     id: '',
@@ -27,31 +31,65 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
     description: '',
     display_rule: 'first_contact'
   });
+  const [selectedFunctions, setSelectedFunctions] = useState<string[]>([]);
+  const [originalFunctions, setOriginalFunctions] = useState<string[]>([]);
+  const [selectedFunctionId, setSelectedFunctionId] = useState('');
 
   useEffect(() => {
-    if (mode === 'edit' && prompt) {
-      const ruleDisplay = prompt.rule_display || 'first contact';
-      setFormData({
-        id: prompt.id || '',
-        prompt: prompt.prompt || '',
-        description: prompt.description || '',
-        display_rule: ruleDisplay.split(' ').join('_')
-      });
-    } else if (mode === 'create') {
-      setFormData({
-        id: crypto.randomUUID(),
-        prompt: '',
-        description: '',
-        display_rule: 'first_contact'
-      });
+    if (open) {
+      // Load available functions
+      fetchFunctions(botId);
+      
+      if (mode === 'edit' && prompt) {
+        const ruleDisplay = prompt.rule_display || 'first contact';
+        setFormData({
+          id: prompt.id || '',
+          prompt: prompt.prompt || '',
+          description: prompt.description || '',
+          display_rule: ruleDisplay.split(' ').join('_')
+        });
+        
+        // Load existing functions for this prompt
+        loadPromptFunctions(prompt.id);
+      } else if (mode === 'create') {
+        setFormData({
+          id: crypto.randomUUID(),
+          prompt: '',
+          description: '',
+          display_rule: 'first_contact'
+        });
+        setSelectedFunctions([]);
+        setOriginalFunctions([]);
+        setSelectedFunctionId('');
+      }
     }
-  }, [mode, prompt, open]);
+  }, [mode, prompt, open, botId]);
+
+  const loadPromptFunctions = async (promptId: string) => {
+    const result = await fetchPromptFunctions(botId, promptId);
+    if (result.success) {
+      const functionIds = result.functions.map((fn: any) => fn.function_id);
+      setSelectedFunctions(functionIds);
+      setOriginalFunctions(functionIds);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleAddFunction = () => {
+    if (selectedFunctionId && !selectedFunctions.includes(selectedFunctionId)) {
+      setSelectedFunctions([...selectedFunctions, selectedFunctionId]);
+      setSelectedFunctionId('');
+    }
+  };
+
+  const handleRemoveFunction = (functionId: string) => {
+    setSelectedFunctions(selectedFunctions.filter(id => id !== functionId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,45 +107,82 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
     setLoading(true);
     
     try {
-      let result;
+      let promptResult;
+      const currentPromptId = formData.id.trim();
       
-      if (mode === 'create') {
-        result = await createPrompt({
-          bot_id: botId,
-          id: formData.id.trim(),
-          prompt: formData.prompt.trim(),
-          description: formData.description.trim() || undefined,
-          rule_display: formData.display_rule.split('_').join(' ')
-        });
-      } else {
-        result = await updatePrompt(botId, prompt!.id, {
-          prompt: formData.prompt.trim(),
-          description: formData.description.trim() || undefined,
-          rule_display: formData.display_rule.split('_').join(' ')
-        });
+      // Check if prompt data changed
+      const promptChanged = mode === 'create' || 
+        prompt?.prompt !== formData.prompt.trim() ||
+        prompt?.description !== formData.description.trim() ||
+        prompt?.rule_display !== formData.display_rule.split('_').join(' ');
+      
+      // Only update prompt if data changed
+      if (promptChanged) {
+        if (mode === 'create') {
+          promptResult = await createPrompt({
+            bot_id: botId,
+            id: currentPromptId,
+            prompt: formData.prompt.trim(),
+            description: formData.description.trim() || undefined,
+            rule_display: formData.display_rule.split('_').join(' ')
+          });
+        } else {
+          promptResult = await updatePrompt(botId, prompt!.id, {
+            prompt: formData.prompt.trim(),
+            description: formData.description.trim() || undefined,
+            rule_display: formData.display_rule.split('_').join(' ')
+          });
+        }
+
+        if (!promptResult.success) {
+          toast({
+            title: "Erro",
+            description: promptResult.error || "Erro ao processar prompt",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
       }
 
-      if (result.success) {
-        toast({
-          title: "Sucesso",
-          description: mode === 'create' ? "Prompt criado com sucesso!" : "Prompt atualizado com sucesso!",
-        });
-        onOpenChange(false);
-        setFormData({
-          id: '',
-          prompt: '',
-          description: '',
-          display_rule: 'first_contact'
-        });
-        // Call onSuccess callback to refresh the list
-        onSuccess?.();
-      } else {
-        toast({
-          title: "Erro",
-          description: result.error || "Erro ao processar solicitação",
-          variant: "destructive",
-        });
+      // Manage functions
+      const functionsToAdd = selectedFunctions.filter(fn => !originalFunctions.includes(fn));
+      const functionsToRemove = originalFunctions.filter(fn => !selectedFunctions.includes(fn));
+
+      // Remove functions that were deleted
+      for (const functionId of functionsToRemove) {
+        const removeResult = await removeFunctionFromPrompt(botId, currentPromptId, functionId);
+        if (!removeResult.success) {
+          console.error('Error removing function:', removeResult.error);
+        }
       }
+
+      // Add new functions
+      for (const functionId of functionsToAdd) {
+        const addResult = await addFunctionToPrompt(botId, currentPromptId, functionId);
+        if (!addResult.success) {
+          console.error('Error adding function:', addResult.error);
+        }
+      }
+
+      toast({
+        title: "Sucesso",
+        description: mode === 'create' ? "Prompt criado com sucesso!" : "Prompt atualizado com sucesso!",
+      });
+      
+      onOpenChange(false);
+      setFormData({
+        id: '',
+        prompt: '',
+        description: '',
+        display_rule: 'first_contact'
+      });
+      setSelectedFunctions([]);
+      setOriginalFunctions([]);
+      setSelectedFunctionId('');
+      
+      // Call onSuccess callback to refresh the list
+      onSuccess?.();
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -165,6 +240,55 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
                 <SelectItem value="email_not_informed">Email não informado</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="functions">Funções</Label>
+            <div className="flex gap-2">
+              <Select value={selectedFunctionId} onValueChange={setSelectedFunctionId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Selecione uma função" />
+                </SelectTrigger>
+                <SelectContent>
+                  {functions
+                    .filter(fn => !selectedFunctions.includes(fn.function_id))
+                    .map((fn) => (
+                      <SelectItem key={fn.function_id} value={fn.function_id}>
+                        {fn.name || fn.function_id}
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                onClick={handleAddFunction}
+                disabled={!selectedFunctionId}
+                variant="outline"
+              >
+                Adicionar
+              </Button>
+            </div>
+            
+            {selectedFunctions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {selectedFunctions.map((functionId) => {
+                  const functionObj = functions.find(fn => fn.function_id === functionId);
+                  return (
+                    <Badge key={functionId} variant="secondary" className="flex items-center gap-1">
+                      {functionObj?.name || functionId}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFunction(functionId)}
+                        className="ml-1 hover:bg-destructive/20 rounded-sm p-0.5"
+                      >
+                        <X size={12} />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
