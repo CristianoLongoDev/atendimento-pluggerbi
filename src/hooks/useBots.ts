@@ -152,6 +152,70 @@ export const useBots = () => {
     }
   };
 
+  const fetchBotFunctions = async (botId: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions`, {
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { success: true, data: data.functions || [] };
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Erro ao carregar funções do bot' 
+      };
+    }
+  };
+
+  const addFunctionToBot = async (botId: string, functionId: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ function_id: functionId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Erro ao adicionar função ao bot' 
+      };
+    }
+  };
+
+  const removeFunctionFromBot = async (botId: string, functionId: string) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions/${functionId}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Erro ao remover função do bot' 
+      };
+    }
+  };
+
   return {
     bots,
     loading,
@@ -159,6 +223,9 @@ export const useBots = () => {
     fetchBots,
     createBot,
     updateBot,
-    deleteBot
+    deleteBot,
+    fetchBotFunctions,
+    addFunctionToBot,
+    removeFunctionFromBot
   };
 };

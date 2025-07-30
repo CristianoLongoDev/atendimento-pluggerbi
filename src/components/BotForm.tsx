@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Bot } from '@/hooks/useBots';
+import { Bot, useBots } from '@/hooks/useBots';
+import { useFunctions } from '@/hooks/useFunctions';
+import { X } from 'lucide-react';
 
 interface BotFormProps {
   open: boolean;
@@ -14,6 +17,7 @@ interface BotFormProps {
   onSubmit: (botData: Omit<Bot, 'id'> | { id: string } & Partial<Bot>) => Promise<{ success: boolean; error?: string }>;
   bot?: Bot | null;
   mode: 'create' | 'edit';
+  selectedBotId?: string;
 }
 
 export const BotForm: React.FC<BotFormProps> = ({
@@ -21,15 +25,25 @@ export const BotForm: React.FC<BotFormProps> = ({
   onOpenChange,
   onSubmit,
   bot,
-  mode
+  mode,
+  selectedBotId
 }) => {
   const { toast } = useToast();
+  const { fetchBotFunctions, addFunctionToBot, removeFunctionFromBot } = useBots();
+  const { functions, fetchFunctions } = useFunctions();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     type: 'suporte_integracao_movidesk',
     system_prompt: ''
   });
+  
+  // Function management state
+  const [selectedFunctionId, setSelectedFunctionId] = useState<string>('');
+  const [currentFunctions, setCurrentFunctions] = useState<Array<{ function_id: string; name: string }>>([]);
+  const [originalFunctions, setOriginalFunctions] = useState<Array<{ function_id: string; name: string }>>([]);
+  const [functionsToAdd, setFunctionsToAdd] = useState<Set<string>>(new Set());
+  const [functionsToRemove, setFunctionsToRemove] = useState<Set<string>>(new Set());
 
   // Update form data when bot changes
   useEffect(() => {
@@ -47,6 +61,85 @@ export const BotForm: React.FC<BotFormProps> = ({
       });
     }
   }, [bot, mode, open]);
+
+  // Load functions and bot functions when dialog opens
+  useEffect(() => {
+    if (open && selectedBotId) {
+      fetchFunctions(selectedBotId);
+      
+      if (mode === 'edit' && bot) {
+        loadBotFunctions(bot.id);
+      } else {
+        // Reset for create mode
+        setCurrentFunctions([]);
+        setOriginalFunctions([]);
+        setFunctionsToAdd(new Set());
+        setFunctionsToRemove(new Set());
+      }
+    }
+  }, [open, selectedBotId, bot, mode]);
+
+  const loadBotFunctions = async (botId: string) => {
+    const result = await fetchBotFunctions(botId);
+    if (result.success) {
+      const botFunctions = result.data;
+      setCurrentFunctions(botFunctions);
+      setOriginalFunctions([...botFunctions]);
+      setFunctionsToAdd(new Set());
+      setFunctionsToRemove(new Set());
+    }
+  };
+
+  const addFunction = () => {
+    if (!selectedFunctionId) return;
+    
+    const selectedFunction = functions.find(f => f.function_id === selectedFunctionId);
+    if (!selectedFunction) return;
+    
+    const isAlreadyAdded = currentFunctions.some(f => f.function_id === selectedFunctionId);
+    if (isAlreadyAdded) return;
+    
+    const newFunction = {
+      function_id: selectedFunction.function_id,
+      name: selectedFunction.name
+    };
+    
+    setCurrentFunctions(prev => [...prev, newFunction]);
+    
+    // Track changes
+    const wasOriginallyPresent = originalFunctions.some(f => f.function_id === selectedFunctionId);
+    if (wasOriginallyPresent) {
+      // Was removed before, now re-adding
+      setFunctionsToRemove(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(selectedFunctionId);
+        return newSet;
+      });
+    } else {
+      // New function to add
+      setFunctionsToAdd(prev => new Set(prev).add(selectedFunctionId));
+    }
+    
+    setSelectedFunctionId('');
+  };
+
+  const removeFunction = (functionId: string) => {
+    setCurrentFunctions(prev => prev.filter(f => f.function_id !== functionId));
+    
+    // Track changes
+    const wasOriginallyPresent = originalFunctions.some(f => f.function_id === functionId);
+    if (wasOriginallyPresent) {
+      // Original function being removed
+      setFunctionsToRemove(prev => new Set(prev).add(functionId));
+    } else {
+      // Was added in this session, just remove from add list
+      setFunctionsToAdd(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(functionId);
+        return newSet;
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,31 +163,75 @@ export const BotForm: React.FC<BotFormProps> = ({
         system_prompt: formData.system_prompt
       };
 
-      let result;
-      if (mode === 'edit' && bot) {
-        result = await onSubmit({ id: bot.id, ...botData });
-      } else {
-        result = await onSubmit(botData);
+      // Check if bot data changed
+      const botDataChanged = mode === 'create' || 
+        (bot && (
+          bot.name !== formData.name || 
+          bot.type !== formData.type || 
+          bot.system_prompt !== formData.system_prompt
+        ));
+
+      // Submit bot data if changed
+      let result = { success: true };
+      if (botDataChanged) {
+        if (mode === 'edit' && bot) {
+          result = await onSubmit({ id: bot.id, ...botData });
+        } else {
+          result = await onSubmit(botData);
+        }
       }
 
-      if (result.success) {
-        toast({
-          title: "Sucesso",
-          description: mode === 'edit' ? "Bot atualizado com sucesso" : "Bot criado com sucesso"
-        });
-        onOpenChange(false);
-        setFormData({
-          name: '',
-          type: 'suporte_integracao_movidesk',
-          system_prompt: ''
-        });
-      } else {
+      if (!result.success) {
         toast({
           title: "Erro",
-          description: result.error || "Erro ao salvar bot",
+          description: (result as any).error || "Erro ao salvar bot",
           variant: "destructive"
         });
+        setLoading(false);
+        return;
       }
+
+      // Handle function changes only for edit mode
+      if (mode === 'edit' && bot) {
+        // Remove functions
+        for (const functionId of functionsToRemove) {
+          const removeResult = await removeFunctionFromBot(bot.id, functionId);
+          if (!removeResult.success) {
+            toast({
+              title: "Erro",
+              description: `Erro ao remover função: ${removeResult.error}`,
+              variant: "destructive"
+            });
+          }
+        }
+
+        // Add functions
+        for (const functionId of functionsToAdd) {
+          const addResult = await addFunctionToBot(bot.id, functionId);
+          if (!addResult.success) {
+            toast({
+              title: "Erro",
+              description: `Erro ao adicionar função: ${addResult.error}`,
+              variant: "destructive"
+            });
+          }
+        }
+      }
+
+      toast({
+        title: "Sucesso",
+        description: mode === 'edit' ? "Bot atualizado com sucesso" : "Bot criado com sucesso"
+      });
+      onOpenChange(false);
+      setFormData({
+        name: '',
+        type: 'suporte_integracao_movidesk',
+        system_prompt: ''
+      });
+      setCurrentFunctions([]);
+      setOriginalFunctions([]);
+      setFunctionsToAdd(new Set());
+      setFunctionsToRemove(new Set());
     } catch (err) {
       toast({
         title: "Erro",
@@ -152,6 +289,58 @@ export const BotForm: React.FC<BotFormProps> = ({
               className="h-40"
               required
             />
+          </div>
+
+          {/* Functions Section */}
+          <div className="space-y-2">
+            <Label>Funções</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Select
+                  value={selectedFunctionId}
+                  onValueChange={setSelectedFunctionId}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Selecione uma função" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {functions
+                      .filter(f => !currentFunctions.some(cf => cf.function_id === f.function_id))
+                      .map((func) => (
+                        <SelectItem key={func.function_id} value={func.function_id}>
+                          {func.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  onClick={addFunction}
+                  disabled={!selectedFunctionId}
+                  variant="outline"
+                >
+                  Adicionar
+                </Button>
+              </div>
+              
+              {currentFunctions.length > 0 && (
+                <div className="flex flex-wrap gap-2 p-2 border rounded-md min-h-[60px]">
+                  {currentFunctions.map((func) => (
+                    <Badge
+                      key={func.function_id}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
+                      {func.name}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => removeFunction(func.function_id)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2">

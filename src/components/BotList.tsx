@@ -190,6 +190,7 @@ export const BotList: React.FC = () => {
         onSubmit={handleFormSubmit}
         bot={selectedBot}
         mode={formMode}
+        selectedBotId={selectedBot?.id}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
