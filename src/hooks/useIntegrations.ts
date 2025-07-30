@@ -29,7 +29,10 @@ export const useIntegrations = () => {
   const { session } = useAuth();
 
   const fetchIntegrations = useCallback(async () => {
-    if (!session?.access_token) return;
+    if (!session?.access_token) {
+      console.log('No access token available');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -42,7 +45,8 @@ export const useIntegrations = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setIntegrations(data || []);
+        console.log('Integrations fetched:', data);
+        setIntegrations(Array.isArray(data) ? data : []);
       } else {
         console.error('Failed to fetch integrations:', response.statusText);
         setIntegrations([]);

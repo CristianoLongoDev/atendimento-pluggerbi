@@ -23,7 +23,9 @@ const IntegrationsManagement = () => {
   const [integrationToDelete, setIntegrationToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchIntegrations();
+    if (fetchIntegrations) {
+      fetchIntegrations();
+    }
   }, [fetchIntegrations]);
 
   const getIntegrationIcon = (type: string) => {
