@@ -24,7 +24,7 @@ const IntegrationsManagement = () => {
 
   useEffect(() => {
     fetchIntegrations();
-  }, []);
+  }, [fetchIntegrations]);
 
   const getIntegrationIcon = (type: string) => {
     switch (type) {
