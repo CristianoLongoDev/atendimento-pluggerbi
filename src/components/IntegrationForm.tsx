@@ -50,9 +50,10 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
         integration_type: integration.integration_type || '',
         is_active: integration.is_active ?? true,
         phone_number: integration.phone_number || '',
-        access_token: integration.access_token || '',
-        client_id: integration.client_id || '',
-        client_secret: integration.client_secret || '',
+        // Campos sensíveis não são preenchidos em modo de edição
+        access_token: '',
+        client_id: '',
+        client_secret: '',
       });
     } else {
       setFormData({
@@ -107,6 +108,8 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   };
 
   const renderFieldsByType = () => {
+    const isEditMode = mode === 'edit';
+    
     switch (formData.integration_type) {
       case 'movidesk':
         return (
@@ -117,9 +120,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 id="access_token"
                 value={formData.access_token || ''}
                 onChange={(e) => setFormData({ ...formData, access_token: e.target.value })}
-                placeholder="Digite o token de acesso"
-                required
+                placeholder={isEditMode ? "Insira o novo token de acesso" : "Digite o token de acesso"}
+                required={!isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Deixe em branco para manter o token atual
+                </p>
+              )}
             </div>
           </div>
         );
@@ -133,9 +141,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 id="client_id"
                 value={formData.client_id || ''}
                 onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                placeholder="Digite o Client ID"
-                required
+                placeholder={isEditMode ? "Insira o novo Client ID" : "Digite o Client ID"}
+                required={!isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Deixe em branco para manter o Client ID atual
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="client_secret">Client Secret</Label>
@@ -144,9 +157,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 type="password"
                 value={formData.client_secret || ''}
                 onChange={(e) => setFormData({ ...formData, client_secret: e.target.value })}
-                placeholder="Digite o Client Secret"
-                required
+                placeholder={isEditMode ? "Insira o novo Client Secret" : "Digite o Client Secret"}
+                required={!isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Deixe em branco para manter o Client Secret atual
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="phone_number">Número do Telefone</Label>
@@ -171,9 +189,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 id="client_id"
                 value={formData.client_id || ''}
                 onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                placeholder="Digite o Client ID"
-                required
+                placeholder={isEditMode ? "Insira o novo Client ID" : "Digite o Client ID"}
+                required={!isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Deixe em branco para manter o Client ID atual
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="client_secret">Client Secret</Label>
@@ -182,9 +205,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 type="password"
                 value={formData.client_secret || ''}
                 onChange={(e) => setFormData({ ...formData, client_secret: e.target.value })}
-                placeholder="Digite o Client Secret"
-                required
+                placeholder={isEditMode ? "Insira o novo Client Secret" : "Digite o Client Secret"}
+                required={!isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Deixe em branco para manter o Client Secret atual
+                </p>
+              )}
             </div>
           </div>
         );
@@ -198,9 +226,14 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                 id="access_token"
                 value={formData.access_token || ''}
                 onChange={(e) => setFormData({ ...formData, access_token: e.target.value })}
-                placeholder="Digite o token de acesso"
-                required
+                placeholder={isEditMode ? "Insira o novo token de acesso" : "Digite o token de acesso"}
+                required={!isEditMode}
               />
+              {isEditMode && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Deixe em branco para manter o token atual
+                </p>
+              )}
             </div>
           </div>
         );

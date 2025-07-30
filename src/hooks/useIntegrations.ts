@@ -7,9 +7,10 @@ export interface Integration {
   integration_type: 'movidesk' | 'whatsapp' | 'instagram' | 'chat_widget';
   is_active: boolean;
   phone_number?: string;
-  access_token?: string;
-  client_id?: string;
-  client_secret?: string;
+  // Campos sensíveis não retornam mais da API por segurança
+  // access_token?: string;
+  // client_id?: string;
+  // client_secret?: string;
   created_at: string;
 }
 
