@@ -101,7 +101,7 @@ export const BotForm: React.FC<BotFormProps> = ({
     
     const newFunction = {
       function_id: selectedFunction.function_id,
-      name: selectedFunction.name
+      name: selectedFunction.description || selectedFunction.function_id
     };
     
     setCurrentFunctions(prev => [...prev, newFunction]);
@@ -308,7 +308,7 @@ export const BotForm: React.FC<BotFormProps> = ({
                       .filter(f => !currentFunctions.some(cf => cf.function_id === f.function_id))
                       .map((func) => (
                         <SelectItem key={func.function_id} value={func.function_id}>
-                          {func.name}
+                          {func.description || func.function_id}
                         </SelectItem>
                       ))}
                   </SelectContent>
