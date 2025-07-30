@@ -12,6 +12,7 @@ import { ChannelForm } from '@/components/ChannelForm';
 import { BotList } from '@/components/BotList';
 import PromptsManagement from '@/pages/PromptsManagement';
 import FunctionsManagement from '@/pages/FunctionsManagement';
+import IntegrationsManagement from '@/pages/IntegrationsManagement';
 import PageHeader from '@/components/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -478,6 +479,9 @@ const Index = () => {
             <FunctionsManagement />
           </div>
         );
+
+      case 'integrations':
+        return <IntegrationsManagement />;
 
       default:
         return null;

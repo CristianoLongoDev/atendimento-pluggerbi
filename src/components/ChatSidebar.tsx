@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MessageSquare, Bot, User, Filter, Search, Plus, Settings, Users, FileText, ShieldCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { MessageSquare, Bot, User, Filter, Search, Plus, Settings, Users, FileText, ShieldCheck, ChevronDown, ChevronRight, Puzzle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     { id: 'account', label: 'Minha Conta', icon: User },
     { id: 'agent-bots', label: 'Agentes Bots', icon: Bot },
     { id: 'channels', label: 'Canais Atendimento', icon: Settings },
+    { id: 'integrations', label: 'Integrações', icon: Puzzle },
     { id: 'prompts', label: 'Prompts', icon: FileText },
     { id: 'roles', label: 'Funções', icon: ShieldCheck },
   ];
