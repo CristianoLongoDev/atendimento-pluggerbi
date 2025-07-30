@@ -8,6 +8,7 @@ import { MoreHorizontal, Plus, Edit, Trash2, Bot as BotIcon } from 'lucide-react
 import { useBots, Bot } from '@/hooks/useBots';
 import { BotForm } from './BotForm';
 import { useToast } from '@/hooks/use-toast';
+import PageHeader from '@/components/PageHeader';
 
 export const BotList: React.FC = () => {
   const { bots, loading, error, fetchBots, createBot, updateBot, deleteBot } = useBots();
@@ -106,7 +107,13 @@ export const BotList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div>
+          <PageHeader 
+            title="Agent Bots" 
+            description="Gerencie seus agentes bot" 
+          />
+        </div>
         <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Bot
