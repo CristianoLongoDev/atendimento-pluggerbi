@@ -106,11 +106,7 @@ export const BotList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Agent Bots</h2>
-          <p className="text-muted-foreground">Gerencie seus agentes bot</p>
-        </div>
+      <div className="flex justify-end">
         <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Bot
