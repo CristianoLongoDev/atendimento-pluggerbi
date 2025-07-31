@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Bot, useBots } from '@/hooks/useBots';
 import { useFunctions } from '@/hooks/useFunctions';
+import { useIntegrations } from '@/hooks/useIntegrations';
 import { X } from 'lucide-react';
 
 interface BotFormProps {
@@ -31,10 +32,11 @@ export const BotForm: React.FC<BotFormProps> = ({
   const { toast } = useToast();
   const { fetchBotFunctions, addFunctionToBot, removeFunctionFromBot } = useBots();
   const { functions, fetchFunctions } = useFunctions();
+  const { integrations, fetchIntegrations } = useIntegrations();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    type: 'suporte_integracao_movidesk',
+    integration_id: '',
     system_prompt: ''
   });
   
@@ -50,31 +52,35 @@ export const BotForm: React.FC<BotFormProps> = ({
     if (mode === 'edit' && bot) {
       setFormData({
         name: bot.name || '',
-        type: bot.type || 'suporte_integracao_movidesk',
+        integration_id: (bot as any).integration_id || '',
         system_prompt: bot.system_prompt || ''
       });
     } else if (mode === 'create') {
       setFormData({
         name: '',
-        type: 'suporte_integracao_movidesk',
+        integration_id: '',
         system_prompt: ''
       });
     }
   }, [bot, mode, open]);
 
-  // Load functions and bot functions when dialog opens
+  // Load integrations and functions when dialog opens
   useEffect(() => {
-    if (open && selectedBotId) {
-      fetchFunctions(selectedBotId);
+    if (open) {
+      fetchIntegrations();
       
-      if (mode === 'edit' && bot) {
-        loadBotFunctions(bot.id);
-      } else {
-        // Reset for create mode
-        setCurrentFunctions([]);
-        setOriginalFunctions([]);
-        setFunctionsToAdd(new Set());
-        setFunctionsToRemove(new Set());
+      if (selectedBotId) {
+        fetchFunctions(selectedBotId);
+        
+        if (mode === 'edit' && bot) {
+          loadBotFunctions(bot.id);
+        } else {
+          // Reset for create mode
+          setCurrentFunctions([]);
+          setOriginalFunctions([]);
+          setFunctionsToAdd(new Set());
+          setFunctionsToRemove(new Set());
+        }
       }
     }
   }, [open, selectedBotId, bot, mode]);
@@ -163,17 +169,21 @@ export const BotForm: React.FC<BotFormProps> = ({
         return;
       }
 
-      const botData = {
+      const botData: any = {
         name: formData.name,
-        type: formData.type,
         system_prompt: formData.system_prompt
       };
+
+      // Only add integration_id if it's not empty
+      if (formData.integration_id) {
+        botData.integration_id = formData.integration_id;
+      }
 
       // Check if bot data changed
       const botDataChanged = mode === 'create' || 
         (bot && (
           bot.name !== formData.name || 
-          bot.type !== formData.type || 
+          (bot as any).integration_id !== formData.integration_id || 
           bot.system_prompt !== formData.system_prompt
         ));
 
@@ -231,7 +241,7 @@ export const BotForm: React.FC<BotFormProps> = ({
       onOpenChange(false);
       setFormData({
         name: '',
-        type: 'suporte_integracao_movidesk',
+        integration_id: '',
         system_prompt: ''
       });
       setCurrentFunctions([]);
@@ -271,16 +281,30 @@ export const BotForm: React.FC<BotFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo</Label>
+            <Label htmlFor="integration">Integração</Label>
             <Select
-              value={formData.type}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+              value={formData.integration_id}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, integration_id: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Selecione uma integração" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="suporte_integracao_movidesk">Suporte Integração Movidesk</SelectItem>
+              <SelectContent className="bg-background border z-50">
+                <SelectItem value="">
+                  <div className="flex items-center space-x-2">
+                    <span>Nenhuma</span>
+                  </div>
+                </SelectItem>
+                {integrations
+                  .filter(integration => integration.is_active)
+                  .map((integration) => (
+                    <SelectItem key={integration.id} value={integration.id}>
+                      <div className="flex items-center space-x-2">
+                        <img src="/lovable-uploads/569333c2-882a-47f0-a979-7cb705164fbd.png" alt="Movidesk" className="w-4 h-4 object-contain" />
+                        <span>{integration.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
