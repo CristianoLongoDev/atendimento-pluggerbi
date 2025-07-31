@@ -99,6 +99,9 @@ export const useChannels = () => {
       // Remove the id field from the body since it's already in the URL
       const { id: _, ...dataToSend } = channelData as any;
       
+      console.log('updateChannel - Data being sent:', dataToSend);
+      console.log('updateChannel - Channel ID:', id);
+      
       const response = await fetch(`https://atendimento.pluggerbi.com/channels/${id}`, {
         method: 'PUT',
         headers,
@@ -106,7 +109,9 @@ export const useChannels = () => {
       });
       
       if (!response.ok) {
-        throw new Error(`Erro ao atualizar canal. Status: ${response.status}`);
+        const errorText = await response.text();
+        console.log('updateChannel - Error response:', errorText);
+        throw new Error(`Erro ao atualizar canal. Status: ${response.status} - ${errorText}`);
       }
       
       await fetchChannels(); // Refresh the list
