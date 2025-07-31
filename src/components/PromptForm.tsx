@@ -22,7 +22,7 @@ interface PromptFormProps {
 
 const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: PromptFormProps) => {
   const { toast } = useToast();
-  const { createPrompt, updatePrompt, addFunctionToPrompt, removeFunctionFromPrompt } = usePrompts();
+  const { createPrompt, updatePrompt, fetchPromptFunctions, addFunctionToPrompt, removeFunctionFromPrompt } = usePrompts();
   const { fetchBotFunctions } = useBots();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -74,12 +74,9 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
   };
 
   const loadPromptFunctions = async (promptId: string) => {
-    const result = await fetchBotFunctions(botId);
+    const result = await fetchPromptFunctions(botId, promptId);
     if (result.success) {
-      const allFunctions = result.data || [];
-      // Functions associated with this prompt have used="prompt"
-      const promptFunctions = allFunctions.filter((fn: any) => fn.used === 'prompt');
-      const functionIds = promptFunctions.map((fn: any) => fn.function_id);
+      const functionIds = result.functions.map((fn: any) => fn.function_id);
       setSelectedFunctions(functionIds);
       setOriginalFunctions(functionIds);
     }
