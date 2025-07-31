@@ -155,7 +155,7 @@ export const useBots = () => {
   const fetchBotFunctions = async (botId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions`, {
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/used`, {
         headers,
       });
 
@@ -164,7 +164,15 @@ export const useBots = () => {
       }
 
       const data = await response.json();
-      return { success: true, data: data.functions || [] };
+      // Filter only functions that are associated with this bot (used: "bot")
+      const botFunctions = (data.functions || [])
+        .filter((func: any) => func.used === 'bot')
+        .map((func: any) => ({
+          function_id: func.function_id,
+          description: func.description || func.function_id
+        }));
+      
+      return { success: true, data: botFunctions };
     } catch (err) {
       return { 
         success: false, 
@@ -198,7 +206,7 @@ export const useBots = () => {
   const removeFunctionFromBot = async (botId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions/${functionId}`, {
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
         method: 'DELETE',
         headers,
       });
