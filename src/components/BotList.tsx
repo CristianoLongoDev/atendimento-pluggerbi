@@ -76,7 +76,7 @@ export const BotList: React.FC = () => {
 
   const getIntegrationInfo = (integrationId: string) => {
     if (!integrationId) {
-      return { name: 'Nenhuma', logo: null };
+      return { name: 'Nenhuma integração', logo: null };
     }
     
     const integration = integrations.find(i => i.id === integrationId);
