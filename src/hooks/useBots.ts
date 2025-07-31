@@ -206,7 +206,7 @@ export const useBots = () => {
   const removeFunctionFromBot = async (botId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions/${functionId}`, {
         method: 'DELETE',
         headers,
       });
