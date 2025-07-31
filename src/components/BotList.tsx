@@ -6,12 +6,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { MoreHorizontal, Plus, Edit, Trash2, Bot as BotIcon } from 'lucide-react';
 import { useBots, Bot } from '@/hooks/useBots';
+import { useIntegrations } from '@/hooks/useIntegrations';
 import { BotForm } from './BotForm';
 import { useToast } from '@/hooks/use-toast';
 import PageHeader from '@/components/PageHeader';
 
 export const BotList: React.FC = () => {
   const { bots, loading, error, fetchBots, createBot, updateBot, deleteBot } = useBots();
+  const { integrations, fetchIntegrations } = useIntegrations();
   const { toast } = useToast();
   
   const [formOpen, setFormOpen] = useState(false);
@@ -23,6 +25,7 @@ export const BotList: React.FC = () => {
   React.useEffect(() => {
     console.log('BotList - Component mounted, calling fetchBots');
     fetchBots();
+    fetchIntegrations();
   }, []);
 
   const handleCreate = () => {
@@ -71,14 +74,16 @@ export const BotList: React.FC = () => {
     }
   };
 
-  const getTypeVariant = (type: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      'suporte': 'default',
-      'vendas': 'secondary',
-      'atendimento': 'outline',
-      'social': 'destructive'
+  const getIntegrationInfo = (integrationId: string) => {
+    if (!integrationId) {
+      return { name: 'Nenhuma', logo: null };
+    }
+    
+    const integration = integrations.find(i => i.id === integrationId);
+    return {
+      name: integration?.name || 'Integração não encontrada',
+      logo: '/lovable-uploads/569333c2-882a-47f0-a979-7cb705164fbd.png'
     };
-    return variants[type] || 'default';
   };
 
   if (loading && bots.length === 0) {
@@ -166,9 +171,23 @@ export const BotList: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <Badge variant={getTypeVariant(bot.type)}>
-                      {bot.type}
-                    </Badge>
+                    {(() => {
+                      const integrationInfo = getIntegrationInfo((bot as any).integration_id);
+                      return (
+                        <div className="flex items-center space-x-2">
+                          {integrationInfo.logo && (
+                            <img 
+                              src={integrationInfo.logo} 
+                              alt="Integração" 
+                              className="w-4 h-4 object-contain" 
+                            />
+                          )}
+                          <Badge variant="secondary">
+                            {integrationInfo.name}
+                          </Badge>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground line-clamp-3">
