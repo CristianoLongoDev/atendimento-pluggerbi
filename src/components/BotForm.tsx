@@ -82,7 +82,10 @@ export const BotForm: React.FC<BotFormProps> = ({
   const loadBotFunctions = async (botId: string) => {
     const result = await fetchBotFunctions(botId);
     if (result.success) {
-      const botFunctions = result.data;
+      const botFunctions = result.data.map((func: any) => ({
+        function_id: func.function_id,
+        name: func.description || func.function_id
+      }));
       setCurrentFunctions(botFunctions);
       setOriginalFunctions([...botFunctions]);
       setFunctionsToAdd(new Set());
@@ -95,6 +98,9 @@ export const BotForm: React.FC<BotFormProps> = ({
     
     const selectedFunction = functions.find(f => f.function_id === selectedFunctionId);
     if (!selectedFunction) return;
+    
+    // Don't allow adding functions that are used by prompts or other bots
+    if (selectedFunction.used === 'prompt' || selectedFunction.used === 'bot') return;
     
     const isAlreadyAdded = currentFunctions.some(f => f.function_id === selectedFunctionId);
     if (isAlreadyAdded) return;
@@ -306,11 +312,22 @@ export const BotForm: React.FC<BotFormProps> = ({
                   <SelectContent>
                     {functions
                       .filter(f => !currentFunctions.some(cf => cf.function_id === f.function_id))
-                      .map((func) => (
-                        <SelectItem key={func.function_id} value={func.function_id}>
-                          {func.description || func.function_id}
-                        </SelectItem>
-                      ))}
+                      .map((func) => {
+                        const isDisabled = func.used === 'prompt' || func.used === 'bot';
+                        const displayText = func.used === 'prompt' 
+                          ? `${func.description || func.function_id} (associado a um prompt)`
+                          : func.description || func.function_id;
+                        
+                        return (
+                          <SelectItem 
+                            key={func.function_id} 
+                            value={func.function_id}
+                            disabled={isDisabled}
+                          >
+                            {displayText}
+                          </SelectItem>
+                        );
+                      })}
                   </SelectContent>
                 </Select>
                 <Button

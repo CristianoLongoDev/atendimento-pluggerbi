@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BotFunction {
-  bot_id: string;
+  bot_id?: string;
   function_id: string;
-  name: string;
+  name?: string;
   description?: string;
-  created_at: string;
-  updated_at: string;
+  used?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface CreateFunctionData {
@@ -38,7 +39,7 @@ export const useFunctions = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions`, {
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/used`, {
         headers,
       });
 
