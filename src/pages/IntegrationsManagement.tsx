@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { IntegrationForm } from '@/components/IntegrationForm';
 import { useIntegrations } from '@/hooks/useIntegrations';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, MoreHorizontal, MessageSquare, Phone, Instagram, Hash } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreHorizontal, Hash } from 'lucide-react';
 
 const IntegrationsManagement = () => {
   const { integrations, loading, fetchIntegrations, createIntegration, updateIntegration, deleteIntegration } = useIntegrations();
@@ -31,13 +31,7 @@ const IntegrationsManagement = () => {
   const getIntegrationIcon = (type: string) => {
     switch (type) {
       case 'movidesk':
-        return <Hash className="w-4 h-4" />;
-      case 'whatsapp':
-        return <Phone className="w-4 h-4" />;
-      case 'instagram':
-        return <Instagram className="w-4 h-4" />;
-      case 'chat_widget':
-        return <MessageSquare className="w-4 h-4" />;
+        return <img src="/lovable-uploads/569333c2-882a-47f0-a979-7cb705164fbd.png" alt="Movidesk" className="w-5 h-5 object-contain" />;
       default:
         return <Hash className="w-4 h-4" />;
     }
@@ -47,16 +41,11 @@ const IntegrationsManagement = () => {
     switch (type) {
       case 'movidesk':
         return 'Movidesk';
-      case 'whatsapp':
-        return 'WhatsApp';
-      case 'instagram':
-        return 'Instagram';
-      case 'chat_widget':
-        return 'Chat Widget';
       default:
         return type;
     }
   };
+
 
   const handleCreateIntegration = () => {
     setFormMode('create');

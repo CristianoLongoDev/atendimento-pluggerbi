@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Hash, Phone, Instagram, MessageSquare } from 'lucide-react';
 import type { Integration, CreateIntegrationData } from '@/hooks/useIntegrations';
 
 interface IntegrationFormProps {
@@ -18,10 +17,7 @@ interface IntegrationFormProps {
 }
 
 const integrationOptions = [
-  { value: 'movidesk', label: 'Movidesk', icon: Hash },
-  { value: 'whatsapp', label: 'WhatsApp', icon: Phone },
-  { value: 'instagram', label: 'Instagram', icon: Instagram },
-  { value: 'chat_widget', label: 'Chat Widget', icon: MessageSquare },
+  { value: 'movidesk', label: 'Movidesk', icon: '/lovable-uploads/569333c2-882a-47f0-a979-7cb705164fbd.png' },
 ];
 
 export const IntegrationForm: React.FC<IntegrationFormProps> = ({
@@ -58,7 +54,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
     } else {
       setFormData({
         name: '',
-        integration_type: '',
+        integration_type: 'movidesk',
         is_active: true,
         phone_number: '',
         access_token: '',
@@ -110,112 +106,29 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const renderFieldsByType = () => {
     const isEditMode = mode === 'edit';
     
-    switch (formData.integration_type) {
-      case 'movidesk':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="access_token">Token de Acesso</Label>
-              <Input
-                id="access_token"
-                value={formData.access_token || ''}
-                onChange={(e) => setFormData({ ...formData, access_token: e.target.value })}
-                placeholder={isEditMode ? "Insira o novo token de acesso" : "Digite o token de acesso"}
-                required={!isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deixe em branco para manter o token atual
-                </p>
-              )}
-            </div>
+    if (formData.integration_type === 'movidesk') {
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="access_token">Token de Acesso</Label>
+            <Input
+              id="access_token"
+              value={formData.access_token || ''}
+              onChange={(e) => setFormData({ ...formData, access_token: e.target.value })}
+              placeholder={isEditMode ? "Insira o novo token de acesso" : "Digite o token de acesso"}
+              required={!isEditMode}
+            />
+            {isEditMode && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Deixe em branco para manter o token atual
+              </p>
+            )}
           </div>
-        );
-      
-      case 'whatsapp':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="phone_number">Número do Telefone</Label>
-              <Input
-                id="phone_number"
-                value={formData.phone_number || ''}
-                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                placeholder="+5511999999999"
-                maxLength={50}
-                required
-                disabled={isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  O número do telefone não pode ser alterado após a criação
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      
-      case 'instagram':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="client_id">Client ID</Label>
-              <Input
-                id="client_id"
-                value={formData.client_id || ''}
-                onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                placeholder={isEditMode ? "Insira o novo Client ID" : "Digite o Client ID"}
-                required={!isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deixe em branco para manter o Client ID atual
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="client_secret">Client Secret</Label>
-              <Input
-                id="client_secret"
-                type="password"
-                value={formData.client_secret || ''}
-                onChange={(e) => setFormData({ ...formData, client_secret: e.target.value })}
-                placeholder={isEditMode ? "Insira o novo Client Secret" : "Digite o Client Secret"}
-                required={!isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deixe em branco para manter o Client Secret atual
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      
-      case 'chat_widget':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="access_token">Token de Acesso</Label>
-              <Input
-                id="access_token"
-                value={formData.access_token || ''}
-                onChange={(e) => setFormData({ ...formData, access_token: e.target.value })}
-                placeholder={isEditMode ? "Insira o novo token de acesso" : "Digite o token de acesso"}
-                required={!isEditMode}
-              />
-              {isEditMode && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Deixe em branco para manter o token atual
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      
-      default:
-        return null;
+        </div>
+      );
     }
+
+    return null;
   };
 
   return (
@@ -243,7 +156,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
                   {integrationOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex items-center space-x-2">
-                        <option.icon className="w-4 h-4" />
+                        <img src={option.icon} alt={option.label} className="w-6 h-6 object-contain" />
                         <span>{option.label}</span>
                       </div>
                     </SelectItem>
