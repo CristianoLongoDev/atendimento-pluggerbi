@@ -259,7 +259,7 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
                 </SelectTrigger>
                 <SelectContent>
                   {availableFunctions
-                    .filter(fn => !selectedFunctions.includes(fn.function_id))
+                    .filter(fn => !selectedFunctions.includes(fn.function_id) && fn.used !== 'prompt')
                     .map((fn) => {
                       const isDisabled = fn.used === 'bot';
                       const displayText = fn.used === 'bot' 
