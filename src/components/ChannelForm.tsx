@@ -31,8 +31,11 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     type: 'whatsapp',
     name: '',
     botAgent: '',
-    status: 1,
-    whatsappPhone: ''
+    active: true,
+    phone_number: '',
+    client_id: '',
+    client_secret: '',
+    access_token: ''
   });
 
   // Fetch bots when component opens
@@ -44,32 +47,27 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
 
   // Update form data when channel changes
   useEffect(() => {
-    console.log('ChannelForm - useEffect triggered:', { mode, channel, open });
-    
     if (mode === 'edit' && channel) {
-      console.log('ChannelForm - Channel data for edit:', {
-        id: channel.id,
-        type: channel.type,
-        name: channel.name,
-        bot_id: channel.bot_id,
-        active: channel.active,
-        whatsapp_phone_number: (channel as any).whatsapp_phone_number
-      });
-      
       setFormData({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
         botAgent: channel.bot_id || '',
-        status: channel.active ? 1 : 0,
-        whatsappPhone: (channel as any).whatsapp_phone_number || ''
+        active: channel.active || false,
+        phone_number: (channel as any).phone_number || '',
+        client_id: '',
+        client_secret: '',
+        access_token: ''
       });
     } else if (mode === 'create') {
       setFormData({
         type: 'whatsapp',
         name: '',
         botAgent: '',
-        status: 1,
-        whatsappPhone: ''
+        active: true,
+        phone_number: '',
+        client_id: '',
+        client_secret: '',
+        access_token: ''
       });
     }
   }, [channel, mode, open]);
@@ -90,11 +88,31 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         return;
       }
 
-      // Validate WhatsApp phone number if type is whatsapp
-      if (formData.type === 'whatsapp' && !formData.whatsappPhone) {
+      // Validate required fields based on type
+      if (formData.type === 'whatsapp' && !formData.phone_number) {
         toast({
           title: "Erro",
-          description: "Telefone Remetente é obrigatório para WhatsApp",
+          description: "Número de telefone é obrigatório para WhatsApp",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (formData.type === 'instagram' && (!formData.client_id || !formData.client_secret)) {
+        toast({
+          title: "Erro",
+          description: "Client ID e Client Secret são obrigatórios para Instagram",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (formData.type === 'chat_widget' && !formData.access_token) {
+        toast({
+          title: "Erro",
+          description: "Access Token é obrigatório para Chat Widget",
           variant: "destructive"
         });
         setLoading(false);
@@ -105,12 +123,19 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         type: formData.type,
         name: formData.name,
         bot_id: formData.botAgent,
-        active: formData.status === 1
+        active: formData.active
       };
 
-      // Add whatsapp_phone_number only for WhatsApp type
-      if (formData.type === 'whatsapp') {
-        channelData.whatsapp_phone_number = formData.whatsappPhone;
+      // Add type-specific fields only if they have values
+      if (formData.type === 'whatsapp' && formData.phone_number) {
+        channelData.phone_number = formData.phone_number;
+      }
+      if (formData.type === 'instagram') {
+        if (formData.client_id) channelData.client_id = formData.client_id;
+        if (formData.client_secret) channelData.client_secret = formData.client_secret;
+      }
+      if (formData.type === 'chat_widget' && formData.access_token) {
+        channelData.access_token = formData.access_token;
       }
 
       let result;
@@ -130,8 +155,11 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           type: 'whatsapp',
           name: '',
           botAgent: '',
-          status: 1,
-          whatsappPhone: ''
+          active: true,
+          phone_number: '',
+          client_id: '',
+          client_secret: '',
+          access_token: ''
         });
       } else {
         toast({
@@ -174,8 +202,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
               <SelectContent>
                 <SelectItem value="whatsapp">WhatsApp</SelectItem>
                 <SelectItem value="instagram">Instagram</SelectItem>
-                <SelectItem value="facebook">Facebook</SelectItem>
-                <SelectItem value="telegram">Telegram</SelectItem>
+                <SelectItem value="chat_widget">Chat Widget</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -218,28 +245,68 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select
-              value={formData.status.toString()}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, status: parseInt(value) }))}
+              value={formData.active ? "true" : "false"}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, active: value === "true" }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o status" />
               </SelectTrigger>
               <SelectContent className="bg-background border z-50">
-                <SelectItem value="1">Ativo</SelectItem>
-                <SelectItem value="0">Desabilitado</SelectItem>
+                <SelectItem value="true">Ativo</SelectItem>
+                <SelectItem value="false">Desabilitado</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {formData.type === 'whatsapp' && (
             <div className="space-y-2">
-              <Label htmlFor="whatsappPhone">Telefone Remetente *</Label>
+              <Label htmlFor="phone_number">Número de Telefone *</Label>
               <Input
-                id="whatsappPhone"
-                value={formData.whatsappPhone}
-                onChange={(e) => setFormData(prev => ({ ...prev, whatsappPhone: e.target.value }))}
-                placeholder="5511999999999"
+                id="phone_number"
+                value={formData.phone_number}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                placeholder="+5511999999999"
                 required
+              />
+            </div>
+          )}
+
+          {formData.type === 'instagram' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="client_id">Client ID *</Label>
+                <Input
+                  id="client_id"
+                  value={formData.client_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, client_id: e.target.value }))}
+                  placeholder={mode === 'edit' ? "Informe o novo Client ID caso deseje alterar" : "Client ID do Instagram"}
+                  required={mode === 'create'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_secret">Client Secret *</Label>
+                <Input
+                  id="client_secret"
+                  type="password"
+                  value={formData.client_secret}
+                  onChange={(e) => setFormData(prev => ({ ...prev, client_secret: e.target.value }))}
+                  placeholder={mode === 'edit' ? "Informe o novo Client Secret caso deseje alterar" : "Client Secret do Instagram"}
+                  required={mode === 'create'}
+                />
+              </div>
+            </>
+          )}
+
+          {formData.type === 'chat_widget' && (
+            <div className="space-y-2">
+              <Label htmlFor="access_token">Access Token *</Label>
+              <Input
+                id="access_token"
+                type="password"
+                value={formData.access_token}
+                onChange={(e) => setFormData(prev => ({ ...prev, access_token: e.target.value }))}
+                placeholder={mode === 'edit' ? "Informe o novo Access Token caso deseje alterar" : "Access Token do Chat Widget"}
+                required={mode === 'create'}
               />
             </div>
           )}
