@@ -157,6 +157,7 @@ export const usePrompts = () => {
     }
   };
 
+
   const fetchPromptFunctions = async (botId: string, promptId: string) => {
     try {
       const headers = await getAuthHeaders();

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Prompt, usePrompts } from '@/hooks/usePrompts';
-import { useFunctions } from '@/hooks/useFunctions';
+import { useBots } from '@/hooks/useBots';
 import { X } from 'lucide-react';
 
 interface PromptFormProps {
@@ -22,8 +22,8 @@ interface PromptFormProps {
 
 const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: PromptFormProps) => {
   const { toast } = useToast();
-  const { createPrompt, updatePrompt, fetchPromptFunctions, addFunctionToPrompt, removeFunctionFromPrompt } = usePrompts();
-  const { functions, fetchFunctions } = useFunctions();
+  const { createPrompt, updatePrompt, addFunctionToPrompt, removeFunctionFromPrompt } = usePrompts();
+  const { fetchBotFunctions } = useBots();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     id: '',
@@ -34,11 +34,12 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
   const [selectedFunctions, setSelectedFunctions] = useState<string[]>([]);
   const [originalFunctions, setOriginalFunctions] = useState<string[]>([]);
   const [selectedFunctionId, setSelectedFunctionId] = useState('');
+  const [availableFunctions, setAvailableFunctions] = useState<any[]>([]);
 
   useEffect(() => {
     if (open) {
       // Load available functions
-      fetchFunctions(botId);
+      loadAvailableFunctions();
       
       if (mode === 'edit' && prompt) {
         const ruleDisplay = prompt.rule_display || 'first contact';
@@ -65,10 +66,20 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
     }
   }, [mode, prompt, open, botId]);
 
-  const loadPromptFunctions = async (promptId: string) => {
-    const result = await fetchPromptFunctions(botId, promptId);
+  const loadAvailableFunctions = async () => {
+    const result = await fetchBotFunctions(botId);
     if (result.success) {
-      const functionIds = result.functions.map((fn: any) => fn.function_id);
+      setAvailableFunctions(result.data || []);
+    }
+  };
+
+  const loadPromptFunctions = async (promptId: string) => {
+    const result = await fetchBotFunctions(botId);
+    if (result.success) {
+      const allFunctions = result.data || [];
+      // Functions associated with this prompt have used="prompt"
+      const promptFunctions = allFunctions.filter((fn: any) => fn.used === 'prompt');
+      const functionIds = promptFunctions.map((fn: any) => fn.function_id);
       setSelectedFunctions(functionIds);
       setOriginalFunctions(functionIds);
     }
@@ -250,13 +261,24 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
                   <SelectValue placeholder="Selecione uma função" />
                 </SelectTrigger>
                 <SelectContent>
-                  {functions
+                  {availableFunctions
                     .filter(fn => !selectedFunctions.includes(fn.function_id))
-                    .map((fn) => (
-                      <SelectItem key={fn.function_id} value={fn.function_id}>
-                        {fn.name || fn.function_id}
-                      </SelectItem>
-                    ))
+                    .map((fn) => {
+                      const isDisabled = fn.used === 'bot';
+                      const displayText = fn.used === 'bot' 
+                        ? `${fn.description || fn.function_id} (associado ao agente)`
+                        : fn.description || fn.function_id;
+                      
+                      return (
+                        <SelectItem 
+                          key={fn.function_id} 
+                          value={fn.function_id}
+                          disabled={isDisabled}
+                        >
+                          {displayText}
+                        </SelectItem>
+                      );
+                    })
                   }
                 </SelectContent>
               </Select>
@@ -273,10 +295,10 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
             {selectedFunctions.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {selectedFunctions.map((functionId) => {
-                  const functionObj = functions.find(fn => fn.function_id === functionId);
+                  const functionObj = availableFunctions.find(fn => fn.function_id === functionId);
                   return (
                     <Badge key={functionId} variant="secondary" className="flex items-center gap-1">
-                      {functionObj?.name || functionId}
+                      {functionObj?.description || functionId}
                       <button
                         type="button"
                         onClick={() => handleRemoveFunction(functionId)}
