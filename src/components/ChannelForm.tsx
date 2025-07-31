@@ -48,6 +48,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   // Update form data when channel changes
   useEffect(() => {
     if (mode === 'edit' && channel) {
+      console.log('ChannelForm - Loading channel for edit:', channel);
       setFormData({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
