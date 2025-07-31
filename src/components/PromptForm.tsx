@@ -69,6 +69,7 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
   const loadAvailableFunctions = async () => {
     const result = await fetchBotFunctions(botId);
     if (result.success) {
+      console.log('Available functions loaded:', result.data);
       setAvailableFunctions(result.data || []);
     }
   };
@@ -259,12 +260,17 @@ const PromptForm = ({ open, onOpenChange, prompt, mode, botId, onSuccess }: Prom
                 </SelectTrigger>
                 <SelectContent>
                   {availableFunctions
-                    .filter(fn => !selectedFunctions.includes(fn.function_id))
+                    .filter(fn => {
+                      console.log('Processing function:', fn.function_id, 'used:', fn.used, 'selected:', selectedFunctions.includes(fn.function_id));
+                      return !selectedFunctions.includes(fn.function_id);
+                    })
                     .map((fn) => {
                       const isDisabled = fn.used === 'bot';
                       const displayText = fn.used === 'bot' 
                         ? `${fn.description || fn.function_id} (associado ao agente)`
                         : fn.description || fn.function_id;
+                      
+                      console.log('Rendering function:', fn.function_id, 'disabled:', isDisabled, 'text:', displayText);
                       
                       return (
                         <SelectItem 
