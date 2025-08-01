@@ -52,13 +52,13 @@ export const BotForm: React.FC<BotFormProps> = ({
     if (mode === 'edit' && bot) {
       setFormData({
         name: bot.name || '',
-        integration_id: (bot as any).integration_id || '',
+        integration_id: (bot as any).integration_id || 'none',
         system_prompt: bot.system_prompt || ''
       });
     } else if (mode === 'create') {
       setFormData({
         name: '',
-        integration_id: '',
+        integration_id: 'none',
         system_prompt: ''
       });
     }
@@ -174,16 +174,19 @@ export const BotForm: React.FC<BotFormProps> = ({
         system_prompt: formData.system_prompt
       };
 
-      // Only add integration_id if it's not empty
-      if (formData.integration_id) {
+      // Only add integration_id if it's not empty and not "none"
+      if (formData.integration_id && formData.integration_id !== 'none') {
         botData.integration_id = formData.integration_id;
       }
 
       // Check if bot data changed
+      const currentIntegration = formData.integration_id === 'none' ? null : formData.integration_id;
+      const originalIntegration = (bot as any)?.integration_id || null;
+      
       const botDataChanged = mode === 'create' || 
         (bot && (
           bot.name !== formData.name || 
-          (bot as any).integration_id !== formData.integration_id || 
+          originalIntegration !== currentIntegration || 
           bot.system_prompt !== formData.system_prompt
         ));
 
@@ -241,7 +244,7 @@ export const BotForm: React.FC<BotFormProps> = ({
       onOpenChange(false);
       setFormData({
         name: '',
-        integration_id: '',
+        integration_id: 'none',
         system_prompt: ''
       });
       setCurrentFunctions([]);
@@ -290,7 +293,7 @@ export const BotForm: React.FC<BotFormProps> = ({
                 <SelectValue placeholder="Selecione uma integração" />
               </SelectTrigger>
               <SelectContent className="bg-background border z-50">
-                <SelectItem value="">
+                <SelectItem value="none">
                   <div className="flex items-center space-x-2">
                     <span>Nenhuma</span>
                   </div>
