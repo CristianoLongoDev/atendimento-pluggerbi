@@ -40,7 +40,7 @@ export const useFunctions = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/used`, {
+      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions`, {
         headers,
       });
 
