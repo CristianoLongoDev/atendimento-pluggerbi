@@ -578,14 +578,14 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
               <div className="space-y-2">
                 <Label htmlFor="action">Ação da Função</Label>
                 <Select 
-                  value={formData.action || ""} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, action: value === "" ? null : value }))}
+                  value={formData.action || "none"} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, action: value === "none" ? null : value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione uma ação" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">
+                    <SelectItem value="none">
                       Nenhuma
                     </SelectItem>
                     <SelectItem value="cria_ticket_movidesk">
