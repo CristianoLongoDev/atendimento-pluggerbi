@@ -42,7 +42,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [formData, setFormData] = useState({
     id: '',
     description: '',
-    action: '',
+    action: null,
   });
   const [loading, setLoading] = useState(false);
   const [parametersLoading, setParametersLoading] = useState(false);
