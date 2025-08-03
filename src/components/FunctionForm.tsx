@@ -332,7 +332,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         };
         
         // Add action field if integration is Movidesk
-        if (botIntegrationType === 'movidesk' && formData.action) {
+        if (botIntegrationType === 'movidesk' && formData.action && formData.action !== 'none') {
           createData.action = formData.action;
         }
         
@@ -397,7 +397,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           
           // Add action field if integration is Movidesk
           if (botIntegrationType === 'movidesk') {
-            updateData.action = formData.action || undefined;
+            updateData.action = formData.action === 'none' ? null : formData.action;
           }
           
           result = await updateFunction(botId, formData.id, updateData);
