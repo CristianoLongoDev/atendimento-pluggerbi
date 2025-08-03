@@ -21,6 +21,7 @@ interface FunctionFormProps {
   mode: 'create' | 'edit';
   botId: string;
   onSuccess: () => void;
+  bot?: any; // Bot info to check integration_type
 }
 
 const FunctionForm: React.FC<FunctionFormProps> = ({
@@ -30,6 +31,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   mode,
   botId,
   onSuccess,
+  bot,
 }) => {
   const { toast } = useToast();
   const { createFunction, updateFunction } = useFunctions();
@@ -38,6 +40,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [formData, setFormData] = useState({
     id: '',
     description: '',
+    action: '',
   });
   const [loading, setLoading] = useState(false);
   const [parametersLoading, setParametersLoading] = useState(false);
@@ -66,6 +69,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: botFunction.function_id,
         description: botFunction.description || '',
+        action: (botFunction as any).action || '',
       });
       // Load parameters for existing function
       loadParameters(botFunction.function_id);
@@ -73,6 +77,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: '',
         description: '',
+        action: '',
       });
       setLocalParameters([]);
       setOriginalParameters([]);
@@ -307,10 +312,17 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       
       if (mode === 'create') {
         // 1. Primeiro criar a função
-        result = await createFunction(botId, {
+        const createData: any = {
           function_id: formData.id,
           description: formData.description || undefined,
-        });
+        };
+        
+        // Add action field if integration is Movidesk
+        if ((bot as any)?.integration_type === 'movidesk' && formData.action) {
+          createData.action = formData.action;
+        }
+        
+        result = await createFunction(botId, createData);
         
         if (!result.success) {
           toast({
@@ -360,11 +372,21 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         console.log('Clean description:', cleanDescription);
         console.log('Original description:', originalDescription);
         
-        if (cleanDescription !== originalDescription) {
-          console.log('Function description changed, updating...');
-          result = await updateFunction(botId, formData.id, {
+        const originalAction = (botFunction as any)?.action || '';
+        const actionChanged = formData.action !== originalAction;
+        
+        if (cleanDescription !== originalDescription || actionChanged) {
+          console.log('Function data changed, updating...');
+          const updateData: any = {
             description: cleanDescription || undefined,
-          });
+          };
+          
+          // Add action field if integration is Movidesk
+          if ((bot as any)?.integration_type === 'movidesk') {
+            updateData.action = formData.action || undefined;
+          }
+          
+          result = await updateFunction(botId, formData.id, updateData);
           
           console.log('Update function result:', result);
 
@@ -377,7 +399,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
             return;
           }
         } else {
-          console.log('Function description unchanged, skipping update');
+          console.log('Function data unchanged, skipping update');
           result = { success: true }; // Simulate success since no update needed
         }
 
@@ -537,6 +559,25 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
               />
             </div>
 
+            {/* Ação da Função - apenas para integração Movidesk */}
+            {(bot as any)?.integration_type === 'movidesk' && (
+              <div className="space-y-2">
+                <Label htmlFor="action">Ação da Função</Label>
+                <Select 
+                  value={formData.action} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, action: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma ação" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cria_ticket_movidesk">
+                      Cria um ticket no Movidesk
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
           </div>
 

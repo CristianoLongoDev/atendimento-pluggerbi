@@ -225,6 +225,7 @@ const FunctionsManagement = () => {
         mode={functionFormMode}
         botId={selectedBotId}
         onSuccess={() => fetchFunctions(selectedBotId)}
+        bot={bots.find(bot => bot.id === selectedBotId)}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
