@@ -83,7 +83,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: botFunction.function_id,
         description: botFunction.description || '',
-        action: (botFunction as any).action || null,
+        action: botFunction.action || null,
       });
       // Load parameters for existing function
       loadParameters(botFunction.function_id);
@@ -386,7 +386,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         console.log('Clean description:', cleanDescription);
         console.log('Original description:', originalDescription);
         
-        const originalAction = (botFunction as any)?.action || '';
+        const originalAction = botFunction?.action || '';
         const actionChanged = formData.action !== originalAction;
         
         if (cleanDescription !== originalDescription || actionChanged) {

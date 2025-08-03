@@ -6,6 +6,7 @@ export interface BotFunction {
   function_id: string;
   name?: string;
   description?: string;
+  action?: string | null;
   used?: string | null;
   created_at?: string;
   updated_at?: string;
