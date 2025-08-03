@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useFunctions, BotFunction } from '@/hooks/useFunctions';
 import { useFunctionParameters, FunctionParameter } from '@/hooks/useFunctionParameters';
+import { useIntegrations } from '@/hooks/useIntegrations';
 import { Plus, Edit, Trash2, X, Star, StarOff, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -36,6 +37,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const { toast } = useToast();
   const { createFunction, updateFunction } = useFunctions();
   const { fetchParameters, createParameter, updateParameter, deleteParameter, parameters, createParametersBatch, deleteParametersBatch } = useFunctionParameters();
+  const { integrations, fetchIntegrations } = useIntegrations();
   
   const [formData, setFormData] = useState({
     id: '',
@@ -63,6 +65,18 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const [enablePermittedValues, setEnablePermittedValues] = useState(false);
   const [permittedTags, setPermittedTags] = useState<Array<{value: string, isDefault: boolean}>>([]);
   const [tagInput, setTagInput] = useState('');
+
+  // Buscar integrações quando o componente for montado
+  useEffect(() => {
+    fetchIntegrations();
+  }, []);
+
+  // Determinar o tipo de integração do bot
+  const botIntegrationType = React.useMemo(() => {
+    if (!bot?.integration_id || !integrations.length) return null;
+    const integration = integrations.find(i => i.id === bot.integration_id);
+    return integration?.integration_type || null;
+  }, [bot?.integration_id, integrations]);
 
   useEffect(() => {
     if (mode === 'edit' && botFunction) {
@@ -318,7 +332,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         };
         
         // Add action field if integration is Movidesk
-        if ((bot as any)?.integration_type === 'movidesk' && formData.action) {
+        if (botIntegrationType === 'movidesk' && formData.action) {
           createData.action = formData.action;
         }
         
@@ -382,7 +396,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
           };
           
           // Add action field if integration is Movidesk
-          if ((bot as any)?.integration_type === 'movidesk') {
+          if (botIntegrationType === 'movidesk') {
             updateData.action = formData.action || undefined;
           }
           
@@ -560,7 +574,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
             </div>
 
             {/* Ação da Função - apenas para integração Movidesk */}
-            {(bot as any)?.integration_type === 'movidesk' && (
+            {botIntegrationType === 'movidesk' && (
               <div className="space-y-2">
                 <Label htmlFor="action">Ação da Função</Label>
                 <Select 
