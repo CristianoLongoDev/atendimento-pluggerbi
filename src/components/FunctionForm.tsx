@@ -83,7 +83,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: botFunction.function_id,
         description: botFunction.description || '',
-        action: (botFunction as any).action || '',
+        action: (botFunction as any).action || null,
       });
       // Load parameters for existing function
       loadParameters(botFunction.function_id);
@@ -91,7 +91,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
       setFormData({
         id: '',
         description: '',
-        action: '',
+        action: null,
       });
       setLocalParameters([]);
       setOriginalParameters([]);
