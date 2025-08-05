@@ -40,18 +40,29 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   // Subscribe to WebSocket messages
   useEffect(() => {
     const unsubscribe = subscribe((message) => {
+      console.log('🔥 WEBSOCKET MESSAGE RECEIVED:', message.type, message);
+      
       switch (message.type) {
         case 'new_message':
+          console.log('📩 Handling new_message event');
           handleNewMessage(message.data);
           break;
         case 'subscription_updated':
+          console.log('📊 Handling subscription_updated event');
           handleSubscriptionUpdate(message.data);
           break;
         case 'messages_response':
+          console.log('💬 Handling messages_response event');
           handleMessagesResponse(message.data);
           break;
+        case 'connection_confirmed':
+          console.log('✅ Connection confirmed');
+          break;
+        case 'pong':
+          console.log('🏓 Pong received');
+          break;
         default:
-          console.log('Unknown message type:', message.type);
+          console.log('❓ Unknown message type:', message.type);
           break;
       }
     });
@@ -187,6 +198,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       return;
     }
 
+    console.log('📤 SENDING MESSAGE to chat:', chatId, 'content:', content);
+
     const messagePayload = {
       type: 'send_message',
       data: {
@@ -196,6 +209,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       }
     };
 
+    console.log('📤 Sending message payload:', messagePayload);
     wsSendMessage(messagePayload);
     
     // Optimistically add message to local state
@@ -249,6 +263,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       return;
     }
 
+    console.log('🔍 FETCHING MESSAGES for conversation:', conversationId);
+    
     const fetchPayload = {
       type: 'get_messages',
       data: {
@@ -256,6 +272,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       }
     };
 
+    console.log('📤 Sending get_messages payload:', fetchPayload);
     wsSendMessage(fetchPayload);
   }, [isConnected, wsSendMessage]);
 
