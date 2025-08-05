@@ -78,7 +78,7 @@ export type Database = {
         Returns: string
       }
       jwt_custom_claims: {
-        Args: { event: Json }
+        Args: { event: Json } | { event: Json }
         Returns: Json
       }
     }
