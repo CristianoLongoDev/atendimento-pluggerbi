@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      jwt_hook_log: {
+        Row: {
+          created_at: string | null
+          event: Json | null
+          id: number
+        }
+        Insert: {
+          created_at?: string | null
+          event?: Json | null
+          id?: number
+        }
+        Update: {
+          created_at?: string | null
+          event?: Json | null
+          id?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_id: string | null
@@ -58,6 +76,10 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      jwt_custom_claims: {
+        Args: { event: Json } | { user_id: string }
+        Returns: Json
       }
     }
     Enums: {
