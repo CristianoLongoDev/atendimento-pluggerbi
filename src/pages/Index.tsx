@@ -26,86 +26,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 
-// Mock data
-const mockChats = [
-  {
-    id: '1',
-    customerName: 'Maria Silva',
-    customerAvatar: '',
-    lastMessage: 'Preciso de ajuda com meu pedido',
-    timestamp: '14:32',
-    channel: 'whatsapp' as const,
-    status: 'ai' as const,
-    unreadCount: 2,
-    isActive: true,
-  },
-  {
-    id: '2',
-    customerName: 'João Santos',
-    customerAvatar: '',
-    lastMessage: 'Quando será feita a entrega?',
-    timestamp: '14:15',
-    channel: 'instagram' as const,
-    status: 'human' as const,
-    unreadCount: 0,
-    isActive: false,
-  },
-  {
-    id: '3',
-    customerName: 'Ana Costa',
-    customerAvatar: '',
-    lastMessage: 'Gostaria de cancelar minha assinatura',
-    timestamp: '13:45',
-    channel: 'facebook' as const,
-    status: 'ai' as const,
-    unreadCount: 1,
-    isActive: false,
-  },
-  {
-    id: '4',
-    customerName: 'Pedro Oliveira',
-    customerAvatar: '',
-    lastMessage: 'Como faço para trocar um produto?',
-    timestamp: '13:20',
-    channel: 'widget' as const,
-    status: 'pending' as const,
-    unreadCount: 3,
-    isActive: false,
-  },
-];
-
-const mockMessages = [
-  {
-    id: '1',
-    content: 'Olá! Preciso de ajuda com meu pedido',
-    timestamp: '14:30',
-    sender: 'customer' as const,
-  },
-  {
-    id: '2',
-    content: 'Olá Maria! Sou a IA assistente da empresa. Em que posso ajudá-la com seu pedido?',
-    timestamp: '14:30',
-    sender: 'ai' as const,
-  },
-  {
-    id: '3',
-    content: 'Meu pedido não chegou e já passou do prazo',
-    timestamp: '14:31',
-    sender: 'customer' as const,
-  },
-  {
-    id: '4',
-    content: 'Entendo sua preocupação. Vou verificar o status do seu pedido. Poderia me informar o número do pedido?',
-    timestamp: '14:31',
-    sender: 'ai' as const,
-  },
-  {
-    id: '5',
-    content: 'É o pedido #12345',
-    timestamp: '14:32',
-    sender: 'customer' as const,
-  },
-];
 
 const Index = () => {
   const { profile, isAdmin } = useAuth();
@@ -116,7 +36,7 @@ const Index = () => {
   
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedChatId, setSelectedChatId] = useState<string | null>('1');
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState('conversations');
   
   // Channel management states
@@ -133,11 +53,9 @@ const Index = () => {
     }
   }, [selectedSection]); // Remove fetchChannels dependency to avoid infinite loop
   
-  // Use real chat data from WebSocket when available, fallback to mock data
-  const activeChats = isConnected && chats.length > 0 ? chats : mockChats;
-  const selectedChat = activeChats.find(chat => chat.id === selectedChatId);
+  const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
-  const filteredChats = activeChats.filter(chat => {
+  const filteredChats = chats.filter(chat => {
     const matchesFilter = selectedFilter === 'all' || chat.status === selectedFilter;
     const matchesSearch = chat.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
@@ -215,6 +133,29 @@ const Index = () => {
   const renderMainContent = () => {
     switch (selectedSection) {
       case 'conversations':
+        if (!isConnected) {
+          return (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <div className="text-lg font-medium text-destructive">Conexão perdida</div>
+                <div className="text-sm text-muted-foreground">Tentando reconectar...</div>
+              </div>
+            </div>
+          );
+        }
+
+        if (chats.length === 0) {
+          return (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto" />
+                <div className="text-lg font-medium">Nenhuma conversa ativa</div>
+                <div className="text-sm text-muted-foreground">As conversas aparecerão aqui quando chegarem</div>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <>
             <div className="w-80 border-r border-border bg-card overflow-y-auto">
@@ -234,7 +175,7 @@ const Index = () => {
 
             <ChatArea
               selectedChat={selectedChat}
-              messages={selectedChatId ? (messages[selectedChatId] || mockMessages) : mockMessages}
+              messages={selectedChatId ? messages[selectedChatId] || [] : []}
               onSendMessage={handleSendMessage}
               onTransferToHuman={handleTransferToHuman}
             />
