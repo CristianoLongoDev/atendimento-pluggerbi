@@ -31,7 +31,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
-  const { chats, messages, isConnected, sendMessage, transferToHuman, refreshConversations } = useRealtimeConversations();
+  const { chats, messages, isConnected, sendMessage, transferToHuman, refreshConversations, fetchMessages } = useRealtimeConversations();
   const { toast } = useToast();
   
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -168,7 +168,10 @@ const Index = () => {
                 <ChatList
                   chats={filteredChats}
                   selectedChatId={selectedChatId}
-                  onChatSelect={setSelectedChatId}
+                  onChatSelect={(chatId) => {
+                    setSelectedChatId(chatId);
+                    fetchMessages(chatId);
+                  }}
                 />
               </div>
             </div>

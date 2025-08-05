@@ -28,6 +28,7 @@ interface UseRealtimeConversationsReturn {
   sendMessage: (chatId: string, content: string) => void;
   transferToHuman: (chatId: string) => void;
   refreshConversations: () => void;
+  fetchMessages: (conversationId: string) => void;
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
@@ -46,7 +47,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         case 'subscription_updated':
           handleSubscriptionUpdate(message.data);
           break;
+        case 'messages_response':
+          handleMessagesResponse(message.data);
+          break;
         default:
+          console.log('Unknown message type:', message.type);
           break;
       }
     });
@@ -151,6 +156,28 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, []);
 
+  const handleMessagesResponse = useCallback((data: any) => {
+    console.log('Processing messages response:', data);
+    
+    if (data.conversation_id && data.messages) {
+      const conversationMessages = data.messages.map((msg: any) => ({
+        id: msg.id,
+        content: msg.content,
+        sender: msg.sender || 'customer',
+        timestamp: new Date(msg.timestamp).toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        channel: msg.channel
+      }));
+
+      setMessages(prev => ({
+        ...prev,
+        [data.conversation_id]: conversationMessages
+      }));
+    }
+  }, []);
+
   const sendMessage = useCallback((chatId: string, content: string) => {
     if (!isConnected) {
       console.warn('WebSocket not connected. Cannot send message.');
@@ -213,6 +240,22 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     wsSendMessage(transferPayload);
   }, [isConnected, wsSendMessage]);
 
+  const fetchMessages = useCallback((conversationId: string) => {
+    if (!isConnected) {
+      console.warn('WebSocket not connected. Cannot fetch messages.');
+      return;
+    }
+
+    const fetchPayload = {
+      type: 'get_messages',
+      data: {
+        conversation_id: conversationId
+      }
+    };
+
+    wsSendMessage(fetchPayload);
+  }, [isConnected, wsSendMessage]);
+
   const refreshConversations = useCallback(() => {
     if (!isConnected) {
       console.warn('WebSocket not connected. Cannot refresh conversations.');
@@ -233,6 +276,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     isConnected,
     sendMessage,
     transferToHuman,
-    refreshConversations
+    refreshConversations,
+    fetchMessages
   };
 };
