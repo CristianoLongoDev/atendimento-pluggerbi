@@ -60,9 +60,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   }, [subscribe]);
 
   const handleNewMessage = useCallback((messageData: any) => {
-    console.log('Processing new message:', messageData);
+    console.log('🔔 NEW MESSAGE RECEIVED:', messageData);
     
-    if (!messageData) return;
+    if (!messageData) {
+      console.log('❌ No message data received');
+      return;
+    }
 
     const { conversation_id, message_id, content, sender, timestamp, channel } = messageData;
 
