@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccountData } from '@/hooks/useAccountData';
 import { useChannels } from '@/hooks/useChannels';
+import { useRealtimeConversations } from '@/hooks/useRealtimeConversations';
 import Header from '@/components/Header';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatList from '@/components/ChatList';
@@ -110,6 +111,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
+  const { chats, messages, isConnected, sendMessage, transferToHuman, refreshConversations } = useRealtimeConversations();
   const { toast } = useToast();
   
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -131,9 +133,11 @@ const Index = () => {
     }
   }, [selectedSection]); // Remove fetchChannels dependency to avoid infinite loop
   
-  const selectedChat = mockChats.find(chat => chat.id === selectedChatId);
+  // Use real chat data from WebSocket when available, fallback to mock data
+  const activeChats = isConnected && chats.length > 0 ? chats : mockChats;
+  const selectedChat = activeChats.find(chat => chat.id === selectedChatId);
   
-  const filteredChats = mockChats.filter(chat => {
+  const filteredChats = activeChats.filter(chat => {
     const matchesFilter = selectedFilter === 'all' || chat.status === selectedFilter;
     const matchesSearch = chat.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
@@ -147,13 +151,19 @@ const Index = () => {
   ];
 
   const handleSendMessage = (message: string) => {
-    console.log('Sending message:', message);
-    // Implement message sending logic
+    if (selectedChatId) {
+      sendMessage(selectedChatId, message);
+    }
   };
 
   const handleTransferToHuman = () => {
-    console.log('Transferring to human');
-    // Implement transfer logic
+    if (selectedChatId) {
+      transferToHuman(selectedChatId);
+      toast({
+        title: "Chat transferido",
+        description: "A conversa foi transferida para um atendente humano.",
+      });
+    }
   };
 
   // Channel management handlers
@@ -224,7 +234,7 @@ const Index = () => {
 
             <ChatArea
               selectedChat={selectedChat}
-              messages={mockMessages}
+              messages={selectedChatId ? (messages[selectedChatId] || mockMessages) : mockMessages}
               onSendMessage={handleSendMessage}
               onTransferToHuman={handleTransferToHuman}
             />
