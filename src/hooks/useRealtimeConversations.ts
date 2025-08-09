@@ -121,6 +121,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('Processing subscription update:', data);
     
     if (data.conversations) {
+      // Log each conversation to see channel data
+      data.conversations.forEach((conv: any, index: number) => {
+        console.log(`📋 CONVERSA ${index + 1}:`, {
+          id: conv.id,
+          channel: conv.channel,
+          channel_type: conv.channel_type,
+          contact_name: conv.contact_name,
+          last_message: conv.last_message
+        });
+      });
+      
       // Update chats list
       const updatedChats = data.conversations.map((conv: any) => ({
         id: conv.id,
@@ -131,8 +142,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
             hour: '2-digit', 
             minute: '2-digit' 
           }) : '',
-        channel: (conv.channel === 'whatsapp' || conv.channel === 'instagram' || conv.channel === 'facebook' || conv.channel === 'widget') 
-          ? conv.channel : 'widget',
+        channel: (() => {
+          const channelValue = conv.channel_type || conv.channel;
+          return (channelValue === 'whatsapp' || channelValue === 'instagram' || channelValue === 'facebook' || channelValue === 'widget') 
+            ? channelValue : 'widget';
+        })(),
         status: (conv.status === 'ai' || conv.status === 'human' || conv.status === 'pending' || conv.status === 'closed') 
           ? conv.status : 'pending',
         unreadCount: conv.unread_count || 0,
