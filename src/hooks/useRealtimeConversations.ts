@@ -272,13 +272,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     wsSendMessage(transferPayload);
   }, [isConnected, wsSendMessage]);
 
-  const fetchMessages = useCallback((conversationId: string) => {
+  const fetchMessages = useCallback((conversationId: string | number) => {
     console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);
     console.log('🌐 WebSocket connected:', isConnected);
     
+    // Convert to string if it's a number
+    const conversationIdStr = String(conversationId);
+    
     // Validate conversation ID
     try {
-      chatIdSchema.parse(conversationId);
+      chatIdSchema.parse(conversationIdStr);
     } catch (error) {
       console.error('Invalid conversation ID:', error);
       return;
@@ -289,12 +292,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       return;
     }
 
-    console.log('🔍 FETCHING MESSAGES for conversation:', conversationId);
+    console.log('🔍 FETCHING MESSAGES for conversation:', conversationIdStr);
     
     const fetchPayload = {
       type: 'get_messages',
       data: {
-        conversation_id: conversationId
+        conversation_id: conversationIdStr
       }
     };
 
