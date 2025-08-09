@@ -30,6 +30,7 @@ interface UseRealtimeConversationsReturn {
   transferToHuman: (chatId: string) => void;
   refreshConversations: () => void;
   fetchMessages: (conversationId: string | number) => void;
+  markAsRead: (chatId: string) => void;
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
@@ -354,6 +355,18 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     wsSendMessage(refreshPayload);
   }, [isConnected, wsSendMessage]);
 
+  const markAsRead = useCallback((chatId: string) => {
+    setChats(prev => prev.map(chat => {
+      if (chat.id === chatId) {
+        return {
+          ...chat,
+          unreadCount: 0
+        };
+      }
+      return chat;
+    }));
+  }, []);
+
   return {
     chats,
     messages,
@@ -361,6 +374,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     sendMessage,
     transferToHuman,
     refreshConversations,
-    fetchMessages
+    fetchMessages,
+    markAsRead
   };
 };

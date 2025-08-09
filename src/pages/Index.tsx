@@ -31,7 +31,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
-  const { chats, messages, isConnected, sendMessage, transferToHuman, refreshConversations, fetchMessages } = useRealtimeConversations();
+  const { chats, messages, isConnected, sendMessage, transferToHuman, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
   const { toast } = useToast();
   
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -171,6 +171,7 @@ const Index = () => {
                   onChatSelect={(chatId) => {
                     console.log('🎯 CHAT SELECTED:', chatId);
                     setSelectedChatId(chatId);
+                    markAsRead(chatId); // Reset unread count
                     console.log('📞 CALLING fetchMessages for chat:', chatId);
                     fetchMessages(chatId);
                   }}
