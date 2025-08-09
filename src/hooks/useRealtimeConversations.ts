@@ -80,41 +80,64 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
 
     const { conversation_id, message_id, content, sender, timestamp, channel } = messageData;
+    
+    console.log('📍 Processing new message for conversation:', conversation_id);
+    console.log('💬 Message details:', { message_id, content, sender, timestamp });
 
-    // Add new message to the messages state
-    setMessages(prev => ({
-      ...prev,
-      [conversation_id]: [
-        ...(prev[conversation_id] || []),
-        {
-          id: message_id,
-          content,
-          sender: sender || 'customer',
-          timestamp: new Date(timestamp).toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          channel
-        }
-      ]
-    }));
+    // Add new message to the messages state with force update
+    setMessages(prev => {
+      const currentMessages = prev[conversation_id] || [];
+      const newMessage = {
+        id: message_id || `msg_${Date.now()}`,
+        content: content || '',
+        sender: sender || 'customer',
+        timestamp: timestamp ? new Date(timestamp).toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }) : new Date().toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        channel
+      };
+      
+      console.log('🔄 Adding message to conversation:', conversation_id, newMessage);
+      console.log('📚 Current messages count:', currentMessages.length);
+      
+      const updatedMessages = {
+        ...prev,
+        [conversation_id]: [...currentMessages, newMessage]
+      };
+      
+      console.log('📝 Updated messages state:', updatedMessages[conversation_id]);
+      return updatedMessages;
+    });
 
     // Update chat list with new last message
-    setChats(prev => prev.map(chat => {
-      if (chat.id === conversation_id) {
-        return {
-          ...chat,
-          lastMessage: content,
-          timestamp: new Date(timestamp).toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          unreadCount: chat.unreadCount + 1,
-          status: sender === 'customer' ? 'pending' : chat.status
-        };
-      }
-      return chat;
-    }));
+    setChats(prev => {
+      const updatedChats = prev.map(chat => {
+        if (chat.id === conversation_id) {
+          console.log('🔄 Updating chat:', chat.id, 'with new message');
+          return {
+            ...chat,
+            lastMessage: content || '',
+            timestamp: timestamp ? new Date(timestamp).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }) : new Date().toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            unreadCount: chat.unreadCount + 1,
+            status: sender === 'customer' ? 'pending' : chat.status
+          };
+        }
+        return chat;
+      });
+      
+      console.log('💼 Updated chats with new message');
+      return updatedChats;
+    });
   }, []);
 
   const handleSubscriptionUpdate = useCallback((data: any) => {
