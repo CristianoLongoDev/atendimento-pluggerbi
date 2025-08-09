@@ -54,7 +54,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           break;
         case 'messages_response':
           console.log('💬 Handling messages_response event');
-          handleMessagesResponse(message.data);
+          handleMessagesResponse(message);
           break;
         case 'connection_confirmed':
           console.log('✅ Connection confirmed');
@@ -189,11 +189,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, []);
 
-  const handleMessagesResponse = useCallback((data: any) => {
-    console.log('Processing messages response:', data);
+  const handleMessagesResponse = useCallback((message: any) => {
+    console.log('Processing messages response:', message);
     
-    if (data.conversation_id && data.data && data.data.messages) {
-      const conversationMessages = data.data.messages.map((msg: any) => ({
+    if (message.conversation_id && message.data && message.data.messages) {
+      const conversationMessages = message.data.messages.map((msg: any) => ({
         id: msg.id,
         content: msg.message_text,
         sender: msg.sender === 'user' ? 'customer' : msg.sender,
@@ -204,9 +204,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         channel: msg.channel
       }));
 
+      console.log('📝 Setting messages for conversation:', message.conversation_id, conversationMessages);
+
       setMessages(prev => ({
         ...prev,
-        [data.conversation_id]: conversationMessages
+        [message.conversation_id]: conversationMessages
       }));
     }
   }, []);
