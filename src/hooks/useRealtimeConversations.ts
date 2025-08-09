@@ -258,8 +258,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   }, [isConnected, wsSendMessage]);
 
   const fetchMessages = useCallback((conversationId: string) => {
+    console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);
+    console.log('🌐 WebSocket connected:', isConnected);
+    
     if (!isConnected) {
-      console.warn('WebSocket not connected. Cannot fetch messages.');
+      console.warn('❌ WebSocket not connected. Cannot fetch messages.');
       return;
     }
 

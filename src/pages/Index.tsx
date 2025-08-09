@@ -169,7 +169,9 @@ const Index = () => {
                   chats={filteredChats}
                   selectedChatId={selectedChatId}
                   onChatSelect={(chatId) => {
+                    console.log('🎯 CHAT SELECTED:', chatId);
                     setSelectedChatId(chatId);
+                    console.log('📞 CALLING fetchMessages for chat:', chatId);
                     fetchMessages(chatId);
                   }}
                 />
