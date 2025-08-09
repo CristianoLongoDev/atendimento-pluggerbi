@@ -83,9 +83,23 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                 <span className="text-xs text-muted-foreground">{chat.timestamp}</span>
               </div>
               
-              <p className="text-sm text-muted-foreground truncate mb-2">
-                {chat.lastMessage}
-              </p>
+              <div className="flex items-center space-x-1 mb-2">
+                {chat.channel === 'whatsapp' && (
+                  <MessageSquare className="w-3 h-3 text-green-500" />
+                )}
+                {chat.channel === 'instagram' && (
+                  <MessageSquare className="w-3 h-3 text-pink-500" />
+                )}
+                {chat.channel === 'facebook' && (
+                  <MessageSquare className="w-3 h-3 text-blue-500" />
+                )}
+                {chat.channel === 'widget' && (
+                  <MessageSquare className="w-3 h-3 text-purple-500" />
+                )}
+                <span className="text-sm text-muted-foreground capitalize">
+                  {chat.channel}
+                </span>
+              </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1">
