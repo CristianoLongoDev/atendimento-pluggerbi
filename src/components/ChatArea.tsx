@@ -121,7 +121,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -130,11 +130,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({
             <div
               className={`max-w-[70%] ${
                 message.sender === 'customer'
-                  ? 'bg-muted'
+                  ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
                   : message.sender === 'ai'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-primary text-primary-foreground'
-              } rounded-lg p-3`}
+                  ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                  : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
+              } p-3 shadow-sm`}
             >
               {message.sender !== 'customer' && (
                 <div className="flex items-center space-x-1 mb-1">
@@ -148,7 +148,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                   </span>
                 </div>
               )}
-              <p className="text-sm">{message.content}</p>
+              <p className="text-sm leading-relaxed">{message.content}</p>
               <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
             </div>
           </div>

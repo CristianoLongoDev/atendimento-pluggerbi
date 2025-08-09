@@ -188,11 +188,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const handleMessagesResponse = useCallback((data: any) => {
     console.log('Processing messages response:', data);
     
-    if (data.conversation_id && data.messages) {
-      const conversationMessages = data.messages.map((msg: any) => ({
+    if (data.conversation_id && data.data && data.data.messages) {
+      const conversationMessages = data.data.messages.map((msg: any) => ({
         id: msg.id,
-        content: msg.content,
-        sender: msg.sender || 'customer',
+        content: msg.message_text,
+        sender: msg.sender === 'user' ? 'customer' : msg.sender,
         timestamp: new Date(msg.timestamp).toLocaleTimeString('pt-BR', { 
           hour: '2-digit', 
           minute: '2-digit' 
