@@ -123,7 +123,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       // Update chats list
       const updatedChats = data.conversations.map((conv: any) => ({
         id: conv.id,
-        customerName: conv.customer_name || `Cliente ${conv.id}`,
+        customerName: conv.contact_name || `Cliente ${conv.id}`,
         lastMessage: conv.last_message || 'Sem mensagens',
         timestamp: conv.last_message_timestamp ? 
           new Date(conv.last_message_timestamp).toLocaleTimeString('pt-BR', { 
