@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from './useWebSocket';
-import { validateAndSanitizeMessage, webSocketMessageSchema, chatIdSchema, isValidUUID } from '@/lib/validation';
+import { validateAndSanitizeMessage, webSocketMessageSchema, conversationIdSchema, isValidUUID } from '@/lib/validation';
 
 interface Message {
   id: string;
@@ -29,7 +29,7 @@ interface UseRealtimeConversationsReturn {
   sendMessage: (chatId: string, content: string) => void;
   transferToHuman: (chatId: string) => void;
   refreshConversations: () => void;
-  fetchMessages: (conversationId: string) => void;
+  fetchMessages: (conversationId: string | number) => void;
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
@@ -281,7 +281,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     
     // Validate conversation ID
     try {
-      chatIdSchema.parse(conversationIdStr);
+      conversationIdSchema.parse(conversationId);
     } catch (error) {
       console.error('Invalid conversation ID:', error);
       return;

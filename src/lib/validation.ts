@@ -17,6 +17,7 @@ export const messageSchema = z.object({
 });
 
 export const chatIdSchema = z.string().uuid('Invalid chat ID');
+export const conversationIdSchema = z.union([z.number().int().positive(), z.string().regex(/^\d+$/)]).transform(val => String(val));
 
 // WebSocket Message Validation
 export const webSocketMessageSchema = z.object({
