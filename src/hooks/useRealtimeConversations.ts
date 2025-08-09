@@ -132,13 +132,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         });
       });
       
-      // Update chats list
+      // Update chats list - mapping status_attendance to our status
       const updatedChats = data.conversations.map((conv: any) => ({
         id: conv.id,
         customerName: conv.contact_name || `Cliente ${conv.id}`,
         lastMessage: conv.last_message || 'Sem mensagens',
-        timestamp: conv.last_message_timestamp ? 
-          new Date(conv.last_message_timestamp).toLocaleTimeString('pt-BR', { 
+        timestamp: conv.last_message_time ? 
+          new Date(conv.last_message_time).toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
             minute: '2-digit' 
           }) : '',
@@ -147,10 +147,14 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return (channelValue === 'whatsapp' || channelValue === 'instagram' || channelValue === 'facebook' || channelValue === 'widget') 
             ? channelValue : 'widget';
         })(),
-        status: (conv.status === 'ai' || conv.status === 'human' || conv.status === 'pending' || conv.status === 'closed') 
-          ? conv.status : 'pending',
+        status: (() => {
+          if (conv.status_attendance === 'bot') return 'ai';
+          if (conv.status_attendance === 'human') return 'human';
+          if (conv.status_attendance === 'pending') return 'pending';
+          return 'pending';
+        })(),
         unreadCount: conv.unread_count || 0,
-        isActive: conv.is_active || false
+        isActive: conv.status === 'active'
       }));
       
       setChats(updatedChats);
@@ -168,8 +172,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         
         messagesByConversation[conversationId].push({
           id: msg.id,
-          content: msg.content,
-          sender: msg.sender || 'customer',
+          content: msg.message_text || msg.content,
+          sender: msg.sender === 'user' ? 'customer' : msg.sender,
           timestamp: new Date(msg.timestamp).toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
             minute: '2-digit' 
