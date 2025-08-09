@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { runAuthDiagnostics, validateCurrentToken } from '@/lib/authValidation';
+import { callExternalAPI } from '@/lib/authInterceptor';
+import { logSecurityEvent } from '@/lib/security';
 
 interface AccountData {
   id: string;
@@ -8,68 +10,66 @@ interface AccountData {
 }
 
 export const useAccountData = () => {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [accountData, setAccountData] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('useAccountData - profile:', profile);
-    console.log('useAccountData - account_id:', profile?.account_id);
-    
-    if (!profile?.account_id) {
-      console.log('useAccountData - No account_id found');
-      return;
-    }
+    const fetchAccountData = async () => {
+      if (!user || !profile?.account_id) {
+        console.log('👤 Usuário ou account_id não disponível');
+        return;
+      }
 
-    const fetchAccountDataInternal = async (retryCount = 0) => {
-      console.log('useAccountData - Starting fetch, retry:', retryCount);
       setLoading(true);
-      setError(null);
       
       try {
-        // Obter o token de acesso atual
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          throw new Error('Token de acesso não encontrado');
+        console.log('🔍 === INICIANDO BUSCA DE DADOS DA CONTA ===');
+        
+        // Executar diagnóstico de autenticação ANTES da requisição
+        await runAuthDiagnostics();
+        
+        // Validar token atual
+        const tokenInfo = await validateCurrentToken();
+        
+        if (!tokenInfo.isValid) {
+          console.error('❌ Token inválido detectado');
+          setError('Token de autenticação inválido. Faça login novamente.');
+          setLoading(false);
+          return;
         }
 
-        const url = `https://atendimento.pluggerbi.com/accounts/${profile.account_id}`;
-        console.log('useAccountData - Fetching from URL:', url);
+        console.log('✅ Token validado, fazendo requisição para API externa...');
+        console.log('🎯 Account ID:', profile.account_id);
         
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          signal: AbortSignal.timeout(10000) // 10 second timeout
-        });
-        console.log('useAccountData - Response status:', response.status);
+        // Usar o interceptor para fazer a requisição
+        const data = await callExternalAPI(
+          `https://atendimento.pluggerbi.com/accounts/${profile.account_id}`
+        );
         
-        if (!response.ok) {
-          throw new Error(`Erro ao buscar dados da conta. Status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('useAccountData - Response data:', data);
-        
+        console.log('✅ Dados da conta recebidos:', data);
         setAccountData({
           id: profile.account_id,
           name: data.account?.name || 'Nome da conta não encontrado'
         });
-        setError(null); // Clear any previous errors
-      } catch (err) {
-        console.error('useAccountData - Error:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+        setError(null);
         
-        // Retry up to 2 times for network errors
-        if (retryCount < 2 && (errorMessage.includes('Failed to fetch') || errorMessage.includes('timeout'))) {
-          console.log(`Retrying fetchAccountData in 2 seconds... (attempt ${retryCount + 1}/2)`);
-          setTimeout(() => fetchAccountDataInternal(retryCount + 1), 2000);
-          return;
+      } catch (err: any) {
+        console.error('❌ Erro ao buscar dados da conta:', err);
+        
+        // Tratamento específico para erro 401
+        if (err.status === 401) {
+          setError('Sessão expirada. Por favor, faça login novamente.');
+          logSecurityEvent('ACCOUNT_API_UNAUTHORIZED', { accountId: profile.account_id });
+        } else {
+          setError(err.message || 'Erro ao carregar dados da conta');
+          logSecurityEvent('ACCOUNT_API_ERROR', { 
+            accountId: profile.account_id,
+            error: err.message 
+          });
         }
         
-        setError(errorMessage);
         setAccountData({
           id: profile.account_id,
           name: 'Erro ao carregar nome da conta'
@@ -79,8 +79,8 @@ export const useAccountData = () => {
       }
     };
 
-    fetchAccountDataInternal();
-  }, [profile?.account_id]);
+    fetchAccountData();
+  }, [user, profile?.account_id]);
 
   return { accountData, loading, error };
 };

@@ -29,6 +29,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { runAuthDiagnostics } from '@/lib/authValidation';
+
 const Header: React.FC = () => {
   const { profile, signOut, isAdmin } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -37,6 +39,11 @@ const Header: React.FC = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
+  };
+
+  const handleAuthDiagnostics = async () => {
+    console.log('🚀 Executando diagnóstico de autenticação manual...');
+    await runAuthDiagnostics();
   };
 
   const toggleTheme = () => {
@@ -103,6 +110,10 @@ const Header: React.FC = () => {
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleAuthDiagnostics}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Testar Autenticação</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
