@@ -79,7 +79,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       return;
     }
 
-    const { conversation_id, message_id, content, sender, timestamp, channel } = messageData;
+    // Extract data - note that content could be in different fields
+    const conversation_id = messageData.conversation_id;
+    const message_id = messageData.id || messageData.message_id;
+    const content = messageData.message_text || messageData.content || '';
+    const sender = messageData.sender || 'customer';
+    const timestamp = messageData.timestamp;
+    const channel = messageData.channel;
     
     console.log('📍 Processing new message for conversation:', conversation_id);
     console.log('💬 Message details:', { message_id, content, sender, timestamp });
@@ -89,8 +95,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       const currentMessages = prev[conversation_id] || [];
       const newMessage = {
         id: message_id || `msg_${Date.now()}`,
-        content: content || '',
-        sender: sender || 'customer',
+        content: content,
+        sender: sender === 'user' ? 'customer' : sender, // Map 'user' to 'customer'
         timestamp: timestamp ? new Date(timestamp).toLocaleTimeString('pt-BR', { 
           hour: '2-digit', 
           minute: '2-digit' 
@@ -120,7 +126,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           console.log('🔄 Updating chat:', chat.id, 'with new message');
           return {
             ...chat,
-            lastMessage: content || '',
+            lastMessage: content,
             timestamp: timestamp ? new Date(timestamp).toLocaleTimeString('pt-BR', { 
               hour: '2-digit', 
               minute: '2-digit' 
@@ -129,7 +135,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
               minute: '2-digit' 
             }),
             unreadCount: chat.unreadCount + 1,
-            status: sender === 'customer' ? 'pending' : chat.status
+            status: sender === 'customer' || sender === 'user' ? 'pending' : chat.status
           };
         }
         return chat;
