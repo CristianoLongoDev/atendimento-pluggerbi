@@ -31,6 +31,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 }) => {
   const [messageInput, setMessageInput] = useState('');
 
+  // Debug logs
+  console.log('🎯 ChatArea render - selectedChat:', selectedChat?.id);
+  console.log('💬 ChatArea render - messages count:', messages.length);
+  console.log('📝 ChatArea render - messages:', messages);
+
   const handleSendMessage = () => {
     if (messageInput.trim()) {
       try {
@@ -122,7 +127,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map((message) => (
+        {messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-muted-foreground">
+              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>Nenhuma mensagem para exibir</p>
+            </div>
+          </div>
+        ) : (
+        messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
@@ -152,7 +165,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
             </div>
           </div>
-        ))}
+        ))
+        )}
       </div>
 
       {/* Message Input */}
