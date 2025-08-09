@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Channel } from '@/hooks/useChannels';
 import { useBots } from '@/hooks/useBots';
+import { channelConfigSchema, sanitizeHtml, isValidUUID } from '@/lib/validation';
 
 interface ChannelFormProps {
   open: boolean;
@@ -78,11 +79,29 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     setLoading(true);
 
     try {
-      // Validate bot agent is required
-      if (!formData.botAgent) {
+      // Validate and sanitize form data
+      const validationResult = channelConfigSchema.safeParse({
+        name: formData.name,
+        type: formData.type,
+        is_active: formData.active,
+        settings: {}
+      });
+
+      if (!validationResult.success) {
+        toast({
+          title: "Erro de Validação",
+          description: validationResult.error.errors.map(e => e.message).join(', '),
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Validate bot agent is required and is valid UUID
+      if (!formData.botAgent || !isValidUUID(formData.botAgent)) {
         toast({
           title: "Erro",
-          description: "Agente Bot é obrigatório",
+          description: "Agente Bot válido é obrigatório",
           variant: "destructive"
         });
         setLoading(false);
@@ -122,14 +141,25 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
 
       const channelData: any = {
         type: formData.type,
-        name: formData.name,
+        name: sanitizeHtml(formData.name),
         bot_id: formData.botAgent,
         active: formData.active
       };
 
-      // Add type-specific fields only if they have values
+      // Add type-specific fields only if they have values (sanitized)
       if (formData.type === 'whatsapp' && formData.phone_number) {
-        channelData.phone_number = formData.phone_number;
+        // Validate phone number format (basic validation)
+        const phoneRegex = /^[0-9+\-\s()]+$/;
+        if (!phoneRegex.test(formData.phone_number)) {
+          toast({
+            title: "Erro",
+            description: "Formato de telefone inválido",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+        channelData.phone_number = sanitizeHtml(formData.phone_number);
       }
       if (formData.type === 'instagram') {
         if (formData.client_id) channelData.client_id = formData.client_id;

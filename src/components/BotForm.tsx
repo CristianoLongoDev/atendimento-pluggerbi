@@ -11,6 +11,7 @@ import { Bot, useBots } from '@/hooks/useBots';
 import { useFunctions } from '@/hooks/useFunctions';
 import { useIntegrations } from '@/hooks/useIntegrations';
 import { X } from 'lucide-react';
+import { botConfigSchema, sanitizeHtml } from '@/lib/validation';
 
 interface BotFormProps {
   open: boolean;
@@ -158,11 +159,28 @@ export const BotForm: React.FC<BotFormProps> = ({
     setLoading(true);
 
     try {
-      // Validate required fields
-      if (!formData.name || !formData.system_prompt) {
+      // Validate and sanitize form data
+      const validationResult = botConfigSchema.safeParse({
+        name: formData.name,
+        description: '', // Optional field
+        is_active: true,
+        settings: {}
+      });
+
+      if (!validationResult.success) {
+        toast({
+          title: "Erro de Validação",
+          description: validationResult.error.errors.map(e => e.message).join(', '),
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.system_prompt.trim()) {
         toast({
           title: "Erro",
-          description: "Nome e System Prompt são obrigatórios",
+          description: "System Prompt é obrigatório",
           variant: "destructive"
         });
         setLoading(false);
@@ -170,8 +188,8 @@ export const BotForm: React.FC<BotFormProps> = ({
       }
 
       const botData: any = {
-        name: formData.name,
-        system_prompt: formData.system_prompt
+        name: sanitizeHtml(formData.name),
+        system_prompt: sanitizeHtml(formData.system_prompt)
       };
 
       // Only add integration_id if it's not empty and not "none"

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from './useWebSocket';
+import { validateAndSanitizeMessage, webSocketMessageSchema, chatIdSchema, isValidUUID } from '@/lib/validation';
 
 interface Message {
   id: string;
@@ -260,6 +261,14 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const fetchMessages = useCallback((conversationId: string) => {
     console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);
     console.log('🌐 WebSocket connected:', isConnected);
+    
+    // Validate conversation ID
+    try {
+      chatIdSchema.parse(conversationId);
+    } catch (error) {
+      console.error('Invalid conversation ID:', error);
+      return;
+    }
     
     if (!isConnected) {
       console.warn('❌ WebSocket not connected. Cannot fetch messages.');

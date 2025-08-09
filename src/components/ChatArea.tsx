@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { validateAndSanitizeMessage } from '@/lib/validation';
 
 interface Message {
   id: string;
@@ -32,8 +33,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
   const handleSendMessage = () => {
     if (messageInput.trim()) {
-      onSendMessage(messageInput);
-      setMessageInput('');
+      try {
+        const sanitizedMessage = validateAndSanitizeMessage(messageInput);
+        onSendMessage(sanitizedMessage);
+        setMessageInput('');
+      } catch (error) {
+        console.error('Invalid message:', error);
+        // Could show a toast notification here
+        return;
+      }
     }
   };
 
