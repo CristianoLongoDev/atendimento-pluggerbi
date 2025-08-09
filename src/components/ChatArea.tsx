@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,6 +30,14 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   onTransferToHuman,
 }) => {
   const [messageInput, setMessageInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change or chat is selected
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, selectedChat]);
 
   // Debug logs
   console.log('🎯 ChatArea render - selectedChat:', selectedChat?.id);
@@ -167,6 +175,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
         ))
         )}
+        {/* Invisible element to scroll to */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
