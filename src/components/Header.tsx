@@ -36,6 +36,7 @@ const Header: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/auth');
   };
 
   const toggleTheme = () => {

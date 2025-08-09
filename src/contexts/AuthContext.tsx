@@ -143,8 +143,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      // Sempre limpa o estado local, independente se há erro no servidor
+      // Isso garante que o usuário seja deslogado mesmo se a sessão já expirou
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      if (error && error.message !== 'Session from session_id claim in JWT does not exist') {
+        console.warn('Erro durante logout (mas estado foi limpo):', error.message);
+      }
+    } catch (err) {
+      console.error('Erro ao fazer logout:', err);
+      // Mesmo com erro, limpa o estado local para garantir que o usuário seja deslogado
       setUser(null);
       setSession(null);
       setProfile(null);
