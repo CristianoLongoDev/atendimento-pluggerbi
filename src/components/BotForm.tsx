@@ -324,7 +324,7 @@ export const BotForm: React.FC<BotFormProps> = ({
                   </div>
                 </SelectItem>
                 {integrations
-                  .filter(integration => integration.is_active)
+                  .filter(integration => integration.is_active === 1) // 1 = ativo no banco
                   .map((integration) => (
                     <SelectItem key={integration.id} value={integration.id}>
                       <div className="flex items-center space-x-2">

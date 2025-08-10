@@ -5,7 +5,7 @@ export interface Integration {
   id: string;
   name: string;
   integration_type: 'movidesk' | 'whatsapp' | 'instagram' | 'chat_widget';
-  is_active: boolean;
+  is_active: number; // 1 = ativo, 0 = inativo
   phone_number?: string;
   // Campos sensíveis não retornam mais da API por segurança
   // access_token?: string;
@@ -17,7 +17,7 @@ export interface Integration {
 export interface CreateIntegrationData {
   name: string;
   integration_type: string;
-  is_active: boolean;
+  is_active: number; // 1 = ativo, 0 = inativo
   phone_number?: string;
   access_token?: string;
   client_id?: string;
@@ -49,12 +49,7 @@ export const useIntegrations = () => {
         console.log('Integrations fetched:', data);
         // A API retorna os dados dentro da propriedade "integrations"
         const integrationsList = data.integrations || [];
-        // Converter is_active para boolean se vier como número
-        const normalizedIntegrations = integrationsList.map((integration: any) => ({
-          ...integration,
-          is_active: Boolean(integration.is_active)
-        }));
-        setIntegrations(Array.isArray(normalizedIntegrations) ? normalizedIntegrations : []);
+        setIntegrations(Array.isArray(integrationsList) ? integrationsList : []);
       } else {
         console.error('Failed to fetch integrations:', response.statusText);
         setIntegrations([]);

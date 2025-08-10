@@ -32,7 +32,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
   const [formData, setFormData] = useState<CreateIntegrationData>({
     name: '',
     integration_type: '',
-    is_active: true,
+    is_active: 1, // 1 = ativo
     phone_number: '',
     access_token: '',
     client_id: '',
@@ -44,7 +44,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       setFormData({
         name: integration.name || '',
         integration_type: integration.integration_type || '',
-        is_active: integration.is_active ?? true,
+        is_active: integration.is_active ?? 1, // Usar padrão do banco
         phone_number: integration.phone_number || '',
         // Campos sensíveis não são preenchidos em modo de edição
         access_token: '',
@@ -55,7 +55,7 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
       setFormData({
         name: '',
         integration_type: 'movidesk',
-        is_active: true,
+        is_active: 1, // 1 = ativo no banco
         phone_number: '',
         access_token: '',
         client_id: '',
@@ -182,8 +182,8 @@ export const IntegrationForm: React.FC<IntegrationFormProps> = ({
             <div className="flex items-center space-x-2">
               <Switch
                 id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                checked={formData.is_active === 1} // Converter para boolean para o Switch
+                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked ? 1 : 0 })} // Converter de volta para número
               />
               <Label htmlFor="is_active">Ativo</Label>
             </div>
