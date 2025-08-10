@@ -312,31 +312,37 @@ export const BotForm: React.FC<BotFormProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="integration">Integração</Label>
-            <Select
-              value={formData.integration_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, integration_id: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma integração" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border z-50">
-                <SelectItem value="none">
-                  <div className="flex items-center space-x-2">
-                    <span>Nenhuma</span>
-                  </div>
-                </SelectItem>
-                {integrations
-                  .filter(integration => integration.is_active === 1) // 1 = ativo no banco
-                  .map((integration) => (
-                    <SelectItem key={integration.id} value={integration.id}>
-                      <div className="flex items-center space-x-2">
-                        <img src="/lovable-uploads/569333c2-882a-47f0-a979-7cb705164fbd.png" alt="Movidesk" className="w-4 h-4 object-contain" />
-                        <span>{integration.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+            {integrations.length > 0 ? (
+              <Select
+                value={formData.integration_id}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, integration_id: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma integração" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  <SelectItem value="none">
+                    <div className="flex items-center space-x-2">
+                      <span>Nenhuma</span>
+                    </div>
+                  </SelectItem>
+                  {integrations
+                    .filter(integration => integration.is_active === 1) // 1 = ativo no banco
+                    .map((integration) => (
+                      <SelectItem key={integration.id} value={integration.id}>
+                        <div className="flex items-center space-x-2">
+                          <img src="/lovable-uploads/569333c2-882a-47f0-a979-7cb705164fbd.png" alt="Movidesk" className="w-4 h-4 object-contain" />
+                          <span>{integration.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="h-10 bg-muted animate-pulse rounded-md flex items-center px-3">
+                <span className="text-muted-foreground text-sm">Carregando integrações...</span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
