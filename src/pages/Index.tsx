@@ -189,10 +189,12 @@ const Index = () => {
               onToggleInfoExpanded={() => setIsInfoExpanded(!isInfoExpanded)}
             />
 
-            <ChatInfo 
-              selectedChat={selectedChat} 
-              isExpanded={isInfoExpanded} 
-            />
+            {isInfoExpanded && (
+              <ChatInfo 
+                selectedChat={selectedChat} 
+                isExpanded={isInfoExpanded} 
+              />
+            )}
           </>
         );
 
