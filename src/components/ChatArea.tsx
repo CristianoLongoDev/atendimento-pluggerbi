@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { validateAndSanitizeMessage } from '@/lib/validation';
 
@@ -21,6 +22,8 @@ interface ChatAreaProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
   onTransferToHuman: () => void;
+  isInfoExpanded?: boolean;
+  onToggleInfoExpanded?: () => void;
 }
 
 const ChatArea: React.FC<ChatAreaProps> = ({
@@ -28,6 +31,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   messages,
   onSendMessage,
   onTransferToHuman,
+  isInfoExpanded = false,
+  onToggleInfoExpanded,
 }) => {
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -126,9 +131,31 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                 Transferir
               </Button>
             )}
-            <Button size="sm" variant="ghost">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="ghost">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {onToggleInfoExpanded && (
+                  <DropdownMenuItem onClick={onToggleInfoExpanded}>
+                    <Info className="w-4 h-4 mr-2" />
+                    {isInfoExpanded ? (
+                      <>
+                        <ChevronUp className="w-4 h-4 mr-1" />
+                        Ocultar informações
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4 mr-1" />
+                        Exibir informações
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

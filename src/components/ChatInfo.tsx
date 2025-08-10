@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,11 +21,10 @@ import {
 
 interface ChatInfoProps {
   selectedChat: any;
+  isExpanded: boolean;
 }
 
-const ChatInfo: React.FC<ChatInfoProps> = ({ selectedChat }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+const ChatInfo: React.FC<ChatInfoProps> = ({ selectedChat, isExpanded }) => {
   if (!selectedChat) {
     return (
       <div className="w-80 bg-card border-l border-border p-4">
@@ -49,26 +47,18 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ selectedChat }) => {
 
   return (
     <div className="w-80 bg-card border-l border-border flex flex-col h-full overflow-y-auto">
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">Informações do Cliente</h3>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Info className="w-4 h-4 mr-1" />
-                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            </CollapsibleTrigger>
+      <div className="p-4 border-b border-border">
+        <h3 className="font-semibold mb-3">Informações do Cliente</h3>
+        
+        <div className="text-center mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-2">
+            {selectedChat.customerName.charAt(0)}
           </div>
-          
-          <div className="text-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-2">
-              {selectedChat.customerName.charAt(0)}
-            </div>
-            <h4 className="font-medium">{selectedChat.customerName}</h4>
-          </div>
+          <h4 className="font-medium">{selectedChat.customerName}</h4>
         </div>
+      </div>
 
+      <Collapsible open={isExpanded}>
         <CollapsibleContent>
           <div className="p-4 border-b border-border">
             <div className="space-y-2 text-sm">

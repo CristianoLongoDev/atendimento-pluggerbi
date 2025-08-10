@@ -38,6 +38,7 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState('conversations');
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   
   // Channel management states
   const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
@@ -184,9 +185,14 @@ const Index = () => {
               messages={selectedChatId ? messages[selectedChatId] || [] : []}
               onSendMessage={handleSendMessage}
               onTransferToHuman={handleTransferToHuman}
+              isInfoExpanded={isInfoExpanded}
+              onToggleInfoExpanded={() => setIsInfoExpanded(!isInfoExpanded)}
             />
 
-            <ChatInfo selectedChat={selectedChat} />
+            <ChatInfo 
+              selectedChat={selectedChat} 
+              isExpanded={isInfoExpanded} 
+            />
           </>
         );
 
