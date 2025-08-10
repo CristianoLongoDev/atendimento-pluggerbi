@@ -37,6 +37,7 @@ export const BotForm: React.FC<BotFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    agent_name: '',
     integration_id: '',
     system_prompt: ''
   });
@@ -55,12 +56,14 @@ export const BotForm: React.FC<BotFormProps> = ({
       console.log('BotForm - Bot integration_id:', (bot as any).integration_id);
       setFormData({
         name: bot.name || '',
+        agent_name: (bot as any).agent_name || '',
         integration_id: (bot as any).integration_id || 'none',
         system_prompt: bot.system_prompt || ''
       });
     } else if (mode === 'create') {
       setFormData({
         name: '',
+        agent_name: '',
         integration_id: 'none',
         system_prompt: ''
       });
@@ -201,6 +204,11 @@ export const BotForm: React.FC<BotFormProps> = ({
         system_prompt: sanitizeHtml(formData.system_prompt)
       };
 
+      // Add agent_name if provided
+      if (formData.agent_name.trim()) {
+        botData.agent_name = sanitizeHtml(formData.agent_name);
+      }
+
       // Only add integration_id if it's not empty and not "none"
       if (formData.integration_id && formData.integration_id !== 'none') {
         botData.integration_id = formData.integration_id;
@@ -213,6 +221,7 @@ export const BotForm: React.FC<BotFormProps> = ({
       const botDataChanged = mode === 'create' || 
         (bot && (
           bot.name !== formData.name || 
+          ((bot as any)?.agent_name || '') !== formData.agent_name ||
           originalIntegration !== currentIntegration || 
           bot.system_prompt !== formData.system_prompt
         ));
@@ -271,6 +280,7 @@ export const BotForm: React.FC<BotFormProps> = ({
       onOpenChange(false);
       setFormData({
         name: '',
+        agent_name: '',
         integration_id: 'none',
         system_prompt: ''
       });
@@ -307,6 +317,16 @@ export const BotForm: React.FC<BotFormProps> = ({
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Nome do bot"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="agent_name">Nome do Agente</Label>
+            <Input
+              id="agent_name"
+              value={formData.agent_name}
+              onChange={(e) => setFormData(prev => ({ ...prev, agent_name: e.target.value }))}
+              placeholder="Nome do agente responsável"
             />
           </div>
 
