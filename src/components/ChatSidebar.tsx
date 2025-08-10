@@ -7,6 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+interface Chat {
+  id: string;
+  status: 'ai' | 'human' | 'pending' | 'closed';
+  unreadCount: number;
+}
+
 interface ChatSidebarProps {
   selectedFilter: string;
   onFilterChange: (filter: string) => void;
@@ -14,6 +20,7 @@ interface ChatSidebarProps {
   onSearchChange: (term: string) => void;
   selectedSection: string;
   onSectionChange: (section: string) => void;
+  chats: Chat[];
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -23,14 +30,21 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onSearchChange,
   selectedSection,
   onSectionChange,
+  chats,
 }) => {
   const [isConversationsExpanded, setIsConversationsExpanded] = useState(selectedSection === 'conversations');
   
+  // Calculate counts dynamically based on unread chats only
+  const unreadChats = chats.filter(chat => chat.unreadCount > 0);
+  const unreadAiChats = unreadChats.filter(chat => chat.status === 'ai');
+  const unreadHumanChats = unreadChats.filter(chat => chat.status === 'human');
+  const unreadPendingChats = unreadChats.filter(chat => chat.status === 'pending');
+  
   const filters = [
-    { id: 'all', label: 'Todas', icon: MessageSquare, count: 12 },
-    { id: 'ai', label: 'IA Ativa', icon: Bot, count: 8 },
-    { id: 'human', label: 'Atendimento Humano', icon: User, count: 3 },
-    { id: 'pending', label: 'Pendentes', icon: Filter, count: 1 },
+    { id: 'all', label: 'Todas', icon: MessageSquare, count: unreadChats.length },
+    { id: 'ai', label: 'IA Ativa', icon: Bot, count: unreadAiChats.length },
+    { id: 'human', label: 'Atendimento Humano', icon: User, count: unreadHumanChats.length },
+    { id: 'pending', label: 'Pendentes', icon: Filter, count: unreadPendingChats.length },
   ];
 
   const configSections = [

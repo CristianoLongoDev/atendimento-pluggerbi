@@ -446,14 +446,15 @@ const Index = () => {
       <Header />
       
       <div className="flex-1 flex overflow-hidden">
-        <ChatSidebar
-          selectedFilter={selectedFilter}
-          onFilterChange={setSelectedFilter}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedSection={selectedSection}
-          onSectionChange={setSelectedSection}
-        />
+              <ChatSidebar
+                selectedFilter={selectedFilter}
+                onFilterChange={setSelectedFilter}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                selectedSection={selectedSection}
+                onSectionChange={setSelectedSection}
+                chats={chats}
+              />
         
         {renderMainContent()}
       </div>
