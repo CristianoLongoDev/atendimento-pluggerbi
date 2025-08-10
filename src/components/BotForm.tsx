@@ -51,6 +51,8 @@ export const BotForm: React.FC<BotFormProps> = ({
   // Update form data when bot changes
   useEffect(() => {
     if (mode === 'edit' && bot) {
+      console.log('BotForm - Edit mode, bot data:', bot);
+      console.log('BotForm - Bot integration_id:', (bot as any).integration_id);
       setFormData({
         name: bot.name || '',
         integration_id: (bot as any).integration_id || 'none',
