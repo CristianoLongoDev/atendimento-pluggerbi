@@ -49,7 +49,12 @@ export const useIntegrations = () => {
         console.log('Integrations fetched:', data);
         // A API retorna os dados dentro da propriedade "integrations"
         const integrationsList = data.integrations || [];
-        setIntegrations(Array.isArray(integrationsList) ? integrationsList : []);
+        // Converter is_active para boolean se vier como número
+        const normalizedIntegrations = integrationsList.map((integration: any) => ({
+          ...integration,
+          is_active: Boolean(integration.is_active)
+        }));
+        setIntegrations(Array.isArray(normalizedIntegrations) ? normalizedIntegrations : []);
       } else {
         console.error('Failed to fetch integrations:', response.statusText);
         setIntegrations([]);
