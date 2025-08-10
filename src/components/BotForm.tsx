@@ -68,6 +68,7 @@ export const BotForm: React.FC<BotFormProps> = ({
   // Load integrations and functions when dialog opens
   useEffect(() => {
     if (open) {
+      console.log('BotForm - Dialog opened, fetching integrations...');
       fetchIntegrations();
       
       if (selectedBotId) {
@@ -85,6 +86,12 @@ export const BotForm: React.FC<BotFormProps> = ({
       }
     }
   }, [open, selectedBotId, bot, mode]);
+
+  // Debug log for integrations
+  useEffect(() => {
+    console.log('BotForm - Integrations state updated:', integrations);
+    console.log('BotForm - Current integration_id in form:', formData.integration_id);
+  }, [integrations, formData.integration_id]);
 
   const loadBotFunctions = async (botId: string) => {
     const result = await fetchBotFunctions(botId);
