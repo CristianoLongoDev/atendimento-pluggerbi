@@ -184,7 +184,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return 'pending';
         })(),
         unreadCount: conv.unread_count || 0,
-        isActive: conv.status === 'active'
+        isActive: conv.status === 'active',
+        botAgentName: conv.bot_agent_name || null
       }));
       
       setChats(updatedChats);

@@ -192,7 +192,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                     <User className="w-3 h-3" />
                   )}
                   <span className="text-xs opacity-80">
-                    {message.sender === 'ai' ? 'IA' : 'Atendente'}
+                    {message.sender === 'ai' ? 'IA' : (selectedChat.botAgentName || 'Atendente')}
                   </span>
                 </div>
               )}
