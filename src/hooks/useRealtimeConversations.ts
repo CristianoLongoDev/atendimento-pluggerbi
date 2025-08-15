@@ -246,11 +246,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   const sendMessage = useCallback((chatId: string, content: string) => {
     if (!isConnected) {
-      console.warn('WebSocket not connected. Cannot send message.');
+      console.warn('❌ WebSocket not connected. Cannot send message.');
+      return;
+    }
+
+    if (!chatId) {
+      console.warn('❌ No chat ID provided. Cannot send message.');
       return;
     }
 
     console.log('📤 SENDING MESSAGE to chat:', chatId, 'content:', content);
+    console.log('🌐 WebSocket connection status:', isConnected);
 
     const messagePayload = {
       type: 'send_message',
@@ -262,7 +268,14 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     };
 
     console.log('📤 Sending message payload:', messagePayload);
-    wsSendMessage(messagePayload);
+    
+    try {
+      wsSendMessage(messagePayload);
+      console.log('✅ Message sent successfully via WebSocket');
+    } catch (error) {
+      console.error('❌ Error sending message via WebSocket:', error);
+      return;
+    }
     
     // Optimistically add message to local state
     const tempMessage: Message = {
@@ -275,14 +288,22 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       })
     };
 
-    setMessages(prev => ({
-      ...prev,
-      [chatId]: [...(prev[chatId] || []), tempMessage]
-    }));
+    console.log('📝 Adding optimistic message to local state:', tempMessage);
+
+    setMessages(prev => {
+      const currentMessages = prev[chatId] || [];
+      const updatedMessages = {
+        ...prev,
+        [chatId]: [...currentMessages, tempMessage]
+      };
+      console.log('📊 Updated messages state for chat:', chatId, updatedMessages[chatId]);
+      return updatedMessages;
+    });
 
     // Update chat last message
     setChats(prev => prev.map(chat => {
       if (chat.id === chatId) {
+        console.log('📝 Updating chat last message for:', chatId);
         return {
           ...chat,
           lastMessage: content,
