@@ -184,13 +184,11 @@ const IntentForm: React.FC<IntentFormProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Nenhuma função</SelectItem>
-                    {functions
-                      .filter(func => func.used === null || func.used === '')
-                      .map((func) => (
-                        <SelectItem key={func.function_id} value={func.function_id}>
-                          {func.name || func.function_id} {func.description && `- ${func.description}`}
-                        </SelectItem>
-                      ))}
+                    {functions.map((func) => (
+                      <SelectItem key={func.function_id} value={func.function_id}>
+                        {func.name || func.function_id} {func.description && `- ${func.description}`}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
