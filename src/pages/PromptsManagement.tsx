@@ -107,8 +107,8 @@ const PromptsManagement = () => {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Gerenciar Prompts" 
-        description="Configure e gerencie os prompts personalizados para seus bots de atendimento" 
+        title="Gerenciar Eventos" 
+        description="Configure e gerencie os eventos personalizados para seus bots de atendimento"
       />
 
       <Card>
@@ -137,11 +137,11 @@ const PromptsManagement = () => {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Prompts do Bot</CardTitle>
+              <CardTitle>Eventos do Bot</CardTitle>
               {prompts.length > 0 && (
                 <Button onClick={handleCreate} className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
-                  Novo Prompt
+                  Novo Evento
                 </Button>
               )}
             </div>
@@ -164,7 +164,7 @@ const PromptsManagement = () => {
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">Nenhum prompt encontrado para este bot.</p>
                 <Button onClick={handleCreate}>
-                  Criar primeiro prompt
+                  + Novo Evento
                 </Button>
               </div>
             ) : (

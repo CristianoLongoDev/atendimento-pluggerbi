@@ -52,7 +52,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     { id: 'agent-bots', label: 'Agentes Bots', icon: Bot },
     { id: 'channels', label: 'Canais Atendimento', icon: Settings },
     { id: 'integrations', label: 'Integrações', icon: Puzzle },
-    { id: 'prompts', label: 'Prompts', icon: FileText },
+    { id: 'prompts', label: 'Eventos', icon: FileText },
     { id: 'roles', label: 'Funções', icon: ShieldCheck },
   ];
 
