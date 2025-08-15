@@ -47,7 +47,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
         name: intent.name || '',
         intention: intent.intention || '',
         prompt: intent.prompt || '',
-        function_id: intent.function_id || '',
+        function_id: intent.function_id || 'none',
         active: intent.active ?? true,
       });
     } else {
@@ -55,7 +55,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
         name: '',
         intention: '',
         prompt: '',
-        function_id: '',
+        function_id: 'none',
         active: true,
       });
     }
@@ -89,7 +89,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
           name: formData.name,
           intention: formData.intention,
           prompt: formData.prompt,
-          function_id: formData.function_id || null,
+          function_id: formData.function_id === 'none' ? null : formData.function_id || null,
           active: formData.active,
         });
       } else {
@@ -97,7 +97,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
           name: formData.name,
           intention: formData.intention,
           prompt: formData.prompt,
-          function_id: formData.function_id || null,
+          function_id: formData.function_id === 'none' ? null : formData.function_id || null,
           active: formData.active,
         });
       }
@@ -183,7 +183,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
                     <SelectValue placeholder="Selecione uma função disponível" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhuma função</SelectItem>
+                    <SelectItem value="none">Nenhuma função</SelectItem>
                     {functions
                       .filter(func => func.used === null || func.used === '')
                       .map((func) => (
