@@ -12,6 +12,7 @@ import ChatInfo from '@/components/ChatInfo';
 import { ChannelForm } from '@/components/ChannelForm';
 import { BotList } from '@/components/BotList';
 import PromptsManagement from '@/pages/PromptsManagement';
+import IntentionsManagement from '@/pages/IntentionsManagement';
 import FunctionsManagement from '@/pages/FunctionsManagement';
 import IntegrationsManagement from '@/pages/IntegrationsManagement';
 import PageHeader from '@/components/PageHeader';
@@ -431,6 +432,13 @@ const Index = () => {
         return (
           <div className="flex-1 p-6">
             <PromptsManagement />
+          </div>
+        );
+
+      case 'intents':
+        return (
+          <div className="flex-1 p-6">
+            <IntentionsManagement />
           </div>
         );
 
