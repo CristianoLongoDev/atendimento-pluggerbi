@@ -64,10 +64,15 @@ export const useIntents = () => {
     try {
       const headers = await getAuthHeaders();
       
+      // Remove campos null do payload
+      const cleanedData = Object.fromEntries(
+        Object.entries(intentData).filter(([_, value]) => value !== null && value !== undefined)
+      );
+      
       const response = await fetch(`https://atendimento.pluggerbi.com/bots/${intentData.bot_id}/intents`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(intentData),
+        body: JSON.stringify(cleanedData),
       });
 
       if (!response.ok) {
@@ -94,10 +99,15 @@ export const useIntents = () => {
     try {
       const headers = await getAuthHeaders();
       
+      // Remove campos null do payload
+      const cleanedData = Object.fromEntries(
+        Object.entries(intentData).filter(([_, value]) => value !== null && value !== undefined)
+      );
+      
       const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify(intentData),
+        body: JSON.stringify(cleanedData),
       });
 
       if (!response.ok) {
