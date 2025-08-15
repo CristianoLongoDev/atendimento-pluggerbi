@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { runAuthDiagnostics } from '@/lib/authValidation';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const Header: React.FC = () => {
   const { profile, signOut, isAdmin } = useAuth();
@@ -44,6 +46,31 @@ const Header: React.FC = () => {
   const handleAuthDiagnostics = async () => {
     console.log('🚀 Executando diagnóstico de autenticação manual...');
     await runAuthDiagnostics();
+  };
+
+  const copyTokenToClipboard = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        await navigator.clipboard.writeText(session.access_token);
+        toast({
+          title: "Token copiado!",
+          description: "Token de acesso copiado para a área de transferência.",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Nenhum token encontrado.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar o token.",
+        variant: "destructive"
+      });
+    }
   };
 
   const toggleTheme = () => {
@@ -114,6 +141,10 @@ const Header: React.FC = () => {
             <DropdownMenuItem onClick={handleAuthDiagnostics}>
               <Settings className="mr-2 h-4 w-4" />
               <span>Testar Autenticação</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={copyTokenToClipboard}>
+              <FileText className="mr-2 h-4 w-4" />
+              <span>Copiar Token (Postman)</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
