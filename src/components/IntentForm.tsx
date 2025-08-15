@@ -4,10 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useIntents, Intent } from '@/hooks/useIntents';
+import { useFunctions } from '@/hooks/useFunctions';
 import { v4 as uuidv4 } from 'uuid';
 
 interface IntentFormProps {
@@ -29,6 +31,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
 }) => {
   const { toast } = useToast();
   const { createIntent, updateIntent, loading } = useIntents();
+  const { functions, fetchFunctions } = useFunctions();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -57,6 +60,12 @@ const IntentForm: React.FC<IntentFormProps> = ({
       });
     }
   }, [intent, mode]);
+
+  useEffect(() => {
+    if (open && botId) {
+      fetchFunctions(botId);
+    }
+  }, [open, botId, fetchFunctions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,14 +174,25 @@ const IntentForm: React.FC<IntentFormProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="function_id">ID da Função (opcional)</Label>
-                <Input
-                  id="function_id"
+                <Label htmlFor="function_id">Função (opcional)</Label>
+                <Select
                   value={formData.function_id}
-                  onChange={(e) => setFormData({ ...formData, function_id: e.target.value })}
-                  placeholder="ID da função a ser executada quando esta intenção for detectada"
-                  maxLength={150}
-                />
+                  onValueChange={(value) => setFormData({ ...formData, function_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma função disponível" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nenhuma função</SelectItem>
+                    {functions
+                      .filter(func => func.used === null || func.used === '')
+                      .map((func) => (
+                        <SelectItem key={func.function_id} value={func.function_id}>
+                          {func.name || func.function_id} {func.description && `- ${func.description}`}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center space-x-2">
