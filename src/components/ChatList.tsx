@@ -3,6 +3,8 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Bot, User } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Chat {
   id: string;
@@ -54,6 +56,15 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
     return statusMap[status as keyof typeof statusMap] || status;
   };
 
+  const formatTimestamp = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR });
+    } catch (error) {
+      return timestamp; // Fallback para o valor original caso haja erro
+    }
+  };
+
   return (
     <div className="space-y-1">
       {chats.map((chat) => (
@@ -80,7 +91,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <h4 className="font-medium truncate">{chat.customerName}</h4>
-                <span className="text-xs text-muted-foreground">{chat.timestamp}</span>
+                <span className="text-xs text-muted-foreground">{formatTimestamp(chat.timestamp)}</span>
               </div>
               
               <div className="flex items-center space-x-1 mb-2">
