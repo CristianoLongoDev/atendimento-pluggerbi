@@ -84,10 +84,13 @@ const IntentForm: React.FC<IntentFormProps> = ({
       return;
     }
 
+    console.log('Iniciando salvamento da intenção:', formData);
+
     try {
       let result;
       
       if (mode === 'create') {
+        console.log('Criando nova intenção...');
         result = await createIntent({
           id: uuidv4(),
           bot_id: botId,
@@ -98,6 +101,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
           active: formData.active,
         });
       } else {
+        console.log('Atualizando intenção existente...');
         result = await updateIntent(botId, intent!.id, {
           name: formData.name,
           intention: formData.intention,
@@ -107,6 +111,8 @@ const IntentForm: React.FC<IntentFormProps> = ({
         });
       }
 
+      console.log('Resultado do salvamento:', result);
+
       if (result.success) {
         toast({
           title: "Sucesso",
@@ -115,6 +121,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
         onSuccess();
         onOpenChange(false);
       } else {
+        console.error('Erro no resultado:', result.error);
         toast({
           title: "Erro",
           description: result.error || "Erro ao salvar intenção",
@@ -122,6 +129,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
         });
       }
     } catch (error) {
+      console.error('Erro inesperado:', error);
       toast({
         title: "Erro",
         description: "Erro inesperado ao salvar intenção",
