@@ -59,7 +59,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
         active: true,
       });
     }
-  }, [intent, mode]);
+  }, [intent, mode, open]);
 
   useEffect(() => {
     if (open && botId) {
