@@ -64,9 +64,13 @@ const IntentForm: React.FC<IntentFormProps> = ({
   useEffect(() => {
     if (open && botId) {
       console.log('Fetching functions for bot:', botId);
-      fetchFunctions(botId);
+      const timeoutId = setTimeout(() => {
+        fetchFunctions(botId);
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [open, botId, fetchFunctions]);
+  }, [open, botId]);
 
   useEffect(() => {
     console.log('Functions updated:', functions);

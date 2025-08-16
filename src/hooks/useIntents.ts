@@ -57,7 +57,7 @@ export const useIntents = () => {
     }
   };
 
-  const createIntent = async (intentData: Omit<Intent, 'created_at' | 'updated_at'>) => {
+  const createIntent = async (intentData: Omit<Intent, 'created_at' | 'updated_at'>, retryCount = 0) => {
     setLoading(true);
     setError(null);
     
@@ -76,6 +76,13 @@ export const useIntents = () => {
       });
 
       if (!response.ok) {
+        // Retry on 503 errors up to 2 times
+        if (response.status === 503 && retryCount < 2) {
+          setLoading(false);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return createIntent(intentData, retryCount + 1);
+        }
+        
         const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
         throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
       }

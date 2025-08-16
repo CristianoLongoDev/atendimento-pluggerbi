@@ -25,6 +25,7 @@ export const useFunctions = () => {
   const [functions, setFunctions] = useState<BotFunction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cache, setCache] = useState<Map<string, { data: BotFunction[], timestamp: number }>>(new Map());
 
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -34,7 +35,14 @@ export const useFunctions = () => {
     };
   };
 
-  const fetchFunctions = async (botId: string) => {
+  const fetchFunctions = async (botId: string, retryCount = 0) => {
+    // Check cache first (valid for 30 seconds)
+    const cached = cache.get(botId);
+    if (cached && Date.now() - cached.timestamp < 30000) {
+      setFunctions(cached.data);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
@@ -45,14 +53,29 @@ export const useFunctions = () => {
       });
 
       if (!response.ok) {
+        // Retry on 503 errors up to 2 times
+        if (response.status === 503 && retryCount < 2) {
+          setTimeout(() => fetchFunctions(botId, retryCount + 1), 1000 * (retryCount + 1));
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      setFunctions(data.functions || []);
+      const functionsData = data.functions || [];
+      
+      // Update cache
+      setCache(prev => new Map(prev.set(botId, { data: functionsData, timestamp: Date.now() })));
+      setFunctions(functionsData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar funções');
-      setFunctions([]);
+      // Use cached data if available and error is network related
+      if (cached && (err instanceof Error && (err.message.includes('503') || err.message.includes('Failed to fetch')))) {
+        setFunctions(cached.data);
+        setError('Usando dados em cache devido a instabilidade da API');
+      } else {
+        setError(err instanceof Error ? err.message : 'Erro ao carregar funções');
+        setFunctions([]);
+      }
     } finally {
       setLoading(false);
     }
