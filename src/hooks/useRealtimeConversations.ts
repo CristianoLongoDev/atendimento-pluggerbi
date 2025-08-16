@@ -98,10 +98,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: message_id || `msg_${Date.now()}`,
         content: content,
         sender: sender === 'user' ? 'customer' : sender, // Map 'user' to 'customer'
-        timestamp: timestamp ? new Date(timestamp).toLocaleTimeString('pt-BR', { 
+        timestamp: timestamp ? new Date(timestamp).toLocaleDateString('pt-BR', { 
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
           hour: '2-digit', 
           minute: '2-digit' 
-        }) : new Date().toLocaleTimeString('pt-BR', { 
+        }) : new Date().toLocaleDateString('pt-BR', { 
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
           hour: '2-digit', 
           minute: '2-digit' 
         }),
@@ -128,12 +134,18 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return {
             ...chat,
             lastMessage: content,
-            timestamp: timestamp ? new Date(timestamp).toLocaleTimeString('pt-BR', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            }) : new Date().toLocaleTimeString('pt-BR', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            timestamp: timestamp ? new Date(timestamp).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }) : new Date().toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit', 
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
             }),
             unreadCount: chat.unreadCount + 1,
             status: sender === 'customer' || sender === 'user' ? 'pending' : chat.status
@@ -168,9 +180,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         customerName: conv.contact_name || `Cliente ${conv.id}`,
         lastMessage: conv.last_message || 'Sem mensagens',
         timestamp: conv.last_message_time ? 
-          new Date(conv.last_message_time).toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          new Date(conv.last_message_time).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
           }) : '',
         channel: (() => {
           const channelValue = conv.channel_type || conv.channel;
@@ -205,7 +220,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           id: msg.id,
           content: msg.message_text || msg.content,
           sender: msg.sender === 'user' ? 'customer' : msg.sender,
-          timestamp: new Date(msg.timestamp).toLocaleTimeString('pt-BR', { 
+          timestamp: new Date(msg.timestamp).toLocaleDateString('pt-BR', { 
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
             hour: '2-digit', 
             minute: '2-digit' 
           }),
@@ -228,7 +246,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: msg.id,
         content: msg.message_text,
         sender: msg.sender === 'user' ? 'customer' : msg.sender,
-        timestamp: new Date(msg.timestamp).toLocaleTimeString('pt-BR', { 
+        timestamp: new Date(msg.timestamp).toLocaleDateString('pt-BR', { 
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
           hour: '2-digit', 
           minute: '2-digit' 
         }),
@@ -282,9 +303,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       id: `temp_${Date.now()}`,
       content,
       sender: 'agent',
-      timestamp: new Date().toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      timestamp: new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric', 
+        hour: '2-digit',
+        minute: '2-digit'
       })
     };
 
