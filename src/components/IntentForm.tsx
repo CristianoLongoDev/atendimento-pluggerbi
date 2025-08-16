@@ -63,9 +63,14 @@ const IntentForm: React.FC<IntentFormProps> = ({
 
   useEffect(() => {
     if (open && botId) {
+      console.log('Fetching functions for bot:', botId);
       fetchFunctions(botId);
     }
   }, [open, botId, fetchFunctions]);
+
+  useEffect(() => {
+    console.log('Functions updated:', functions);
+  }, [functions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
