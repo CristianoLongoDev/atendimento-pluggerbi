@@ -43,6 +43,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
 
   useEffect(() => {
     if (intent && mode === 'edit') {
+      console.log('Setting form data for edit mode:', intent);
       setFormData({
         name: intent.name || '',
         intention: intent.intention || '',
