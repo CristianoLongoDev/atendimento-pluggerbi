@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 interface Chat {
   id: string;
-  status: 'ai' | 'human' | 'pending' | 'closed';
+  status: 'ai' | 'human' | 'pending' | 'closed' | 'waiting';
   unreadCount: number;
 }
 

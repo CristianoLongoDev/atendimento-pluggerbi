@@ -67,7 +67,9 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
               if (ws.current) {
                 const subscribeMessage = {
                   type: 'subscribe_conversations',
-                  data: {}
+                  data: {
+                    conversation_ids: [] // Empty array = all conversations
+                  }
                 };
                 ws.current.send(JSON.stringify(subscribeMessage));
               }

@@ -10,12 +10,16 @@ interface Chat {
   id: string;
   customerName: string;
   customerAvatar?: string;
+  customerPhone?: string;
+  customerEmail?: string;
   lastMessage: string;
   timestamp: string;
   channel: 'whatsapp' | 'instagram' | 'facebook' | 'widget';
-  status: 'ai' | 'human' | 'pending' | 'closed';
+  status: 'ai' | 'human' | 'pending' | 'closed' | 'waiting';
   unreadCount: number;
   isActive: boolean;
+  botAgentName?: string;
+  metadata?: any;
 }
 
 interface GroupedChat {
@@ -25,7 +29,7 @@ interface GroupedChat {
   channel: 'whatsapp' | 'instagram' | 'facebook' | 'widget';
   lastMessage: string;
   timestamp: string;
-  status: 'ai' | 'human' | 'pending' | 'closed';
+  status: 'ai' | 'human' | 'pending' | 'closed' | 'waiting';
   unreadCount: number;
   conversationCount: number;
   conversations: Chat[];
@@ -109,7 +113,8 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
       ai: 'IA',
       human: 'Humano',
       pending: 'Pendente',
-      closed: 'Finalizado'
+      closed: 'Finalizado',
+      waiting: 'Aguardando'
     };
     return statusMap[status as keyof typeof statusMap] || status;
   };

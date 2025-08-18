@@ -8,18 +8,35 @@ interface Message {
   timestamp: string;
   sender: 'customer' | 'ai' | 'agent';
   channel?: string;
+  message_type?: string;
+  tokens?: number;
+  metadata?: {
+    contact?: {
+      id?: string;
+      name?: string;
+      phone?: string;
+    };
+    bot?: {
+      name?: string;
+      agent_name?: string;
+    };
+  };
 }
 
 interface Chat {
   id: string;
   customerName: string;
   customerAvatar?: string;
+  customerPhone?: string;
+  customerEmail?: string;
   lastMessage: string;
   timestamp: string;
   channel: 'whatsapp' | 'instagram' | 'facebook' | 'widget';
-  status: 'ai' | 'human' | 'pending' | 'closed';
+  status: 'ai' | 'human' | 'pending' | 'closed' | 'waiting';
   unreadCount: number;
   isActive: boolean;
+  botAgentName?: string;
+  metadata?: any;
 }
 
 interface UseRealtimeConversationsReturn {
@@ -72,21 +89,26 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     return unsubscribe;
   }, [subscribe]);
 
-  const handleNewMessage = useCallback((messageData: any) => {
-    console.log('🔔 NEW MESSAGE RECEIVED:', messageData);
+  const handleNewMessage = useCallback((data: any) => {
+    console.log('🔔 NEW MESSAGE RECEIVED:', data);
     
-    if (!messageData) {
+    if (!data || !data.data) {
       console.log('❌ No message data received');
       return;
     }
 
-    // Extract data - note that content could be in different fields
-    const conversation_id = messageData.conversation_id;
-    const message_id = messageData.id || messageData.message_id;
-    const content = messageData.message_text || messageData.content || '';
-    const sender = messageData.sender || 'customer';
+    const messageData = data.data;
+    const conversation_id = data.conversation_id;
+    
+    // Extract data according to new API structure
+    const message_id = messageData.id;
+    const content = messageData.content;
+    const sender = messageData.sender === 'user' ? 'customer' : messageData.sender;
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
+    const message_type = messageData.message_type;
+    const tokens = messageData.tokens;
+    const metadata = messageData.metadata;
     
     console.log('📍 Processing new message for conversation:', conversation_id);
     console.log('💬 Message details:', { message_id, content, sender, timestamp });
@@ -94,10 +116,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     // Add new message to the messages state with force update
     setMessages(prev => {
       const currentMessages = prev[conversation_id] || [];
-      const newMessage = {
+      const newMessage: Message = {
         id: message_id || `msg_${Date.now()}`,
         content: content,
-        sender: sender === 'user' ? 'customer' : sender, // Map 'user' to 'customer'
+        sender: sender,
         timestamp: timestamp ? new Date(timestamp).toLocaleDateString('pt-BR', { 
           day: '2-digit',
           month: '2-digit',
@@ -111,7 +133,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           hour: '2-digit', 
           minute: '2-digit' 
         }),
-        channel
+        channel,
+        message_type,
+        tokens,
+        metadata
       };
       
       console.log('🔄 Adding message to conversation:', conversation_id, newMessage);
@@ -175,32 +200,32 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       });
       
       // Update chats list - mapping status_attendance to our status
-      const updatedChats = data.conversations.map((conv: any) => ({
+      const updatedChats = data.conversations.map((conv: any): Chat => ({
         id: conv.id,
-        customerName: conv.contact_name || `Cliente ${conv.id}`,
+        customerName: conv.customer_name || `Cliente ${conv.id}`,
+        customerPhone: conv.metadata?.contact?.phone,
+        customerEmail: conv.metadata?.contact?.email,
+        customerAvatar: conv.metadata?.contact?.avatar,
         lastMessage: conv.last_message || 'Sem mensagens',
-        timestamp: conv.last_message_time ? 
-          new Date(conv.last_message_time).toLocaleDateString('pt-BR', {
+        timestamp: conv.updated_at ? 
+          new Date(conv.updated_at).toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: '2-digit', 
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
           }) : '',
-        channel: (() => {
-          const channelValue = conv.channel_type || conv.channel;
-          return (channelValue === 'whatsapp' || channelValue === 'instagram' || channelValue === 'facebook' || channelValue === 'widget') 
-            ? channelValue : 'widget';
-        })(),
+        channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
         status: (() => {
-          if (conv.status_attendance === 'bot') return 'ai';
-          if (conv.status_attendance === 'human') return 'human';
-          if (conv.status_attendance === 'pending') return 'pending';
+          if (conv.status === 'ai') return 'ai';
+          if (conv.status === 'human') return 'human';
+          if (conv.status === 'waiting') return 'waiting';
           return 'pending';
         })(),
         unreadCount: conv.unread_count || 0,
-        isActive: conv.status === 'active',
-        botAgentName: conv.bot_agent_name || null
+        isActive: conv.status !== 'closed',
+        botAgentName: conv.metadata?.bot?.agent_name,
+        metadata: conv.metadata
       }));
       
       setChats(updatedChats);
@@ -218,7 +243,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         
         messagesByConversation[conversationId].push({
           id: msg.id,
-          content: msg.message_text || msg.content,
+          content: msg.content,
           sender: msg.sender === 'user' ? 'customer' : msg.sender,
           timestamp: new Date(msg.timestamp).toLocaleDateString('pt-BR', { 
             day: '2-digit',
@@ -227,7 +252,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
             hour: '2-digit', 
             minute: '2-digit' 
           }),
-          channel: msg.channel
+          channel: msg.channel,
+          message_type: msg.message_type,
+          tokens: msg.tokens,
+          metadata: msg.metadata
         });
       });
 
@@ -242,9 +270,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('Processing messages response:', message);
     
     if (message.conversation_id && message.data && message.data.messages) {
-      const conversationMessages = message.data.messages.map((msg: any) => ({
+      const conversationMessages = message.data.messages.map((msg: any): Message => ({
         id: msg.id,
-        content: msg.message_text,
+        content: msg.content,
         sender: msg.sender === 'user' ? 'customer' : msg.sender,
         timestamp: new Date(msg.timestamp).toLocaleDateString('pt-BR', { 
           day: '2-digit',
@@ -253,7 +281,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           hour: '2-digit', 
           minute: '2-digit' 
         }),
-        channel: msg.channel
+        channel: msg.channel,
+        message_type: msg.message_type,
+        tokens: msg.tokens,
+        metadata: msg.metadata
       }));
 
       console.log('📝 Setting messages for conversation:', message.conversation_id, conversationMessages);
@@ -379,7 +410,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     const fetchPayload = {
       type: 'get_messages',
       data: {
-        conversation_id: conversationIdStr
+        conversation_id: parseInt(conversationIdStr),
+        limit: 50,
+        offset: 0
       }
     };
 
@@ -395,7 +428,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
     const refreshPayload = {
       type: 'subscribe_conversations',
-      data: {}
+      data: {
+        conversation_ids: [] // Empty array = all conversations
+      }
     };
 
     wsSendMessage(refreshPayload);
