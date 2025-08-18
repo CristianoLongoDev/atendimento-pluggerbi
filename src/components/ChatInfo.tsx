@@ -36,13 +36,13 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ selectedChat, isExpanded }) => {
   }
 
   const customerInfo = {
-    email: 'cliente@email.com',
-    phone: '+55 11 99999-9999',
+    email: selectedChat.customerEmail || 'Email não informado',
+    phone: selectedChat.customerPhone || 'Telefone não informado',
     location: 'São Paulo, SP',
     firstContact: '15/12/2024',
     totalChats: 5,
     avgResponseTime: '2min',
-    tags: ['VIP', 'Recorrente']
+    tags: selectedChat.tags || []
   };
 
   return (
@@ -51,10 +51,21 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ selectedChat, isExpanded }) => {
         <h3 className="font-semibold mb-3">Informações do Cliente</h3>
         
         <div className="text-center mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-2">
-            {selectedChat.customerName.charAt(0)}
-          </div>
+          {selectedChat.customerAvatar ? (
+            <img 
+              src={selectedChat.customerAvatar} 
+              alt={selectedChat.customerName}
+              className="w-16 h-16 rounded-full mx-auto mb-2 object-cover"
+            />
+          ) : (
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-2">
+              {selectedChat.customerName.charAt(0)}
+            </div>
+          )}
           <h4 className="font-medium">{selectedChat.customerName}</h4>
+          {selectedChat.botAgentName && (
+            <p className="text-xs text-muted-foreground">Bot: {selectedChat.botAgentName}</p>
+          )}
         </div>
       </div>
 
@@ -76,14 +87,16 @@ const ChatInfo: React.FC<ChatInfoProps> = ({ selectedChat, isExpanded }) => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1 mt-3">
-              {customerInfo.tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  <Tag className="w-3 h-3 mr-1" />
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+            {customerInfo.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3">
+                {customerInfo.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-xs">
+                    <Tag className="w-3 h-3 mr-1" />
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="p-4 space-y-4">

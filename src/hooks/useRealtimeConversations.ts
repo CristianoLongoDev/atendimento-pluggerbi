@@ -20,6 +20,10 @@ interface Chat {
   status: 'ai' | 'human' | 'pending' | 'closed';
   unreadCount: number;
   isActive: boolean;
+  botAgentName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  tags?: string[];
 }
 
 interface UseRealtimeConversationsReturn {
@@ -178,6 +182,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       const updatedChats = data.conversations.map((conv: any) => ({
         id: conv.id,
         customerName: conv.contact_name || `Cliente ${conv.id}`,
+        customerAvatar: conv.contact_avatar,
         lastMessage: conv.last_message || 'Sem mensagens',
         timestamp: conv.last_message_time ? 
           new Date(conv.last_message_time).toLocaleDateString('pt-BR', {
@@ -200,7 +205,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         })(),
         unreadCount: conv.unread_count || 0,
         isActive: conv.status === 'active',
-        botAgentName: conv.bot_agent_name || null
+        botAgentName: conv.bot_agent_name || null,
+        customerEmail: conv.contact_email,
+        customerPhone: conv.contact_phone,
+        tags: conv.tags || []
       }));
       
       setChats(updatedChats);
