@@ -233,17 +233,24 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               
               // Filtrar mensagens por conversation_id
               const conversationMessages = sortedMessages.filter(message => 
-                message.conversationId === conversationId || 
-                (isFirstConversation && !message.conversationId) // Para mensagens sem conversationId, mostrar na primeira conversa
+                message.conversationId === conversationId
               );
-              const lastMessage = conversationMessages[conversationMessages.length - 1];
-              const conversationDate = new Date(conversation.timestamp).toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              });
+              
+              // Se não há mensagens para esta conversa e é a primeira (mais recente), usar todas
+              const finalMessages = conversationMessages.length > 0 ? conversationMessages : 
+                (isFirstConversation ? sortedMessages : []);
+              
+              const lastMessage = finalMessages[finalMessages.length - 1];
+              
+              // Usar started_at da conversa para a data
+              const conversationDate = conversation.started_at ? 
+                new Date(conversation.started_at).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) : 'Data não disponível';
               
               const toggleConversation = () => {
                 setOpenConversations(prev => 
@@ -283,7 +290,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                   
                   <CollapsibleContent className="p-4">
                     <div className="space-y-3">
-                      {conversationMessages.map((message) => (
+                      {finalMessages.map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
@@ -315,7 +322,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         </div>
                       ))}
                       
-                      {!isFirstConversation && conversationMessages.length === 0 && (
+                      {!isFirstConversation && finalMessages.length === 0 && (
                         <div className="text-center text-muted-foreground text-sm py-4">
                           Conversa sem mensagens carregadas
                         </div>
