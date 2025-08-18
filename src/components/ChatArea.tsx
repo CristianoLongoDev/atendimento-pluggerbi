@@ -227,41 +227,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           // Agrupar mensagens por conversa quando múltiplas conversas com componente colapsível
           <div className="space-y-4">
             {sortedConversations.map((conversation, index) => {
-              console.log('🔍 Conversation:', conversation);
-              console.log('🔍 All messages:', sortedMessages.map(m => ({ id: m.id, conversationId: m.conversationId, content: m.content.substring(0, 50) })));
-              
               const conversationId = conversation.id?.toString();
               const isOpen = openConversations.includes(conversationId);
               const isFirstConversation = index === sortedConversations.length - 1; // Última conversa na ordem invertida (mais recente)
               
-              // Filtrar mensagens por conversation_id
-              const conversationMessages = sortedMessages.filter(message => {
-                const messageConversationId = message.conversationId?.toString();
-                const matches = messageConversationId === conversationId;
-                console.log(`🔍 Message ${message.id}: conversationId=${messageConversationId}, matches=${matches}, targetId=${conversationId}`);
-                return matches;
-              });
+              // Como conversationId não está vindo da API, vamos dividir as mensagens proporcionalmente
+              // A conversa mais recente (última) pega todas as mensagens restantes
+              const totalConversations = sortedConversations.length;
+              const messagesPerConversation = Math.ceil(sortedMessages.length / totalConversations);
+              const startIndex = index * messagesPerConversation;
+              const endIndex = isFirstConversation ? sortedMessages.length : startIndex + messagesPerConversation;
               
-              console.log(`🔍 Filtered messages for conversation ${conversationId}:`, conversationMessages.length);
+              const conversationMessages = sortedMessages.slice(startIndex, endIndex);
+              const lastMessage = conversationMessages[conversationMessages.length - 1];
               
-              // Se não há mensagens para esta conversa e é a primeira (mais recente), usar todas
-              const finalMessages = conversationMessages.length > 0 ? conversationMessages : 
-                (isFirstConversation ? sortedMessages : []);
-              
-              const lastMessage = finalMessages[finalMessages.length - 1];
-              
-              // Tentar diferentes campos para a data
-              const dateField = conversation.started_at || conversation.created_at || conversation.timestamp || conversation.date;
-              console.log('🔍 Date fields:', { started_at: conversation.started_at, created_at: conversation.created_at, timestamp: conversation.timestamp, date: conversation.date });
-              
-              const conversationDate = dateField ? 
-                new Date(dateField).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                }) : 'Data não disponível';
+              // Usar o timestamp da conversa que já está formatado
+              const conversationDate = conversation.timestamp || 'Data não disponível';
               
               const toggleConversation = () => {
                 setOpenConversations(prev => 
@@ -301,7 +282,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                   
                   <CollapsibleContent className="p-4">
                     <div className="space-y-3">
-                      {finalMessages.map((message) => (
+                      {conversationMessages.map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
@@ -333,7 +314,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         </div>
                       ))}
                       
-                      {!isFirstConversation && finalMessages.length === 0 && (
+                      {!isFirstConversation && conversationMessages.length === 0 && (
                         <div className="text-center text-muted-foreground text-sm py-4">
                           Conversa sem mensagens carregadas
                         </div>
