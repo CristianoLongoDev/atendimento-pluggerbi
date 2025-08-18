@@ -230,7 +230,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               const conversationId = conversation.id?.toString();
               const isOpen = openConversations.includes(conversationId);
               const isFirstConversation = index === sortedConversations.length - 1; // Última conversa na ordem invertida (mais recente)
-              const conversationMessages = isFirstConversation ? sortedMessages : [];
+              
+              // Filtrar mensagens por conversation_id
+              const conversationMessages = sortedMessages.filter(message => 
+                message.conversationId === conversationId || 
+                (isFirstConversation && !message.conversationId) // Para mensagens sem conversationId, mostrar na primeira conversa
+              );
               const lastMessage = conversationMessages[conversationMessages.length - 1];
               const conversationDate = new Date(conversation.timestamp).toLocaleDateString('pt-BR', {
                 day: '2-digit',
