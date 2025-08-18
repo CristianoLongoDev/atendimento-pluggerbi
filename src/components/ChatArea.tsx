@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateAndSanitizeMessage } from '@/lib/validation';
 
 interface Message {
@@ -37,7 +38,24 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   onToggleInfoExpanded,
 }) => {
   const [messageInput, setMessageInput] = useState('');
+  const [openConversations, setOpenConversations] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Inverter ordem das mensagens (mais antiga primeiro, mais recente por último)
+  const sortedMessages = [...messages].reverse();
+  
+  // Inverter ordem das conversas também (mais antiga primeiro, mais recente por último)
+  const sortedConversations = [...conversations].reverse();
+
+  // Definir qual conversa está expandida (apenas a última/mais recente)
+  useEffect(() => {
+    if (conversations.length > 0) {
+      const lastConversationId = conversations[0]?.id?.toString();
+      if (lastConversationId) {
+        setOpenConversations([lastConversationId]);
+      }
+    }
+  }, [conversations]);
 
   // Auto-scroll to bottom when messages change or chat is selected
   useEffect(() => {
@@ -173,7 +191,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         ) : conversations.length <= 1 ? (
           // Exibir mensagens normalmente se apenas uma conversa
           <div className="space-y-3">
-            {messages.map((message) => (
+            {sortedMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
@@ -206,63 +224,100 @@ const ChatArea: React.FC<ChatAreaProps> = ({
             ))}
           </div>
         ) : (
-          // Agrupar mensagens por conversa quando múltiplas conversas
-          <div className="space-y-6">
-            {conversations.map((conversation, index) => {
-              // Para agora, mostrar todas as mensagens em cada seção até termos conversationId real
-              const isLastConversation = index === 0; // A primeira conversa (mais recente) recebe todas as mensagens
-              const conversationMessages = isLastConversation ? messages : [];
+          // Agrupar mensagens por conversa quando múltiplas conversas com componente colapsível
+          <div className="space-y-4">
+            {sortedConversations.map((conversation, index) => {
+              const conversationId = conversation.id?.toString();
+              const isOpen = openConversations.includes(conversationId);
+              const isFirstConversation = index === sortedConversations.length - 1; // Última conversa na ordem invertida (mais recente)
+              const conversationMessages = isFirstConversation ? sortedMessages : [];
+              const lastMessage = conversationMessages[conversationMessages.length - 1];
+              const conversationDate = new Date(conversation.timestamp).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
               
+              const toggleConversation = () => {
+                setOpenConversations(prev => 
+                  isOpen 
+                    ? prev.filter(id => id !== conversationId)
+                    : [...prev, conversationId]
+                );
+              };
+
               return (
-                <div key={conversation.id} className="space-y-3">
-                  {index > 0 && (
-                    <div className="flex items-center gap-3 my-4">
-                      <Separator className="flex-1" />
-                      <Badge variant="outline" className="text-xs px-2 py-1">
-                        Conversa anterior - {new Date(conversation.timestamp).toLocaleDateString('pt-BR')}
-                      </Badge>
-                      <Separator className="flex-1" />
-                    </div>
-                  )}
-                  
-                  {conversationMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div
-                        className={`max-w-[70%] ${
-                          message.sender === 'customer'
-                            ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
-                            : message.sender === 'ai'
-                            ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                            : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                        } p-3 shadow-sm`}
-                      >
-                        {message.sender !== 'customer' && (
-                          <div className="flex items-center space-x-1 mb-1">
-                            {message.sender === 'ai' ? (
-                              <Bot className="w-3 h-3" />
-                            ) : (
-                              <User className="w-3 h-3" />
-                            )}
-                            <span className="text-xs opacity-80">
-                              {message.sender === 'ai' ? 'IA' : (selectedChat.botAgentName || 'Atendente')}
-                            </span>
-                          </div>
+                <Collapsible 
+                  key={conversation.id} 
+                  open={isOpen}
+                  onOpenChange={toggleConversation}
+                  className="border border-border rounded-lg overflow-hidden"
+                >
+                  <CollapsibleTrigger className="w-full p-3 bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          Conversa - {conversationDate}
+                        </span>
+                        {lastMessage && (
+                          <Badge variant="outline" className="text-xs">
+                            Última: {lastMessage.timestamp}
+                          </Badge>
                         )}
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
                       </div>
+                      {isOpen ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
                     </div>
-                  ))}
+                  </CollapsibleTrigger>
                   
-                  {!isLastConversation && conversationMessages.length === 0 && (
-                    <div className="text-center text-muted-foreground text-sm py-4">
-                      Conversa sem mensagens carregadas
+                  <CollapsibleContent className="p-4">
+                    <div className="space-y-3">
+                      {conversationMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
+                        >
+                          <div
+                            className={`max-w-[70%] ${
+                              message.sender === 'customer'
+                                ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
+                                : message.sender === 'ai'
+                                ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                            } p-3 shadow-sm`}
+                          >
+                            {message.sender !== 'customer' && (
+                              <div className="flex items-center space-x-1 mb-1">
+                                {message.sender === 'ai' ? (
+                                  <Bot className="w-3 h-3" />
+                                ) : (
+                                  <User className="w-3 h-3" />
+                                )}
+                                <span className="text-xs opacity-80">
+                                  {message.sender === 'ai' ? 'IA' : (selectedChat.botAgentName || 'Atendente')}
+                                </span>
+                              </div>
+                            )}
+                            <p className="text-sm leading-relaxed">{message.content}</p>
+                            <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {!isFirstConversation && conversationMessages.length === 0 && (
+                        <div className="text-center text-muted-foreground text-sm py-4">
+                          Conversa sem mensagens carregadas
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </CollapsibleContent>
+                </Collapsible>
               );
             })}
           </div>
