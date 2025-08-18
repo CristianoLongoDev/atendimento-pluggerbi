@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,10 +14,12 @@ interface Message {
   timestamp: string;
   sender: 'customer' | 'ai' | 'agent';
   senderName?: string;
+  conversationId?: string;
 }
 
 interface ChatAreaProps {
   selectedChat: any;
+  conversations?: any[];
   messages: Message[];
   onSendMessage: (message: string) => void;
   onTransferToHuman: () => void;
@@ -28,6 +29,7 @@ interface ChatAreaProps {
 
 const ChatArea: React.FC<ChatAreaProps> = ({
   selectedChat,
+  conversations = [],
   messages,
   onSendMessage,
   onTransferToHuman,
@@ -44,11 +46,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     }
   }, [messages, selectedChat]);
 
-  // Debug logs
-  console.log('🎯 ChatArea render - selectedChat:', selectedChat?.id);
-  console.log('💬 ChatArea render - messages count:', messages.length);
-  console.log('📝 ChatArea render - messages:', messages);
-
   const handleSendMessage = () => {
     if (messageInput.trim()) {
       try {
@@ -57,7 +54,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         setMessageInput('');
       } catch (error) {
         console.error('Invalid message:', error);
-        // Could show a toast notification here
         return;
       }
     }
@@ -107,6 +103,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               <h3 className="font-medium">{selectedChat.customerName}</h3>
               <div className="flex items-center space-x-2 mt-1">
                 {getChannelBadge(selectedChat.channel)}
+                {selectedChat.conversationCount > 1 && (
+                  <Badge variant="outline" className="text-xs">
+                    {selectedChat.conversationCount} conversas
+                  </Badge>
+                )}
                 <Badge variant={selectedChat.status === 'ai' ? 'secondary' : 'default'} className="text-xs">
                   {selectedChat.status === 'ai' ? (
                     <>
@@ -161,7 +162,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-muted-foreground">
@@ -169,38 +170,102 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               <p>Nenhuma mensagem para exibir</p>
             </div>
           </div>
-        ) : (
-        messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
-          >
-            <div
-              className={`max-w-[70%] ${
-                message.sender === 'customer'
-                  ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
-                  : message.sender === 'ai'
-                  ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                  : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
-              } p-3 shadow-sm`}
-            >
-              {message.sender !== 'customer' && (
-                <div className="flex items-center space-x-1 mb-1">
-                  {message.sender === 'ai' ? (
-                    <Bot className="w-3 h-3" />
-                  ) : (
-                    <User className="w-3 h-3" />
+        ) : conversations.length <= 1 ? (
+          // Exibir mensagens normalmente se apenas uma conversa
+          <div className="space-y-3">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
+              >
+                <div
+                  className={`max-w-[70%] ${
+                    message.sender === 'customer'
+                      ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
+                      : message.sender === 'ai'
+                      ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                  } p-3 shadow-sm`}
+                >
+                  {message.sender !== 'customer' && (
+                    <div className="flex items-center space-x-1 mb-1">
+                      {message.sender === 'ai' ? (
+                        <Bot className="w-3 h-3" />
+                      ) : (
+                        <User className="w-3 h-3" />
+                      )}
+                      <span className="text-xs opacity-80">
+                        {message.sender === 'ai' ? 'IA' : (selectedChat.botAgentName || 'Atendente')}
+                      </span>
+                    </div>
                   )}
-                  <span className="text-xs opacity-80">
-                    {message.sender === 'ai' ? 'IA' : (selectedChat.botAgentName || 'Atendente')}
-                  </span>
+                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
                 </div>
-              )}
-              <p className="text-sm leading-relaxed">{message.content}</p>
-              <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
-            </div>
+              </div>
+            ))}
           </div>
-        ))
+        ) : (
+          // Agrupar mensagens por conversa quando múltiplas conversas
+          <div className="space-y-6">
+            {conversations.map((conversation, index) => {
+              // Para agora, mostrar todas as mensagens em cada seção até termos conversationId real
+              const isLastConversation = index === 0; // A primeira conversa (mais recente) recebe todas as mensagens
+              const conversationMessages = isLastConversation ? messages : [];
+              
+              return (
+                <div key={conversation.id} className="space-y-3">
+                  {index > 0 && (
+                    <div className="flex items-center gap-3 my-4">
+                      <Separator className="flex-1" />
+                      <Badge variant="outline" className="text-xs px-2 py-1">
+                        Conversa anterior - {new Date(conversation.timestamp).toLocaleDateString('pt-BR')}
+                      </Badge>
+                      <Separator className="flex-1" />
+                    </div>
+                  )}
+                  
+                  {conversationMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.sender === 'customer' ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div
+                        className={`max-w-[70%] ${
+                          message.sender === 'customer'
+                            ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
+                            : message.sender === 'ai'
+                            ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                            : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                        } p-3 shadow-sm`}
+                      >
+                        {message.sender !== 'customer' && (
+                          <div className="flex items-center space-x-1 mb-1">
+                            {message.sender === 'ai' ? (
+                              <Bot className="w-3 h-3" />
+                            ) : (
+                              <User className="w-3 h-3" />
+                            )}
+                            <span className="text-xs opacity-80">
+                              {message.sender === 'ai' ? 'IA' : (selectedChat.botAgentName || 'Atendente')}
+                            </span>
+                          </div>
+                        )}
+                        <p className="text-sm leading-relaxed">{message.content}</p>
+                        <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {!isLastConversation && conversationMessages.length === 0 && (
+                    <div className="text-center text-muted-foreground text-sm py-4">
+                      Conversa sem mensagens carregadas
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
         {/* Invisible element to scroll to */}
         <div ref={messagesEndRef} />

@@ -38,6 +38,7 @@ const Index = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [selectedConversations, setSelectedConversations] = useState<any[]>([]);
   const [selectedSection, setSelectedSection] = useState('conversations');
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   
@@ -170,22 +171,51 @@ const Index = () => {
                 <ChatList
                   chats={filteredChats}
                   selectedChatId={selectedChatId}
-                  onChatSelect={(chatId) => {
-                    console.log('🎯 CHAT SELECTED:', chatId);
-                    setSelectedChatId(chatId);
-                    markAsRead(chatId); // Reset unread count
-                    console.log('📞 CALLING fetchMessages for chat:', chatId);
-                    fetchMessages(chatId);
+                  onChatSelect={(groupKey, conversations) => {
+                    console.log('🎯 GROUP SELECTED:', groupKey, conversations);
+                    setSelectedChatId(groupKey);
+                    setSelectedConversations(conversations);
+                    
+                    // Marcar todas as conversas como lidas e buscar mensagens de todas
+                    conversations.forEach(chat => {
+                      markAsRead(chat.id);
+                      fetchMessages(chat.id);
+                    });
                   }}
                 />
               </div>
             </div>
 
             <ChatArea
-              selectedChat={selectedChat}
-              messages={selectedChatId ? messages[selectedChatId] || [] : []}
-              onSendMessage={handleSendMessage}
-              onTransferToHuman={handleTransferToHuman}
+              selectedChat={selectedConversations.length > 0 ? {
+                ...selectedConversations[0],
+                conversationCount: selectedConversations.length
+              } : null}
+              conversations={selectedConversations}
+              messages={selectedConversations.length > 0 ? 
+                selectedConversations.flatMap(conv => messages[conv.id] || [])
+                  .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+                : []
+              }
+              onSendMessage={(message) => {
+                // Enviar para a conversa mais recente do grupo
+                if (selectedConversations.length > 0) {
+                  const mostRecentConv = selectedConversations[0];
+                  sendMessage(mostRecentConv.id, message);
+                }
+              }}
+              onTransferToHuman={() => {
+                // Transferir todas as conversas ativas do grupo
+                selectedConversations.forEach(conv => {
+                  if (conv.status !== 'closed') {
+                    transferToHuman(conv.id);
+                  }
+                });
+                toast({
+                  title: "Conversas transferidas",
+                  description: "As conversas ativas foram transferidas para atendimento humano.",
+                });
+              }}
               isInfoExpanded={isInfoExpanded}
               onToggleInfoExpanded={() => setIsInfoExpanded(!isInfoExpanded)}
             />
