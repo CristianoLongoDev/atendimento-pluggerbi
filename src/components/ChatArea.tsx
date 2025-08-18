@@ -227,14 +227,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           // Agrupar mensagens por conversa quando múltiplas conversas com componente colapsível
           <div className="space-y-4">
             {sortedConversations.map((conversation, index) => {
+              console.log('🔍 Conversation:', conversation);
+              console.log('🔍 All messages:', sortedMessages.map(m => ({ id: m.id, conversationId: m.conversationId, content: m.content.substring(0, 50) })));
+              
               const conversationId = conversation.id?.toString();
               const isOpen = openConversations.includes(conversationId);
               const isFirstConversation = index === sortedConversations.length - 1; // Última conversa na ordem invertida (mais recente)
               
               // Filtrar mensagens por conversation_id
-              const conversationMessages = sortedMessages.filter(message => 
-                message.conversationId === conversationId
-              );
+              const conversationMessages = sortedMessages.filter(message => {
+                const messageConversationId = message.conversationId?.toString();
+                const matches = messageConversationId === conversationId;
+                console.log(`🔍 Message ${message.id}: conversationId=${messageConversationId}, matches=${matches}, targetId=${conversationId}`);
+                return matches;
+              });
+              
+              console.log(`🔍 Filtered messages for conversation ${conversationId}:`, conversationMessages.length);
               
               // Se não há mensagens para esta conversa e é a primeira (mais recente), usar todas
               const finalMessages = conversationMessages.length > 0 ? conversationMessages : 
@@ -242,9 +250,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               
               const lastMessage = finalMessages[finalMessages.length - 1];
               
-              // Usar started_at da conversa para a data
-              const conversationDate = conversation.started_at ? 
-                new Date(conversation.started_at).toLocaleDateString('pt-BR', {
+              // Tentar diferentes campos para a data
+              const dateField = conversation.started_at || conversation.created_at || conversation.timestamp || conversation.date;
+              console.log('🔍 Date fields:', { started_at: conversation.started_at, created_at: conversation.created_at, timestamp: conversation.timestamp, date: conversation.date });
+              
+              const conversationDate = dateField ? 
+                new Date(dateField).toLocaleDateString('pt-BR', {
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric',
