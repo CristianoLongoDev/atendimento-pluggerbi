@@ -8,6 +8,7 @@ import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare, Info, ChevronDo
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateAndSanitizeMessage } from '@/lib/validation';
+import { formatInTimeZone } from 'date-fns-tz';
 
 interface Message {
   id: string;
@@ -266,7 +267,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         </span>
                         {lastMessage && (
                           <Badge variant="outline" className="text-xs">
-                            Última: {lastMessage.timestamp}
+                            Última: {formatInTimeZone(new Date(lastMessage.timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')}
                           </Badge>
                         )}
                       </div>
