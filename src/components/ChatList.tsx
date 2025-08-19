@@ -92,7 +92,22 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
     });
     
     // Retornar grupos ordenados por timestamp da última mensagem
-    return Object.values(groups).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    const finalGroups = Object.values(groups).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    
+    // Debug final para grupos de CRISTIANO
+    finalGroups.forEach(group => {
+      if (group.customerName.includes('CRISTIANO')) {
+        console.log('🚨 FINAL GROUP CRISTIANO:', {
+          customerName: group.customerName,
+          channel: group.channel,
+          conversationCount: group.conversationCount,
+          hasActiveConversations: group.conversations.some(conv => conv.isActive),
+          conversationsStatus: group.conversations.map(c => ({ id: c.id, isActive: c.isActive, status: c.status }))
+        });
+      }
+    });
+    
+    return finalGroups;
   }, [chats]);
   const getChannelColor = (channel: string) => {
     const colors = {
