@@ -187,16 +187,14 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       
       // Update chats list - mapping status_attendance to our status
       const updatedChats = data.conversations.map((conv: any): Chat => {
-         // Log específico para CRISTIANO para debug
-         if (conv.customer_name && conv.customer_name.includes('CRISTIANO')) {
-           console.log('🔍 DEBUG CRISTIANO:', {
-             id: conv.id,
-             customer_name: conv.customer_name,
-             status: conv.status,
-             channel: conv.channel,
-             isActive: conv.status === 'active'
-           });
-         }
+         // Log para debug de todos os usuários
+         console.log('🔍 DEBUG CONVERSA:', {
+           id: conv.id,
+           customer_name: conv.customer_name,
+           status: conv.status,
+           channel: conv.channel,
+           isActive: conv.status === 'active'
+         });
         
         return {
           id: conv.id,
