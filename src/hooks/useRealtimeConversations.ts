@@ -288,26 +288,50 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const handleMessagesResponse = useCallback((message: any) => {
     console.log('Processing messages response:', message);
     
-    if (message.conversation_id && message.data && message.data.messages) {
-      const conversationMessages = message.data.messages.map((msg: any): Message => ({
-        id: msg.id,
-        content: msg.content,
-        sender: msg.sender === 'user' ? 'customer' : msg.sender,
-        timestamp: (() => {
-          const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
-          return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
-        })(),
-        channel: msg.channel,
-        message_type: msg.message_type,
-        tokens: msg.tokens,
-        metadata: msg.metadata
-      }));
+    if (message.conversation_id && message.data) {
+      // Extrair conversation_status se disponível
+      const conversationStatus = message.data.conversation_status;
+      const isActive = conversationStatus === 'active';
+      
+      console.log(`🔍 MESSAGES RESPONSE - Conversation ${message.conversation_id}:`, {
+        conversation_status: conversationStatus,
+        isActive: isActive
+      });
+      
+      if (message.data.messages) {
+        const conversationMessages = message.data.messages.map((msg: any): Message => ({
+          id: msg.id,
+          content: msg.content,
+          sender: msg.sender === 'user' ? 'customer' : msg.sender,
+          timestamp: (() => {
+            const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
+            return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+          })(),
+          channel: msg.channel,
+          message_type: msg.message_type,
+          tokens: msg.tokens,
+          metadata: msg.metadata
+        }));
 
-      console.log('📝 Setting messages for conversation:', message.conversation_id, conversationMessages);
+        console.log('📝 Setting messages for conversation:', message.conversation_id, conversationMessages);
 
-      setMessages(prev => ({
-        ...prev,
-        [message.conversation_id]: conversationMessages
+        setMessages(prev => ({
+          ...prev,
+          [message.conversation_id]: conversationMessages
+        }));
+      }
+      
+      // Atualizar o status da conversa baseado no conversation_status
+      setChats(prev => prev.map(chat => {
+        if (chat.id === message.conversation_id.toString()) {
+          console.log(`🔄 Updating chat ${chat.id} isActive from ${chat.isActive} to ${isActive}`);
+          return {
+            ...chat,
+            isActive: isActive,
+            status: isActive ? 'ai' : 'closed'
+          };
+        }
+        return chat;
       }));
     }
   }, []);
