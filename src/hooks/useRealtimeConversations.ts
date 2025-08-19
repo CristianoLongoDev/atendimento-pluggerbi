@@ -211,15 +211,33 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         });
       });
       
+      // Agrupar conversas por cliente e canal para verificar status ativo
+      const conversationsByCustomer: { [key: string]: any[] } = {};
+      
+      data.conversations.forEach((conv: any) => {
+        const customerKey = `${conv.customer_name || `Cliente ${conv.id}`}-${conv.channel}`;
+        if (!conversationsByCustomer[customerKey]) {
+          conversationsByCustomer[customerKey] = [];
+        }
+        conversationsByCustomer[customerKey].push(conv);
+      });
+
       // Update chats list - mapping status_attendance to our status
       const updatedChats = data.conversations.map((conv: any): Chat => {
+        const customerKey = `${conv.customer_name || `Cliente ${conv.id}`}-${conv.channel}`;
+        const customerConversations = conversationsByCustomer[customerKey];
+        
+        // Verificar se há pelo menos uma conversa ativa para este cliente
+        const hasActiveConversation = customerConversations.some((c: any) => c.status === 'active');
+        
          // Log para debug de todos os usuários
          console.log('🔍 DEBUG CONVERSA:', {
            id: conv.id,
            customer_name: conv.customer_name,
            status: conv.status,
            channel: conv.channel,
-           isActive: conv.status === 'active'
+           hasActiveConversation: hasActiveConversation,
+           customerConversations: customerConversations.map((c: any) => ({ id: c.id, status: c.status }))
          });
         
         return {
@@ -268,7 +286,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
             return 'pending';
           })(),
           unreadCount: conv.unread_count || 0,
-          isActive: conv.status === 'active', // Usar status diretamente
+          isActive: hasActiveConversation, // Usar verificação se há conversa ativa para este cliente
           botAgentName: conv.metadata?.bot?.agent_name,
           metadata: conv.metadata
         };
