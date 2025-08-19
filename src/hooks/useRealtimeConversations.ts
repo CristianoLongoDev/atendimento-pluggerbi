@@ -187,17 +187,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       
       // Update chats list - mapping status_attendance to our status
       const updatedChats = data.conversations.map((conv: any): Chat => {
-        // Log específico para CRISTIANO para debug
-        if (conv.customer_name && conv.customer_name.includes('CRISTIANO')) {
-          console.log('🔍 DEBUG CRISTIANO:', {
-            id: conv.id,
-            customer_name: conv.customer_name,
-            conversation_status: conv.conversation_status,
-            status: conv.status,
-            channel: conv.channel,
-            isActive: conv.conversation_status ? conv.conversation_status === 'active' : conv.status !== 'closed'
-          });
-        }
+         // Log específico para CRISTIANO para debug
+         if (conv.customer_name && conv.customer_name.includes('CRISTIANO')) {
+           console.log('🔍 DEBUG CRISTIANO:', {
+             id: conv.id,
+             customer_name: conv.customer_name,
+             status: conv.status,
+             channel: conv.channel,
+             isActive: conv.status === 'active'
+           });
+         }
         
         return {
           id: conv.id,
@@ -236,18 +235,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           })() : '',
           channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
           status: (() => {
-            // Usar conversation_status se disponível, senão usar status da mensagem
-            if (conv.conversation_status) {
-              return conv.conversation_status === 'active' ? 'ai' : 'closed';
-            }
-            if (conv.status === 'ai') return 'ai';
+            // Usar campo status diretamente (active/closed)
+            if (conv.status === 'active') return 'ai';
+            if (conv.status === 'closed') return 'closed';
+            // Fallback para outros status possíveis
             if (conv.status === 'human') return 'human';
             if (conv.status === 'waiting') return 'waiting';
-            if (conv.status === 'closed') return 'closed';
             return 'pending';
           })(),
           unreadCount: conv.unread_count || 0,
-          isActive: conv.conversation_status ? conv.conversation_status === 'active' : conv.status !== 'closed',
+          isActive: conv.status === 'active', // Usar status diretamente
           botAgentName: conv.metadata?.bot?.agent_name,
           metadata: conv.metadata
         };
