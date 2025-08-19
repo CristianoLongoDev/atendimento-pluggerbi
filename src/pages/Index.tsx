@@ -120,36 +120,28 @@ const UsersTabContent: React.FC = () => {
           description: "Dados do usuário foram atualizados com sucesso."
         });
       } else {
-        // Create new user
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: formData.full_name,
-              role: formData.role,
-              account_id: profile?.account_id
-            }
-          }
+        // Create new user using edge function to avoid session changes
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(`https://ohnqbjeopvcpybptkszl.supabase.co/functions/v1/create-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            full_name: formData.full_name,
+            role: formData.role,
+            department: formData.department
+          })
         });
 
-        if (authError) throw authError;
+        const result = await response.json();
 
-        // If user was created, also create/update profile
-        if (authData.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: authData.user.id,
-              email: formData.email,
-              full_name: formData.full_name,
-              role: formData.role,
-              department: formData.department,
-              account_id: profile?.account_id
-            });
-
-          if (profileError) throw profileError;
+        if (!response.ok) {
+          throw new Error(result.error || 'Erro ao criar usuário');
         }
 
         toast({
