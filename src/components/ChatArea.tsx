@@ -258,7 +258,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                   onOpenChange={toggleConversation}
                   className="border border-border rounded-lg overflow-hidden"
                 >
-                  <CollapsibleTrigger className="w-full p-3 bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <CollapsibleTrigger className={`w-full p-3 transition-colors ${
+                    conversation.status === 'closed' 
+                      ? 'bg-muted/30 hover:bg-muted/50' 
+                      : 'bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-950/50'
+                  }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <MessageSquare className="w-4 h-4" />
