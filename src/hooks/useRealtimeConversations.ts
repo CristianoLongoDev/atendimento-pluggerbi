@@ -219,7 +219,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           last_message: conv.last_message,
           conversation_status: conv.conversation_status,
           status: conv.status,
-          isActiveStatus: conv.status === 'active'
+          isActiveStatus: conv.conversation_status === 'active'
         });
         
         // Debug específico para ANA CAROLINE
@@ -255,7 +255,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         const customerConversations = conversationsByCustomer[customerKey];
         
         // Verificar se há pelo menos uma conversa ativa para este cliente
-        const hasActiveConversation = customerConversations.some((c: any) => c.status === 'active');
+        const hasActiveConversation = customerConversations.some((c: any) => c.conversation_status === 'active');
         
          // Log para debug de todos os usuários
          console.log('🔍 DEBUG CONVERSA:', {
@@ -264,7 +264,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
            status: conv.status,
            channel: conv.channel,
            hasActiveConversation: hasActiveConversation,
-           customerConversations: customerConversations.map((c: any) => ({ id: c.id, status: c.status }))
+           customerConversations: customerConversations.map((c: any) => ({ id: c.id, status: c.status, conversation_status: c.conversation_status }))
          });
          
          // Debug específico para ANA CAROLINE após agrupamento
@@ -274,8 +274,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
              hasActiveConversation: hasActiveConversation,
              customerConversations: customerConversations,
              totalConversationsForCustomer: customerConversations.length,
-             statusArray: customerConversations.map(c => c.status),
-             activeConversations: customerConversations.filter(c => c.status === 'active')
+              statusArray: customerConversations.map(c => c.status),
+              conversationStatusArray: customerConversations.map(c => c.conversation_status),
+              activeConversations: customerConversations.filter(c => c.conversation_status === 'active')
            });
          }
         
@@ -316,12 +317,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           })() : '',
           channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
           status: (() => {
-            // Usar campo status diretamente (active/closed)
-            if (conv.status === 'active') return 'ai';
-            if (conv.status === 'closed') return 'closed';
-            // Fallback para outros status possíveis
-            if (conv.status === 'human') return 'human';
-            if (conv.status === 'waiting') return 'waiting';
+            // Usar conversation_status para ativo/fechado e status para quem está atendendo
+            if (conv.conversation_status === 'closed') return 'closed';
+            
+            // Se a conversa está ativa, verificar quem está atendendo
+            if (conv.conversation_status === 'active') {
+              if (conv.status === 'ai') return 'ai';
+              if (conv.status === 'human') return 'human';
+              if (conv.status === 'waiting') return 'waiting';
+              return 'ai'; // Default para conversas ativas
+            }
+            
             return 'pending';
           })(),
           unreadCount: conv.unread_count || 0,
