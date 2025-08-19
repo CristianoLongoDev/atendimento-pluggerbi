@@ -492,37 +492,63 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   }, [isConnected, wsSendMessage]);
 
   const transferToHuman = useCallback(async (chatId: string) => {
+    console.log('🚀 INICIANDO transferToHuman para chat:', chatId);
+    
     try {
       // Primeiro tenta via API REST
       try {
+        console.log('📡 Tentando API REST...');
         const response = await callExternalAPI(
           `https://atendimento.pluggerbi.com/conversations/${chatId}/status`,
           { status_attendance: "human" },
           'PUT'
         );
         console.log('✅ Status alterado para humano via API REST:', response);
+        return; // Se funcionou, para aqui
       } catch (apiError) {
         console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
         
         // Se falhar, tenta via WebSocket
         if (isConnected) {
-          const statusPayload = {
-            type: 'change_status',
-            data: {
+          // Tenta diferentes formatos de mensagem
+          const statusPayloads = [
+            {
+              type: 'change_status',
+              data: {
+                conversation_id: parseInt(chatId),
+                status_attendance: 'human'
+              }
+            },
+            {
+              type: 'update_conversation_status',
+              data: {
+                conversation_id: parseInt(chatId),
+                status: 'human'
+              }
+            },
+            {
+              type: 'conversation_status_update',
               conversation_id: parseInt(chatId),
               status_attendance: 'human'
             }
-          };
+          ];
           
-          console.log('📤 Enviando mudança de status via WebSocket:', statusPayload);
-          wsSendMessage(statusPayload);
-          console.log('✅ Status enviado via WebSocket');
+          // Tenta todos os formatos
+          for (const payload of statusPayloads) {
+            console.log('📤 Tentando formato de mensagem via WebSocket:', payload);
+            wsSendMessage(payload);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Aguarda um pouco entre tentativas
+          }
+          
+          console.log('✅ Todas as tentativas de WebSocket enviadas');
         } else {
+          console.error('❌ WebSocket não conectado e API REST falhou');
           throw new Error('WebSocket não conectado e API REST falhou');
         }
       }
 
-      // Atualizar status local do chat imediatamente
+      // Atualizar status local do chat imediatamente para feedback visual
+      console.log('🔄 Atualizando status local para feedback visual');
       setChats(prevChats => prevChats.map(chat => 
         chat.id === chatId ? { ...chat, status: 'human' } : chat
       ));
@@ -531,7 +557,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.error('❌ Erro ao transferir para humano:', error);
       throw error;
     }
-  }, [isConnected, wsSendMessage]);
+  }, [isConnected, wsSendMessage, callExternalAPI]);
 
   const fetchMessages = useCallback((conversationId: string | number) => {
     console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);
