@@ -129,7 +129,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                     {selectedChat.conversationCount} conversas
                   </Badge>
                 )}
-                <Badge variant={selectedChat.status === 'ai' ? 'secondary' : 'default'} className="text-xs">
+                <Badge variant={selectedChat.status === 'ai' ? 'secondary' : 'destructive'} className="text-xs">
                   {selectedChat.status === 'ai' ? (
                     <>
                       <Bot className="w-3 h-3 mr-1" />
@@ -138,7 +138,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                   ) : (
                     <>
                       <User className="w-3 h-3 mr-1" />
-                      Atendimento Humano
+                      IA Inativa
                     </>
                   )}
                 </Badge>
@@ -147,12 +147,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            {selectedChat.status === 'ai' && (
-              <Button size="sm" className="bg-accent hover:bg-accent/80 text-accent-foreground border-accent" onClick={onTransferToHuman}>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Atender
-              </Button>
-            )}
+            <Button 
+              size="sm" 
+              className="bg-accent hover:bg-accent/80 text-accent-foreground border-accent" 
+              onClick={onTransferToHuman}
+              disabled={selectedChat.status !== 'ai'}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              {selectedChat.status === 'ai' ? 'Atender' : 'Em Atendimento'}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="ghost">
