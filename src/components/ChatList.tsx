@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Bot, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
 
 interface Chat {
@@ -122,7 +123,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
   const formatTimestamp = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
-      return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR });
+      return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm', { locale: ptBR });
     } catch (error) {
       return timestamp; // Fallback para o valor original caso haja erro
     }

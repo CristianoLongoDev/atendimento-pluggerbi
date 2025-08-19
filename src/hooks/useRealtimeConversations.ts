@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { validateAndSanitizeMessage, webSocketMessageSchema, conversationIdSchema, isValidUUID } from '@/lib/validation';
+import { formatInTimeZone } from 'date-fns-tz';
 
 interface Message {
   id: string;
@@ -120,19 +121,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: message_id || `msg_${Date.now()}`,
         content: content,
         sender: sender,
-        timestamp: timestamp ? new Date(timestamp).toLocaleDateString('pt-BR', { 
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }) : new Date().toLocaleDateString('pt-BR', { 
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
+        timestamp: timestamp ? formatInTimeZone(new Date(timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
         channel,
         message_type,
         tokens,
@@ -159,19 +148,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return {
             ...chat,
             lastMessage: content,
-            timestamp: timestamp ? new Date(timestamp).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }) : new Date().toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit', 
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
+            timestamp: timestamp ? formatInTimeZone(new Date(timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
             unreadCount: chat.unreadCount + 1,
             status: sender === 'customer' || sender === 'user' ? 'pending' : chat.status
           };
@@ -207,14 +184,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         customerEmail: conv.metadata?.contact?.email,
         customerAvatar: conv.metadata?.contact?.avatar,
         lastMessage: conv.last_message || 'Sem mensagens',
-        timestamp: conv.updated_at ? 
-          new Date(conv.updated_at).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit', 
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }) : '',
+        timestamp: conv.updated_at ? formatInTimeZone(new Date(conv.updated_at), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : '',
         channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
         status: (() => {
           if (conv.status === 'ai') return 'ai';
@@ -245,13 +215,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           id: msg.id,
           content: msg.content,
           sender: msg.sender === 'user' ? 'customer' : msg.sender,
-          timestamp: new Date(msg.timestamp).toLocaleDateString('pt-BR', { 
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
+          timestamp: formatInTimeZone(new Date(msg.timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
           channel: msg.channel,
           message_type: msg.message_type,
           tokens: msg.tokens,
@@ -274,13 +238,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: msg.id,
         content: msg.content,
         sender: msg.sender === 'user' ? 'customer' : msg.sender,
-        timestamp: new Date(msg.timestamp).toLocaleDateString('pt-BR', { 
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
+        timestamp: formatInTimeZone(new Date(msg.timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
         channel: msg.channel,
         message_type: msg.message_type,
         tokens: msg.tokens,
@@ -334,13 +292,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       id: `temp_${Date.now()}`,
       content,
       sender: 'agent',
-      timestamp: new Date().toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric', 
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      timestamp: formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')
     };
 
     console.log('📝 Adding optimistic message to local state:', tempMessage);
