@@ -93,6 +93,26 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     return unsubscribe;
   }, [subscribe]);
 
+  // Auto-refresh conversations when WebSocket connects
+  useEffect(() => {
+    if (isConnected) {
+      console.log('🔄 WebSocket conectado, buscando conversas...');
+      // Aguarda um pouco para garantir que a conexão está estável
+      setTimeout(() => {
+        if (isConnected) { // Double check connection is still active
+          const refreshPayload = {
+            type: 'subscribe_conversations',
+            data: {
+              conversation_ids: [] // Empty array = all conversations
+            }
+          };
+          wsSendMessage(refreshPayload);
+          console.log('📤 Enviado subscribe_conversations');
+        }
+      }, 1000);
+    }
+  }, [isConnected, wsSendMessage]);
+
   const handleNewMessage = useCallback((data: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED:', data);
     
