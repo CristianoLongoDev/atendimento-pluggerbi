@@ -172,11 +172,13 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                 <AvatarFallback>{group.customerName.charAt(0)}</AvatarFallback>
               </Avatar>
               <div 
-                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${getChannelColor(group.channel)} flex items-center justify-center`}
+                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${
+                  group.status === 'closed' ? 'bg-red-500' : getChannelColor(group.channel)
+                } flex items-center justify-center`}
               >
                 <div className={`w-2 h-2 rounded-full ${
                   group.status === 'closed' 
-                    ? 'bg-red-500' 
+                    ? 'bg-red-600' 
                     : group.conversations.some(conv => conv.isActive) 
                       ? 'bg-green-500' 
                       : 'bg-red-500'
