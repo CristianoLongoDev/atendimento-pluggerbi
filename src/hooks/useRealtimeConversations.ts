@@ -9,7 +9,7 @@ interface Message {
   id: string;
   content: string;
   timestamp: string;
-  sender: 'customer' | 'ai' | 'human';
+  sender: 'customer' | 'ai' | 'agent' | 'human';
   senderName?: string;
   channel?: string;
   message_type?: string;
@@ -143,7 +143,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     // Extract data according to new API structure
     const message_id = messageData.id;
     const content = messageData.content;
-    const sender = messageData.sender === 'user' ? 'customer' : messageData.sender === 'agent' ? 'human' : messageData.sender;
+    const sender = messageData.sender === 'user' ? 'customer' : messageData.sender;
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
     const message_type = messageData.message_type;
@@ -357,7 +357,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         messagesByConversation[conversationId].push({
           id: msg.id,
           content: msg.content,
-          sender: msg.sender === 'user' ? 'customer' : msg.sender === 'agent' ? 'human' : msg.sender,
+          sender: msg.sender === 'user' ? 'customer' : msg.sender,
           timestamp: (() => {
             const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
             return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
@@ -393,7 +393,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         const conversationMessages = message.data.messages.map((msg: any): Message => ({
           id: msg.id,
           content: msg.content,
-          sender: msg.sender === 'user' ? 'customer' : msg.sender === 'agent' ? 'human' : msg.sender,
+          sender: msg.sender === 'user' ? 'customer' : msg.sender,
           timestamp: (() => {
             const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
             return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');

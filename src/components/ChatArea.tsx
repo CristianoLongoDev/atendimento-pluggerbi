@@ -14,7 +14,7 @@ interface Message {
   id: string;
   content: string;
   timestamp: string;
-  sender: 'customer' | 'ai' | 'human';
+  sender: 'customer' | 'ai' | 'agent' | 'human';
   senderName?: string;
   conversationId?: string;
 }
@@ -208,7 +208,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                       ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
                       : message.sender === 'ai'
                       ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                      : 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      : message.sender === 'human'
+                      ? 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
                   } p-3 shadow-sm`}
                 >
                   {message.sender !== 'customer' && (
@@ -219,7 +221,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         <User className="w-3 h-3" />
                       )}
                       <span className="text-xs opacity-80">
-                        {message.sender === 'ai' ? 'IA' : (message.senderName || 'Atendente')}
+                        {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                       </span>
                     </div>
                   )}
@@ -299,7 +301,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                                 ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
                                 : message.sender === 'ai'
                                 ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                                : 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                : message.sender === 'human'
+                                ? 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
                             } p-3 shadow-sm`}
                           >
                             {message.sender !== 'customer' && (
@@ -310,7 +314,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                                   <User className="w-3 h-3" />
                                 )}
                                 <span className="text-xs opacity-80">
-                                  {message.sender === 'ai' ? 'IA' : (message.senderName || 'Atendente')}
+                                  {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                                 </span>
                               </div>
                             )}
