@@ -65,6 +65,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     
     const unsubscribe = subscribe((message) => {
       console.log('🔥 WEBSOCKET MESSAGE RECEIVED:', message.type, message);
+      console.log('📊 Message data:', JSON.stringify(message, null, 2));
       
       switch (message.type) {
         case 'new_message':
