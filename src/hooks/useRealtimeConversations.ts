@@ -220,13 +220,18 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         })() : '',
         channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
         status: (() => {
+          // Usar conversation_status se disponível, senão usar status da mensagem
+          if (conv.conversation_status) {
+            return conv.conversation_status === 'active' ? 'ai' : 'closed';
+          }
           if (conv.status === 'ai') return 'ai';
           if (conv.status === 'human') return 'human';
           if (conv.status === 'waiting') return 'waiting';
+          if (conv.status === 'closed') return 'closed';
           return 'pending';
         })(),
         unreadCount: conv.unread_count || 0,
-        isActive: conv.status !== 'closed',
+        isActive: conv.conversation_status ? conv.conversation_status === 'active' : conv.status !== 'closed',
         botAgentName: conv.metadata?.bot?.agent_name,
         metadata: conv.metadata
       }));
