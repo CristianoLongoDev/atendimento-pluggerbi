@@ -133,10 +133,12 @@ export class AuthInterceptor {
   }
 
   // Método específico para APIs externas
-  async callExternalAPI(url: string, data?: any): Promise<any> {
+  async callExternalAPI(url: string, data?: any, method?: string): Promise<any> {
     try {
+      const requestMethod = method || (data ? 'POST' : 'GET');
+      
       const response = await this.makeAuthenticatedRequest(url, {
-        method: data ? 'POST' : 'GET',
+        method: requestMethod,
         body: data ? JSON.stringify(data) : undefined,
       });
 
@@ -170,6 +172,6 @@ export const makeAuthenticatedRequest = (url: string, options?: RequestInit) => 
   return AuthInterceptor.getInstance().makeAuthenticatedRequest(url, options);
 };
 
-export const callExternalAPI = (url: string, data?: any) => {
-  return AuthInterceptor.getInstance().callExternalAPI(url, data);
+export const callExternalAPI = (url: string, data?: any, method?: string) => {
+  return AuthInterceptor.getInstance().callExternalAPI(url, data, method);
 };

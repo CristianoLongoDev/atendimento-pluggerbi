@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { validateAndSanitizeMessage, webSocketMessageSchema, conversationIdSchema, isValidUUID } from '@/lib/validation';
 import { formatInTimeZone } from 'date-fns-tz';
-import { makeAuthenticatedRequest } from '@/lib/authInterceptor';
+import { callExternalAPI } from '@/lib/authInterceptor';
 
 interface Message {
   id: string;
@@ -493,20 +493,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   const transferToHuman = useCallback(async (chatId: string) => {
     try {
-      const response = await makeAuthenticatedRequest(
+      const response = await callExternalAPI(
         `https://atendimento.pluggerbi.com/conversations/${chatId}/status`,
-        {
-          method: 'PUT',
-          body: JSON.stringify({ status_attendance: "human" })
-        }
+        { status_attendance: "human" },
+        'PUT'
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Status alterado para humano:', data);
+      console.log('✅ Status alterado para humano:', response);
 
       // Atualizar status local do chat
       setChats(prevChats => prevChats.map(chat => 
