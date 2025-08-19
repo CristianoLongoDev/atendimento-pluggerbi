@@ -209,6 +209,21 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           status: conv.status,
           isActiveStatus: conv.status === 'active'
         });
+        
+        // Debug específico para ANA CAROLINE
+        if (conv.customer_name && conv.customer_name.includes('Ana Caroline')) {
+          console.log('🚨 ANA CAROLINE DEBUG - RAW DATA:', {
+            id: conv.id,
+            customer_name: conv.customer_name,
+            status: conv.status,
+            conversation_status: conv.conversation_status,
+            channel: conv.channel,
+            last_message: conv.last_message,
+            updated_at: conv.updated_at,
+            metadata: conv.metadata,
+            FULL_OBJECT: conv
+          });
+        }
       });
       
       // Agrupar conversas por cliente e canal para verificar status ativo
@@ -239,6 +254,18 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
            hasActiveConversation: hasActiveConversation,
            customerConversations: customerConversations.map((c: any) => ({ id: c.id, status: c.status }))
          });
+         
+         // Debug específico para ANA CAROLINE após agrupamento
+         if (conv.customer_name && conv.customer_name.includes('Ana Caroline')) {
+           console.log('🚨 ANA CAROLINE APÓS AGRUPAMENTO:', {
+             customerKey: customerKey,
+             hasActiveConversation: hasActiveConversation,
+             customerConversations: customerConversations,
+             totalConversationsForCustomer: customerConversations.length,
+             statusArray: customerConversations.map(c => c.status),
+             activeConversations: customerConversations.filter(c => c.status === 'active')
+           });
+         }
         
         return {
           id: conv.id,
