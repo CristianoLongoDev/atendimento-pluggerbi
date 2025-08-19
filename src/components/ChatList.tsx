@@ -48,6 +48,15 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
     const groups: { [key: string]: GroupedChat } = {};
     
     chats.forEach(chat => {
+      // Debug para CRISTIANO
+      if (chat.customerName.includes('CRISTIANO')) {
+        console.log('🔍 CHAT LIST DEBUG CRISTIANO:', {
+          customerName: chat.customerName,
+          channel: chat.channel,
+          status: chat.status,
+          isActive: chat.isActive
+        });
+      }
       const groupKey = `${chat.customerName}-${chat.channel}`;
       
       if (!groups[groupKey]) {
