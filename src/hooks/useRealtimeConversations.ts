@@ -184,7 +184,41 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         customerEmail: conv.metadata?.contact?.email,
         customerAvatar: conv.metadata?.contact?.avatar,
         lastMessage: conv.last_message || 'Sem mensagens',
-        timestamp: conv.updated_at ? formatInTimeZone(new Date(conv.updated_at), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : '',
+        timestamp: conv.updated_at ? (() => {
+          try {
+            // Se já está formatado (DD/MM/YYYY), retorna como está
+            if (typeof conv.updated_at === 'string' && conv.updated_at.includes('/')) {
+              return conv.updated_at;
+            }
+            
+            const date = new Date(conv.updated_at);
+            
+            // Verifica se a data é válida
+            if (isNaN(date.getTime())) {
+              console.warn('Invalid date from backend:', conv.updated_at);
+              return new Date().toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'America/Sao_Paulo'
+              });
+            }
+            
+            return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+          } catch (error) {
+            console.error('Error formatting timestamp:', error, conv.updated_at);
+            return new Date().toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZone: 'America/Sao_Paulo'
+            });
+          }
+        })() : '',
         channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
         status: (() => {
           if (conv.status === 'ai') return 'ai';
