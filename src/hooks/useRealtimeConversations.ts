@@ -52,6 +52,7 @@ interface UseRealtimeConversationsReturn {
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
+  console.log('🚀 useRealtimeConversations INICIADO');
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
   
