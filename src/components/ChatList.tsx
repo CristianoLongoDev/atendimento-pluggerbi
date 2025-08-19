@@ -151,7 +151,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                 className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${getChannelColor(group.channel)} flex items-center justify-center`}
               >
                 <div className={`w-2 h-2 rounded-full ${
-                  group.conversations.some(conv => conv.status === 'ai' || conv.status === 'human' || conv.status === 'pending' || conv.status === 'waiting') 
+                  group.conversations.some(conv => conv.status !== 'closed') 
                     ? 'bg-green-500' 
                     : 'bg-red-500'
                 }`}></div>
