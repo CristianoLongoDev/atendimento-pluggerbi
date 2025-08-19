@@ -168,9 +168,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   }, []);
 
   const handleSubscriptionUpdate = useCallback((data: any) => {
-    console.log('Processing subscription update:', data);
+    console.log('🔥 Processing subscription update:', data);
     
     if (data.conversations) {
+      console.log('🔍 TOTAL CONVERSAS RECEBIDAS:', data.conversations.length);
+      
       // Log each conversation to see channel data
       data.conversations.forEach((conv: any, index: number) => {
         console.log(`📋 CONVERSA ${index + 1}:`, {
@@ -181,7 +183,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           customer_name: conv.customer_name,
           last_message: conv.last_message,
           conversation_status: conv.conversation_status,
-          status: conv.status
+          status: conv.status,
+          isActiveStatus: conv.status === 'active'
         });
       });
       
