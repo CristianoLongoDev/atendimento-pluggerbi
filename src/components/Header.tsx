@@ -138,6 +138,12 @@ const Header: React.FC = () => {
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>
             </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => navigate('/users')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Gerenciar Usuários</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={handleAuthDiagnostics}>
               <Settings className="mr-2 h-4 w-4" />
               <span>Testar Autenticação</span>
