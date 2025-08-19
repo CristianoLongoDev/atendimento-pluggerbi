@@ -193,10 +193,12 @@ const Index = () => {
               } : null}
               conversations={selectedConversations}
               messages={selectedConversations.length > 0 ? 
-                selectedConversations.flatMap(conv => messages[conv.id] || [])
+                // Pegar apenas as mensagens da conversa mais recente (primeira do array)
+                (messages[selectedConversations[0].id] || [])
                   .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
                 : []
               }
+              allMessages={messages}
               onSendMessage={(message) => {
                 // Enviar para a conversa mais recente do grupo
                 if (selectedConversations.length > 0) {

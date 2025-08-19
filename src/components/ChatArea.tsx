@@ -22,6 +22,7 @@ interface ChatAreaProps {
   selectedChat: any;
   conversations?: any[];
   messages: Message[];
+  allMessages?: { [chatId: string]: Message[] }; // Todas as mensagens organizadas por conversa
   onSendMessage: (message: string) => void;
   onTransferToHuman: () => void;
   isInfoExpanded?: boolean;
@@ -32,6 +33,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   selectedChat,
   conversations = [],
   messages,
+  allMessages = {},
   onSendMessage,
   onTransferToHuman,
   isInfoExpanded = false,
@@ -231,14 +233,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               const isOpen = openConversations.includes(conversationId);
               const isFirstConversation = index === sortedConversations.length - 1; // Última conversa na ordem invertida (mais recente)
               
-              // Como conversationId não está vindo da API, vamos dividir as mensagens proporcionalmente
-              // A conversa mais recente (última) pega todas as mensagens restantes
-              const totalConversations = sortedConversations.length;
-              const messagesPerConversation = Math.ceil(sortedMessages.length / totalConversations);
-              const startIndex = index * messagesPerConversation;
-              const endIndex = isFirstConversation ? sortedMessages.length : startIndex + messagesPerConversation;
-              
-              const conversationMessages = sortedMessages.slice(startIndex, endIndex);
+              // Usar as mensagens específicas desta conversa do allMessages
+              const conversationMessages = allMessages[conversationId] ? 
+                [...allMessages[conversationId]].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+                : [];
               const lastMessage = conversationMessages[conversationMessages.length - 1];
               
               // Usar o timestamp da conversa que já está formatado
