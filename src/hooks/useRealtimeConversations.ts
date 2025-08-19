@@ -3,12 +3,14 @@ import { useWebSocket } from './useWebSocket';
 import { validateAndSanitizeMessage, webSocketMessageSchema, conversationIdSchema, isValidUUID } from '@/lib/validation';
 import { formatInTimeZone } from 'date-fns-tz';
 import { callExternalAPI } from '@/lib/authInterceptor';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
   id: string;
   content: string;
   timestamp: string;
-  sender: 'customer' | 'ai' | 'agent';
+  sender: 'customer' | 'ai' | 'human';
+  senderName?: string;
   channel?: string;
   message_type?: string;
   tokens?: number;
@@ -53,6 +55,7 @@ interface UseRealtimeConversationsReturn {
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
+  const { profile } = useAuth();
   console.log('🚀 useRealtimeConversations INICIADO');
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
@@ -140,7 +143,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     // Extract data according to new API structure
     const message_id = messageData.id;
     const content = messageData.content;
-    const sender = messageData.sender === 'user' ? 'customer' : messageData.sender;
+    const sender = messageData.sender === 'user' ? 'customer' : messageData.sender === 'agent' ? 'human' : messageData.sender;
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
     const message_type = messageData.message_type;
@@ -354,7 +357,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         messagesByConversation[conversationId].push({
           id: msg.id,
           content: msg.content,
-          sender: msg.sender === 'user' ? 'customer' : msg.sender,
+          sender: msg.sender === 'user' ? 'customer' : msg.sender === 'agent' ? 'human' : msg.sender,
           timestamp: (() => {
             const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
             return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
@@ -390,7 +393,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         const conversationMessages = message.data.messages.map((msg: any): Message => ({
           id: msg.id,
           content: msg.content,
-          sender: msg.sender === 'user' ? 'customer' : msg.sender,
+          sender: msg.sender === 'user' ? 'customer' : msg.sender === 'agent' ? 'human' : msg.sender,
           timestamp: (() => {
             const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
             return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
@@ -443,7 +446,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       data: {
         conversation_id: chatId,
         content,
-        sender: 'agent'
+        sender: 'human',
+        senderName: profile?.full_name || 'Atendente'
       }
     };
 
@@ -461,7 +465,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     const tempMessage: Message = {
       id: `temp_${Date.now()}`,
       content,
-      sender: 'agent',
+      sender: 'human',
+      senderName: profile?.full_name || 'Atendente',
       timestamp: formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')
     };
 
@@ -489,7 +494,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       }
       return chat;
     }));
-  }, [isConnected, wsSendMessage]);
+  }, [isConnected, wsSendMessage, profile]);
 
   const transferToHuman = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO transferToHuman para chat:', chatId);
