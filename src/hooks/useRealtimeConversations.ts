@@ -447,7 +447,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         conversation_id: chatId,
         content,
         sender: 'human',
-        senderName: profile?.full_name || 'Atendente'
+        senderName: profile?.full_name || 'Atendente',
+        user_id: profile?.id
       }
     };
 
