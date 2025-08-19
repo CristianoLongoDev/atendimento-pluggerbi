@@ -263,7 +263,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                       <div className="flex items-center space-x-2">
                         <MessageSquare className="w-4 h-4" />
                         <span className="text-sm font-medium">
-                          Conversa - {conversationDate}
+                          {conversation.status === 'closed' ? 'Conversa encerrada' : 'Conversa ativa'}
                         </span>
                         {lastMessage && (
                           <Badge variant="outline" className="text-xs">
