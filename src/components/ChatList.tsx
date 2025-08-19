@@ -162,7 +162,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
               
               <div className="flex items-center space-x-1 mb-2">
                 {group.channel === 'whatsapp' && (
-                  <MessageSquare className="w-3 h-3 text-green-500" />
+                  <img src="/lovable-uploads/84640d55-cdf5-4bb9-9e7b-d1c9310ed0e6.png" alt="WhatsApp" className="w-4 h-4" />
                 )}
                 {group.channel === 'instagram' && (
                   <MessageSquare className="w-3 h-3 text-pink-500" />
