@@ -59,6 +59,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   // Subscribe to WebSocket messages
   useEffect(() => {
+    console.log('🌐 WEBSOCKET: Configurando subscription...');
+    console.log('🌐 WEBSOCKET: isConnected =', isConnected);
+    
     const unsubscribe = subscribe((message) => {
       console.log('🔥 WEBSOCKET MESSAGE RECEIVED:', message.type, message);
       
