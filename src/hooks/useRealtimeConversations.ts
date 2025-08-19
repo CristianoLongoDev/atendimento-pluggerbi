@@ -121,7 +121,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: message_id || `msg_${Date.now()}`,
         content: content,
         sender: sender,
-        timestamp: timestamp ? formatInTimeZone(new Date(timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
+        timestamp: timestamp ? (() => {
+          const date = new Date(timestamp + (timestamp.includes('Z') ? '' : 'Z'));
+          return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+        })() : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
         channel,
         message_type,
         tokens,
@@ -148,7 +151,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return {
             ...chat,
             lastMessage: content,
-            timestamp: timestamp ? formatInTimeZone(new Date(timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
+            timestamp: timestamp ? (() => {
+              const date = new Date(timestamp + (timestamp.includes('Z') ? '' : 'Z'));
+              return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+            })() : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
             unreadCount: chat.unreadCount + 1,
             status: sender === 'customer' || sender === 'user' ? 'pending' : chat.status
           };
@@ -191,32 +197,25 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
               return conv.updated_at;
             }
             
-            const date = new Date(conv.updated_at);
+            // Garantir que a data seja interpretada como UTC antes de converter para timezone de SP
+            let date;
+            if (typeof conv.updated_at === 'string') {
+              // Se for string, garantir que seja interpretada como UTC
+              date = new Date(conv.updated_at + (conv.updated_at.includes('Z') ? '' : 'Z'));
+            } else {
+              date = new Date(conv.updated_at);
+            }
             
             // Verifica se a data é válida
             if (isNaN(date.getTime())) {
               console.warn('Invalid date from backend:', conv.updated_at);
-              return new Date().toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'America/Sao_Paulo'
-              });
+              return formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
             }
             
             return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
           } catch (error) {
             console.error('Error formatting timestamp:', error, conv.updated_at);
-            return new Date().toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZone: 'America/Sao_Paulo'
-            });
+            return formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
           }
         })() : '',
         channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
@@ -249,7 +248,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           id: msg.id,
           content: msg.content,
           sender: msg.sender === 'user' ? 'customer' : msg.sender,
-          timestamp: formatInTimeZone(new Date(msg.timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
+          timestamp: (() => {
+            const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
+            return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+          })(),
           channel: msg.channel,
           message_type: msg.message_type,
           tokens: msg.tokens,
@@ -272,7 +274,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: msg.id,
         content: msg.content,
         sender: msg.sender === 'user' ? 'customer' : msg.sender,
-        timestamp: formatInTimeZone(new Date(msg.timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
+        timestamp: (() => {
+          const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
+          return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+        })(),
         channel: msg.channel,
         message_type: msg.message_type,
         tokens: msg.tokens,
