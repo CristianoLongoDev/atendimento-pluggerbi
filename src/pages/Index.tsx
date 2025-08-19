@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccountData } from '@/hooks/useAccountData';
@@ -32,7 +31,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users } from 'lucide-react';
-
 
 // Interfaces para usuários
 interface Profile {
@@ -493,7 +491,7 @@ const Index = () => {
     if (selectedSection === 'channels') {
       fetchChannels();
     }
-  }, [selectedSection]); // Remove fetchChannels dependency to avoid infinite loop
+  }, [selectedSection, fetchChannels]);
   
   const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
@@ -786,7 +784,7 @@ const Index = () => {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => handleDeleteChannel(channel.id)}
-                                    className="text-destructive focus:text-destructive"
+                                    className="text-destructive"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Excluir
@@ -794,23 +792,25 @@ const Index = () => {
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
-                          </TableRow>
-                        ))
-                      )}
+                           </TableRow>
+                         ))
+                       )}
                     </TableBody>
                   </Table>
                 )}
               </CardContent>
             </Card>
-
+            
+            {/* Channel Form Modal */}
             <ChannelForm
               open={isChannelFormOpen}
               onOpenChange={setIsChannelFormOpen}
-              onSubmit={handleChannelSubmit}
               channel={editingChannel}
               mode={channelFormMode}
+              onSubmit={handleChannelSubmit}
             />
-
+            
+            {/* Delete Confirmation Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -821,10 +821,7 @@ const Index = () => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={confirmDeleteChannel}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
+                  <AlertDialogAction onClick={confirmDeleteChannel}>
                     Excluir
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -874,15 +871,15 @@ const Index = () => {
       <Header />
       
       <div className="flex-1 flex overflow-hidden">
-              <ChatSidebar
-                selectedFilter={selectedFilter}
-                onFilterChange={setSelectedFilter}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                selectedSection={selectedSection}
-                onSectionChange={setSelectedSection}
-                chats={chats}
-              />
+        <ChatSidebar
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedSection={selectedSection}
+          onSectionChange={setSelectedSection}
+          chats={chats}
+        />
         
         {renderMainContent()}
       </div>
