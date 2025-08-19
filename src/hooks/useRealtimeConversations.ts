@@ -99,10 +99,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   // Auto-refresh conversations when WebSocket connects
   useEffect(() => {
+    console.log('🔄 EFFECT: WebSocket status changed to:', isConnected);
+    
     if (isConnected) {
       console.log('🔄 WebSocket conectado, buscando conversas...');
       // Aguarda um pouco para garantir que a conexão está estável
       setTimeout(() => {
+        console.log('🔄 TIMEOUT: Verificando se ainda está conectado:', isConnected);
         if (isConnected) { // Double check connection is still active
           const refreshPayload = {
             type: 'subscribe_conversations',
@@ -110,10 +113,15 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
               conversation_ids: [] // Empty array = all conversations
             }
           };
+          console.log('📤 ENVIANDO subscribe_conversations:', refreshPayload);
           wsSendMessage(refreshPayload);
-          console.log('📤 Enviado subscribe_conversations');
+          console.log('📤 Enviado subscribe_conversations - SUCESSO');
+        } else {
+          console.log('❌ WebSocket desconectou durante timeout');
         }
       }, 1000);
+    } else {
+      console.log('❌ WebSocket não está conectado');
     }
   }, [isConnected, wsSendMessage]);
 
