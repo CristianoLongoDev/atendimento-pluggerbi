@@ -500,13 +500,21 @@ const Index = () => {
     }
   };
 
-  const handleTransferToHuman = () => {
+  const handleTransferToHuman = async () => {
     if (selectedChatId) {
-      transferToHuman(selectedChatId);
-      toast({
-        title: "Chat transferido",
-        description: "A conversa foi transferida para um atendente humano.",
-      });
+      try {
+        await transferToHuman(selectedChatId);
+        toast({
+          title: "Atendimento assumido",
+          description: "Um humano assumiu o atendimento desta conversa.",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível assumir o atendimento. Tente novamente.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

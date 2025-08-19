@@ -490,21 +490,34 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }));
   }, [isConnected, wsSendMessage]);
 
-  const transferToHuman = useCallback((chatId: string) => {
-    if (!isConnected) {
-      console.warn('WebSocket not connected. Cannot transfer to human.');
-      return;
-    }
+  const transferToHuman = useCallback(async (chatId: string) => {
+    try {
+      const response = await fetch(`https://atendimento.pluggerbi.com/conversations/${chatId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token') || ''}`,
+        },
+        body: JSON.stringify({ status_attendance: "human" }),
+      });
 
-    const transferPayload = {
-      type: 'transfer_to_human',
-      data: {
-        conversation_id: chatId
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-    };
 
-    wsSendMessage(transferPayload);
-  }, [isConnected, wsSendMessage]);
+      const data = await response.json();
+      console.log('✅ Status alterado para humano:', data);
+
+      // Atualizar status local do chat
+      setChats(prevChats => prevChats.map(chat => 
+        chat.id === chatId ? { ...chat, status: 'human' } : chat
+      ));
+
+    } catch (error) {
+      console.error('❌ Erro ao transferir para humano:', error);
+      throw error;
+    }
+  }, []);
 
   const fetchMessages = useCallback((conversationId: string | number) => {
     console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);

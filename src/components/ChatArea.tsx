@@ -148,9 +148,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           
           <div className="flex items-center space-x-2">
             {selectedChat.status === 'ai' && (
-              <Button size="sm" variant="outline" onClick={onTransferToHuman}>
+              <Button size="sm" className="bg-accent hover:bg-accent/80 text-accent-foreground border-accent" onClick={onTransferToHuman}>
                 <UserPlus className="w-4 h-4 mr-2" />
-                Transferir
+                Atender
               </Button>
             )}
             <DropdownMenu>
