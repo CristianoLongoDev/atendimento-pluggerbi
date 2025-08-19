@@ -236,7 +236,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               
               // Usar as mensagens específicas desta conversa do allMessages
               const conversationMessages = allMessages[conversationId] ? 
-                [...allMessages[conversationId]].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+                [...allMessages[conversationId]]
                 : [];
               const lastMessage = conversationMessages[conversationMessages.length - 1];
               
@@ -267,7 +267,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         </span>
                         {lastMessage && (
                           <Badge variant="outline" className="text-xs">
-                            Última: {formatInTimeZone(new Date(lastMessage.timestamp), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')}
+                            Última: {lastMessage.timestamp}
                           </Badge>
                         )}
                       </div>
