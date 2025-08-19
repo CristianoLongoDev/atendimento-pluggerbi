@@ -493,15 +493,36 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   const transferToHuman = useCallback(async (chatId: string) => {
     try {
-      const response = await callExternalAPI(
-        `https://atendimento.pluggerbi.com/conversations/${chatId}/status`,
-        { status_attendance: "human" },
-        'PUT'
-      );
+      // Primeiro tenta via API REST
+      try {
+        const response = await callExternalAPI(
+          `https://atendimento.pluggerbi.com/conversations/${chatId}/status`,
+          { status_attendance: "human" },
+          'PUT'
+        );
+        console.log('✅ Status alterado para humano via API REST:', response);
+      } catch (apiError) {
+        console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
+        
+        // Se falhar, tenta via WebSocket
+        if (isConnected) {
+          const statusPayload = {
+            type: 'change_status',
+            data: {
+              conversation_id: parseInt(chatId),
+              status_attendance: 'human'
+            }
+          };
+          
+          console.log('📤 Enviando mudança de status via WebSocket:', statusPayload);
+          wsSendMessage(statusPayload);
+          console.log('✅ Status enviado via WebSocket');
+        } else {
+          throw new Error('WebSocket não conectado e API REST falhou');
+        }
+      }
 
-      console.log('✅ Status alterado para humano:', response);
-
-      // Atualizar status local do chat
+      // Atualizar status local do chat imediatamente
       setChats(prevChats => prevChats.map(chat => 
         chat.id === chatId ? { ...chat, status: 'human' } : chat
       ));
@@ -510,7 +531,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.error('❌ Erro ao transferir para humano:', error);
       throw error;
     }
-  }, []);
+  }, [isConnected, wsSendMessage]);
 
   const fetchMessages = useCallback((conversationId: string | number) => {
     console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);
