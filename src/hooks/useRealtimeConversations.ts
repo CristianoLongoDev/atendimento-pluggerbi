@@ -178,7 +178,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           channel: conv.channel,
           channel_type: conv.channel_type,
           contact_name: conv.contact_name,
-          last_message: conv.last_message
+          customer_name: conv.customer_name,
+          last_message: conv.last_message,
+          conversation_status: conv.conversation_status,
+          status: conv.status
         });
       });
       
