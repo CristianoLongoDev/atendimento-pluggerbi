@@ -13,7 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserPlus, MoreVertical, Edit, Trash2, Users } from 'lucide-react';
 import Header from '@/components/Header';
-import PageHeader from '@/components/PageHeader';
+import ChatSidebar from '@/components/ChatSidebar';
 
 interface Profile {
   id: string;
@@ -237,12 +237,26 @@ const UsersManagement: React.FC = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="flex-1">
-        <PageHeader 
-          title="Acesso Negado"
-          description="Você não tem permissão para acessar esta página."
-        />
-        </main>
+        <div className="flex">
+          <ChatSidebar 
+            selectedSection="users" 
+            onSectionChange={() => {}}
+            selectedFilter=""
+            onFilterChange={() => {}}
+            searchTerm=""
+            onSearchChange={() => {}}
+            chats={[]}
+          />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Acesso Negado</h3>
+              <p className="text-muted-foreground">
+                Você não tem permissão para acessar esta página.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -250,13 +264,22 @@ const UsersManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="flex-1">
-        <PageHeader 
-          title="Gerenciamento de Usuários"
-          description="Gerencie os usuários da sua conta"
+      <div className="flex">
+        <ChatSidebar 
+          selectedSection="users" 
+          onSectionChange={() => {}}
+          selectedFilter=""
+          onFilterChange={() => {}}
+          searchTerm=""
+          onSearchChange={() => {}}
+          chats={[]}
         />
-
-        <div className="container mx-auto px-6 pb-6">
+        <div className="flex-1 p-6">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-foreground mb-2">Gerenciamento de Usuários</h2>
+            <p className="text-sm text-muted-foreground">Gerencie os usuários da sua conta</p>
+          </div>
+          
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-semibold">Usuários Cadastrados</h2>
@@ -455,7 +478,7 @@ const UsersManagement: React.FC = () => {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 };

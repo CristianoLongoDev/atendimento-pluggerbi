@@ -49,6 +49,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const configSections = [
     { id: 'account', label: 'Minha Conta', icon: User },
+    { id: 'users', label: 'Usuários', icon: Users },
     { id: 'agent-bots', label: 'Agentes Bots', icon: Bot },
     { id: 'channels', label: 'Canais Atendimento', icon: Settings },
     { id: 'integrations', label: 'Integrações', icon: Puzzle },
