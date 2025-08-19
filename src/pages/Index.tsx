@@ -504,6 +504,7 @@ const Index = () => {
     if (selectedChatId) {
       try {
         await transferToHuman(selectedChatId);
+        
         toast({
           title: "Atendimento assumido",
           description: "Um humano assumiu o atendimento desta conversa.",
