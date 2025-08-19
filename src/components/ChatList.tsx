@@ -180,7 +180,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                 )}
               </div>
               
-              <p className="text-sm text-muted-foreground truncate mb-2">{group.lastMessage}</p>
+              
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1">
