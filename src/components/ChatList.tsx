@@ -64,11 +64,8 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
           conversations: [chat]
         };
       } else {
-        // Atualizar com a conversa mais recente
-        const existingTime = new Date(groups[groupKey].timestamp).getTime();
-        const newTime = new Date(chat.timestamp).getTime();
-        
-        if (newTime > existingTime) {
+        // Atualizar com a conversa mais recente - comparar por string quando já formatado
+        if (chat.timestamp > groups[groupKey].timestamp) {
           groups[groupKey].lastMessage = chat.lastMessage;
           groups[groupKey].timestamp = chat.timestamp;
           groups[groupKey].status = chat.status;
@@ -82,11 +79,11 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
     
     // Ordenar conversas dentro de cada grupo por timestamp (mais recente primeiro)
     Object.values(groups).forEach(group => {
-      group.conversations.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      group.conversations.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     });
     
     // Retornar grupos ordenados por timestamp da última mensagem
-    return Object.values(groups).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return Object.values(groups).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   }, [chats]);
   const getChannelColor = (channel: string) => {
     const colors = {
@@ -122,6 +119,11 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
 
   const formatTimestamp = (timestamp: string) => {
     try {
+      // Se já está formatado (contém "/"), retorna como está
+      if (timestamp.includes('/')) {
+        return timestamp;
+      }
+      // Se é uma data ISO, formata para o fuso correto
       const date = new Date(timestamp);
       return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm', { locale: ptBR });
     } catch (error) {
