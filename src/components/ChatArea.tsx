@@ -147,15 +147,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            <Button 
-              size="sm" 
-              className="bg-accent hover:bg-accent/80 text-accent-foreground border-accent" 
-              onClick={onTransferToHuman}
-              disabled={selectedChat.status !== 'ai'}
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              {selectedChat.status === 'ai' ? 'Atender' : 'Em Atendimento'}
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="ghost">
@@ -340,20 +331,34 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input */}
+      {/* Message Input / Attend Button */}
       <div className="p-4 border-t border-border bg-card">
-        <div className="flex items-center space-x-2">
-          <Input
-            placeholder="Digite sua mensagem..."
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="flex-1"
-          />
-          <Button onClick={handleSendMessage} size="sm">
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
+        {selectedChat.status === 'ai' ? (
+          // Mostrar apenas botão "Atender" quando IA está ativa
+          <div className="flex justify-center">
+            <Button 
+              className="bg-accent hover:bg-accent/80 text-accent-foreground border-accent px-8" 
+              onClick={onTransferToHuman}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Atender Conversa
+            </Button>
+          </div>
+        ) : (
+          // Mostrar campo de mensagem quando humano está atendendo
+          <div className="flex items-center space-x-2">
+            <Input
+              placeholder="Digite sua mensagem..."
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              className="flex-1"
+            />
+            <Button onClick={handleSendMessage} size="sm">
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
