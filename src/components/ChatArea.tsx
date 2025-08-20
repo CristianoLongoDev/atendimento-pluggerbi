@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, UserPlus, MessageSquare, Info, ChevronDown, ChevronUp, XCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateAndSanitizeMessage } from '@/lib/validation';
@@ -26,6 +26,7 @@ interface ChatAreaProps {
   allMessages?: { [chatId: string]: Message[] }; // Todas as mensagens organizadas por conversa
   onSendMessage: (message: string) => void;
   onTransferToHuman: () => void;
+  onCloseConversation: () => void;
   isInfoExpanded?: boolean;
   onToggleInfoExpanded?: () => void;
 }
@@ -37,6 +38,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   allMessages = {},
   onSendMessage,
   onTransferToHuman,
+  onCloseConversation,
   isInfoExpanded = false,
   onToggleInfoExpanded,
 }) => {
@@ -331,7 +333,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input / Attend Button */}
+      {/* Message Input / Attend Button / Close Button */}
       <div className="p-4 border-t border-border bg-card">
         {selectedChat.status === 'ai' ? (
           // Mostrar apenas botão "Atender" quando IA está ativa
@@ -345,18 +347,30 @@ const ChatArea: React.FC<ChatAreaProps> = ({
             </Button>
           </div>
         ) : (
-          // Mostrar campo de mensagem quando humano está atendendo
-          <div className="flex items-center space-x-2">
-            <Input
-              placeholder="Digite sua mensagem..."
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1"
-            />
-            <Button onClick={handleSendMessage} size="sm">
-              <Send className="w-4 h-4" />
-            </Button>
+          // Mostrar campo de mensagem e botão encerrar quando humano está atendendo
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Input
+                placeholder="Digite sua mensagem..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} size="sm">
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex justify-center">
+              <Button 
+                variant="destructive"
+                className="px-6" 
+                onClick={onCloseConversation}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Encerrar Conversa
+              </Button>
+            </div>
           </div>
         )}
       </div>

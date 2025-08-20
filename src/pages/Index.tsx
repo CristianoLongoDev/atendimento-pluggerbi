@@ -461,7 +461,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
-  const { chats, messages, isConnected, sendMessage, transferToHuman, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
+  const { chats, messages, isConnected, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
   const { toast } = useToast();
   
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -648,6 +648,18 @@ const Index = () => {
                 toast({
                   title: "Conversas transferidas",
                   description: "As conversas ativas foram transferidas para atendimento humano.",
+                });
+              }}
+              onCloseConversation={() => {
+                // Encerrar todas as conversas ativas do grupo
+                selectedConversations.forEach(conv => {
+                  if (conv.status !== 'closed') {
+                    closeConversation(conv.id);
+                  }
+                });
+                toast({
+                  title: "Conversas encerradas",
+                  description: "As conversas ativas foram encerradas.",
                 });
               }}
               isInfoExpanded={isInfoExpanded}

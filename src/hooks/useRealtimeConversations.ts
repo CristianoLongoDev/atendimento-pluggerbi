@@ -49,6 +49,7 @@ interface UseRealtimeConversationsReturn {
   isConnected: boolean;
   sendMessage: (chatId: string, content: string) => void;
   transferToHuman: (chatId: string) => void;
+  closeConversation: (chatId: string) => void;
   refreshConversations: () => void;
   fetchMessages: (conversationId: string | number) => void;
   markAsRead: (chatId: string) => void;
@@ -610,6 +611,74 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     wsSendMessage(refreshPayload);
   }, [isConnected, wsSendMessage]);
 
+  const closeConversation = useCallback(async (chatId: string) => {
+    console.log('🚀 INICIANDO closeConversation para chat:', chatId);
+    
+    try {
+      // Primeiro tenta via API REST
+      try {
+        console.log('📡 Tentando fechar conversa via API REST...');
+        const response = await callExternalAPI(
+          `https://atendimento.pluggerbi.com/conversations/${chatId}/close`,
+          { user_id: profile?.id },
+          'PUT'
+        );
+        console.log('✅ Conversa encerrada via API REST:', response);
+        return; // Se funcionou, para aqui
+      } catch (apiError) {
+        console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
+        
+        // Se falhar, tenta via WebSocket
+        if (isConnected) {
+          // Tenta diferentes formatos de mensagem para fechar conversa
+          const closePayloads = [
+            {
+              type: 'close_conversation',
+              data: {
+                conversation_id: parseInt(chatId),
+                user_id: profile?.id
+              }
+            },
+            {
+              type: 'update_conversation_status',
+              data: {
+                conversation_id: parseInt(chatId),
+                status: 'closed'
+              }
+            },
+            {
+              type: 'conversation_status_update',
+              conversation_id: parseInt(chatId),
+              status: 'closed'
+            }
+          ];
+          
+          // Tenta todos os formatos
+          for (const payload of closePayloads) {
+            console.log('📤 Tentando formato de mensagem via WebSocket:', payload);
+            wsSendMessage(payload);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Aguarda um pouco entre tentativas
+          }
+          
+          console.log('✅ Todas as tentativas de WebSocket enviadas');
+        } else {
+          console.error('❌ WebSocket não conectado e API REST falhou');
+          throw new Error('WebSocket não conectado e API REST falhou');
+        }
+      }
+
+      // Atualizar status local do chat imediatamente para feedback visual
+      console.log('🔄 Atualizando status local para closed');
+      setChats(prevChats => prevChats.map(chat => 
+        chat.id === chatId ? { ...chat, status: 'closed', isActive: false } : chat
+      ));
+
+    } catch (error) {
+      console.error('❌ Erro ao encerrar conversa:', error);
+      throw error;
+    }
+  }, [isConnected, wsSendMessage, callExternalAPI, profile]);
+
   const markAsRead = useCallback((chatId: string) => {
     setChats(prev => prev.map(chat => {
       if (chat.id === chatId) {
@@ -628,6 +697,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     isConnected,
     sendMessage,
     transferToHuman,
+    closeConversation,
     refreshConversations,
     fetchMessages,
     markAsRead
