@@ -135,7 +135,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                     {selectedChat.conversationCount} conversas
                   </Badge>
                 )}
-                <Badge variant={selectedChat.status === 'ai' ? 'secondary' : 'destructive'} className="text-xs">
+                <Badge variant={selectedChat.status === 'ai' ? 'default' : 'destructive'} className={`text-xs ${selectedChat.status === 'ai' ? 'bg-green-500 hover:bg-green-600' : ''}`}>
                   {selectedChat.status === 'ai' ? (
                     <>
                       <Bot className="w-3 h-3 mr-1" />
