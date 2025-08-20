@@ -624,6 +624,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           'PUT'
         );
         console.log('✅ Conversa encerrada via API REST:', response);
+        
+        // Atualizar status local do chat imediatamente após sucesso da API
+        console.log('🔄 Atualizando status local para closed após sucesso da API');
+        setChats(prevChats => prevChats.map(chat => 
+          chat.id === chatId ? { ...chat, status: 'closed', isActive: false } : chat
+        ));
+        
         return; // Se funcionou, para aqui
       } catch (apiError) {
         console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
@@ -661,17 +668,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           }
           
           console.log('✅ Todas as tentativas de WebSocket enviadas');
+          
+          // Atualizar status local do chat após tentativas via WebSocket
+          console.log('🔄 Atualizando status local para closed após WebSocket');
+          setChats(prevChats => prevChats.map(chat => 
+            chat.id === chatId ? { ...chat, status: 'closed', isActive: false } : chat
+          ));
         } else {
           console.error('❌ WebSocket não conectado e API REST falhou');
           throw new Error('WebSocket não conectado e API REST falhou');
         }
       }
-
-      // Atualizar status local do chat imediatamente para feedback visual
-      console.log('🔄 Atualizando status local para closed');
-      setChats(prevChats => prevChats.map(chat => 
-        chat.id === chatId ? { ...chat, status: 'closed', isActive: false } : chat
-      ));
 
     } catch (error) {
       console.error('❌ Erro ao encerrar conversa:', error);
