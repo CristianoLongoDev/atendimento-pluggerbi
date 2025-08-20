@@ -97,7 +97,21 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           console.log('✅ Connection confirmed');
           break;
         case 'pong':
-          console.log('🏓 Pong received');
+          console.log('🏓 Pong received - conexão ativa');
+          // Aproveitar o pong para verificar se há mensagens perdidas na conversa ativa
+          // Fazer isso de forma throttled para não spammar
+          if (chats.length > 0) {
+            const now = Date.now();
+            const lastCheck = (window as any).__lastMessageCheck || 0;
+            if (now - lastCheck > 30000) { // Só verifica a cada 30 segundos
+              (window as any).__lastMessageCheck = now;
+              const activeChat = chats.find(chat => chat.status === 'ai' || chat.status === 'waiting');
+              if (activeChat) {
+                console.log('🔄 Verificando mensagens da conversa ativa:', activeChat.id);
+                setTimeout(() => fetchMessages(activeChat.id), 100);
+              }
+            }
+          }
           break;
         default:
           console.log('❓ Unknown message type:', message.type);
@@ -127,6 +141,18 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           console.log('📤 ENVIANDO subscribe_conversations:', refreshPayload);
           wsSendMessage(refreshPayload);
           console.log('📤 Enviado subscribe_conversations - SUCESSO');
+          
+          // Após conectar, buscar mensagens de conversas ativas
+          setTimeout(() => {
+            console.log('🔄 Buscando mensagens de conversas ativas após reconexão...');
+            if (chats.length > 0) {
+              const activeChats = chats.filter(chat => chat.status === 'ai' || chat.status === 'waiting');
+              activeChats.forEach(chat => {
+                console.log('🔄 Buscando mensagens para conversa:', chat.id);
+                fetchMessages(chat.id);
+              });
+            }
+          }, 1500);
         } else {
           console.log('❌ WebSocket desconectou durante timeout');
         }
@@ -135,6 +161,37 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('❌ WebSocket não está conectado');
     }
   }, [isConnected, wsSendMessage]);
+
+  // Verificação periódica de mensagens para conversas ativas
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const interval = setInterval(() => {
+      const activeChats = chats.filter(chat => 
+        (chat.status === 'ai' || chat.status === 'waiting' || chat.status === 'human') && 
+        chat.isActive
+      );
+      
+      if (activeChats.length > 0) {
+        console.log('🔄 Verificação periódica - buscando mensagens de', activeChats.length, 'conversas ativas');
+        activeChats.forEach(chat => {
+          // Buscar mensagens diretamente via WebSocket
+          const fetchPayload = {
+            type: 'get_messages',
+            data: {
+              conversation_id: parseInt(chat.id),
+              limit: 50,
+              offset: 0
+            }
+          };
+          console.log('📤 Sending periodic get_messages payload:', fetchPayload);
+          wsSendMessage(fetchPayload);
+        });
+      }
+    }, 30000); // A cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, [isConnected, chats, wsSendMessage]);
 
   const handleNewMessage = useCallback((data: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED:', data);
