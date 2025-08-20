@@ -73,6 +73,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('🔥 WEBSOCKET MESSAGE RECEIVED:', message.type, message);
       console.log('📊 Message data:', JSON.stringify(message, null, 2));
       
+      console.log('📨 RAW WEBSOCKET MESSAGE RECEIVED:', {
+        type: message.type,
+        hasData: !!message.data,
+        fullMessage: message
+      });
+
       switch (message.type) {
         case 'new_message':
           console.log('📩 Handling new_message event');
@@ -83,7 +89,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           handleSubscriptionUpdate(message.data);
           break;
         case 'messages_response':
-          console.log('💬 Handling messages_response event');
+          console.log('💬 Handling messages_response event', message);
           handleMessagesResponse(message);
           break;
         case 'connection_confirmed':
