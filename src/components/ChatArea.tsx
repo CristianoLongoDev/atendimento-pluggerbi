@@ -110,8 +110,21 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     const config = channelConfig[channel as keyof typeof channelConfig];
     return (
       <Badge variant="secondary" className="text-xs">
-        <div className={`w-2 h-2 rounded-full ${config.color} mr-1`}></div>
-        {config.label}
+        <div className="flex items-center space-x-1">
+          {channel === 'whatsapp' && (
+            <img src="/lovable-uploads/84640d55-cdf5-4bb9-9e7b-d1c9310ed0e6.png" alt="WhatsApp" className="w-3 h-3" />
+          )}
+          {channel === 'instagram' && (
+            <MessageSquare className="w-3 h-3 text-pink-500" />
+          )}
+          {channel === 'facebook' && (
+            <MessageSquare className="w-3 h-3 text-blue-500" />
+          )}
+          {channel === 'widget' && (
+            <MessageSquare className="w-3 h-3 text-purple-500" />
+          )}
+          <span>{config.label}</span>
+        </div>
       </Badge>
     );
   };
