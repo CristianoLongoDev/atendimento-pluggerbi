@@ -104,9 +104,22 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         case 'pong':
           console.log('🏓 Pong received - conexão ativa');
           break;
+        case 'message_received':
+        case 'new_message': 
+        case 'message_created':
+        case 'conversation_updated':
+          console.log('🆕 NOVA MENSAGEM RECEBIDA VIA WEBSOCKET:', message.type, message.data);
+          handleNewMessage(message);
+          break;
         default:
           console.log('❓ Unknown message type:', message.type);
           console.log('🔍 Full unknown message:', JSON.stringify(message, null, 2));
+          
+          // Para debug: tentar processar mensagens desconhecidas como possíveis novas mensagens
+          if (message.data && (message.data.conversation_id || message.data.id)) {
+            console.log('🚨 Mensagem desconhecida com dados - tentando processar como nova mensagem');
+            handleNewMessage(message);
+          }
           break;
       }
     });
