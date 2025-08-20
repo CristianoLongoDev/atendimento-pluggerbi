@@ -149,6 +149,16 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
+            {selectedChat.status !== 'ai' && (
+              <Button 
+                variant="destructive"
+                size="sm"
+                onClick={onCloseConversation}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Encerrar Conversa
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="ghost">
@@ -333,7 +343,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input / Attend Button / Close Button */}
+      {/* Message Input / Attend Button */}
       <div className="p-4 border-t border-border bg-card">
         {selectedChat.status === 'ai' ? (
           // Mostrar apenas botão "Atender" quando IA está ativa
@@ -347,30 +357,18 @@ const ChatArea: React.FC<ChatAreaProps> = ({
             </Button>
           </div>
         ) : (
-          // Mostrar campo de mensagem e botão encerrar quando humano está atendendo
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Input
-                placeholder="Digite sua mensagem..."
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                className="flex-1"
-              />
-              <Button onClick={handleSendMessage} size="sm">
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="flex justify-center">
-              <Button 
-                variant="destructive"
-                className="px-6" 
-                onClick={onCloseConversation}
-              >
-                <XCircle className="w-4 h-4 mr-2" />
-                Encerrar Conversa
-              </Button>
-            </div>
+          // Mostrar campo de mensagem quando humano está atendendo
+          <div className="flex items-center space-x-2">
+            <Input
+              placeholder="Digite sua mensagem..."
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              className="flex-1"
+            />
+            <Button onClick={handleSendMessage} size="sm">
+              <Send className="w-4 h-4" />
+            </Button>
           </div>
         )}
       </div>
