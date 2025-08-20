@@ -83,7 +83,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       switch (message.type) {
         case 'new_message':
           console.log('📩 Handling new_message event');
-          handleNewMessage(message.data);
+          console.log('🔍 RAW new_message data:', JSON.stringify(message, null, 2));
+          handleNewMessage(message);
           break;
         case 'subscription_updated':
           console.log('📊 Handling subscription_updated event');
@@ -93,28 +94,19 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           console.log('💬 Handling messages_response event', message);
           handleMessagesResponse(message);
           break;
+        case 'conversations_response':
+          console.log('💼 Handling conversations_response event');
+          handleSubscriptionUpdate(message.data);
+          break;
         case 'connection_confirmed':
           console.log('✅ Connection confirmed');
           break;
         case 'pong':
           console.log('🏓 Pong received - conexão ativa');
-          // Aproveitar o pong para verificar se há mensagens perdidas na conversa ativa
-          // Fazer isso de forma throttled para não spammar
-          if (chats.length > 0) {
-            const now = Date.now();
-            const lastCheck = (window as any).__lastMessageCheck || 0;
-            if (now - lastCheck > 30000) { // Só verifica a cada 30 segundos
-              (window as any).__lastMessageCheck = now;
-              const activeChat = chats.find(chat => chat.status === 'ai' || chat.status === 'waiting');
-              if (activeChat) {
-                console.log('🔄 Verificando mensagens da conversa ativa:', activeChat.id);
-                setTimeout(() => fetchMessages(activeChat.id), 100);
-              }
-            }
-          }
           break;
         default:
           console.log('❓ Unknown message type:', message.type);
+          console.log('🔍 Full unknown message:', JSON.stringify(message, null, 2));
           break;
       }
     });
@@ -142,16 +134,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           wsSendMessage(refreshPayload);
           console.log('📤 Enviado subscribe_conversations - SUCESSO');
           
-          // Após conectar, buscar mensagens de conversas ativas
+          // Após conectar, buscar mensagens de conversas ativas uma única vez
           setTimeout(() => {
-            console.log('🔄 Buscando mensagens de conversas ativas após reconexão...');
-            if (chats.length > 0) {
-              const activeChats = chats.filter(chat => chat.status === 'ai' || chat.status === 'waiting');
-              activeChats.forEach(chat => {
-                console.log('🔄 Buscando mensagens para conversa:', chat.id);
-                fetchMessages(chat.id);
-              });
-            }
+            console.log('🔄 Buscando mensagens iniciais após reconexão...');
+            refreshConversations();
           }, 1500);
         } else {
           console.log('❌ WebSocket desconectou durante timeout');
@@ -162,49 +148,29 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, [isConnected, wsSendMessage]);
 
-  // Verificação periódica de mensagens para conversas ativas
-  useEffect(() => {
-    if (!isConnected) return;
-
-    const interval = setInterval(() => {
-      const activeChats = chats.filter(chat => 
-        (chat.status === 'ai' || chat.status === 'waiting' || chat.status === 'human') && 
-        chat.isActive
-      );
-      
-      if (activeChats.length > 0) {
-        console.log('🔄 Verificação periódica - buscando mensagens de', activeChats.length, 'conversas ativas');
-        activeChats.forEach(chat => {
-          // Buscar mensagens diretamente via WebSocket
-          const fetchPayload = {
-            type: 'get_messages',
-            data: {
-              conversation_id: parseInt(chat.id),
-              limit: 50,
-              offset: 0
-            }
-          };
-          console.log('📤 Sending periodic get_messages payload:', fetchPayload);
-          wsSendMessage(fetchPayload);
-        });
-      }
-    }, 30000); // A cada 30 segundos
-
-    return () => clearInterval(interval);
-  }, [isConnected, chats, wsSendMessage]);
-
-  const handleNewMessage = useCallback((data: any) => {
-    console.log('🔔 NEW MESSAGE RECEIVED:', data);
+  const handleNewMessage = useCallback((message: any) => {
+    console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
     
-    if (!data || !data.data) {
-      console.log('❌ No message data received');
+    // Estrutura pode variar - tentar diferentes formatos
+    let data = message.data || message;
+    let conversation_id = message.conversation_id || data.conversation_id;
+    
+    if (!data) {
+      console.log('❌ No message data found in any format');
       return;
     }
 
-    const messageData = data.data;
-    const conversation_id = data.conversation_id;
+    // Se data.data existe, usar essa estrutura
+    if (data.data) {
+      conversation_id = data.conversation_id || conversation_id;
+      data = data.data;
+    }
     
-    // Extract data according to new API structure
+    console.log('🔍 Processed data:', { data, conversation_id });
+
+    const messageData = data;
+    
+    // Extract data according to API structure
     const message_id = messageData.id;
     const content = messageData.content;
     const sender = messageData.sender === 'user' ? 'customer' : messageData.sender;
@@ -215,9 +181,14 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     const metadata = messageData.metadata;
     
     console.log('📍 Processing new message for conversation:', conversation_id);
-    console.log('💬 Message details:', { message_id, content, sender, timestamp });
+    console.log('💬 Message details:', { message_id, content, sender, timestamp, channel });
 
-    // Add new message to the messages state with force update
+    if (!conversation_id) {
+      console.error('❌ No conversation_id found - cannot process message');
+      return;
+    }
+
+    // Add new message to the messages state
     setMessages(prev => {
       const currentMessages = prev[conversation_id] || [];
       const newMessage: Message = {
