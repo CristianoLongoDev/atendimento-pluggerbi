@@ -442,6 +442,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
     console.log('📤 SENDING MESSAGE to chat:', chatId, 'content:', content);
 
+    // Verificar conectividade antes de tentar enviar
+    if (!isConnected) {
+      console.warn('❌ WebSocket não conectado. Mensagem pode não ser entregue.');
+    }
+
+    let messageSuccessfullySent = false;
+
     try {
       const response = await callExternalAPI(
         `https://atendimento.pluggerbi.com/conversations/${chatId}/send-message`,
@@ -452,45 +459,73 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         'POST'
       );
       console.log('✅ Message sent successfully via API:', response);
+      messageSuccessfullySent = true;
     } catch (error) {
       console.error('❌ Error sending message via API:', error);
-      return;
+      
+      // Tentar via WebSocket se disponível como fallback
+      if (isConnected) {
+        try {
+          console.log('🔄 Tentando enviar via WebSocket como fallback...');
+          const wsPayload = {
+            type: 'send_message',
+            data: {
+              conversation_id: parseInt(chatId),
+              content,
+              user_id: profile?.id
+            }
+          };
+          wsSendMessage(wsPayload);
+          console.log('✅ Message sent via WebSocket fallback');
+          messageSuccessfullySent = true;
+        } catch (wsError) {
+          console.error('❌ WebSocket fallback also failed:', wsError);
+        }
+      }
+      
+      if (!messageSuccessfullySent) {
+        console.error('❌ Todas as tentativas de envio falharam');
+        // TODO: Adicionar toast de erro para o usuário
+        return;
+      }
     }
     
-    // Optimistically add message to local state
-    const tempMessage: Message = {
-      id: `temp_${Date.now()}`,
-      content,
-      sender: 'human',
-      senderName: profile?.full_name || 'Atendente',
-      timestamp: formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')
-    };
-
-    console.log('📝 Adding optimistic message to local state:', tempMessage);
-
-    setMessages(prev => {
-      const currentMessages = prev[chatId] || [];
-      const updatedMessages = {
-        ...prev,
-        [chatId]: [...currentMessages, tempMessage]
+    // Só adiciona otimisticamente se a mensagem foi enviada com sucesso
+    if (messageSuccessfullySent) {
+      const tempMessage: Message = {
+        id: `temp_${Date.now()}`,
+        content,
+        sender: 'human',
+        senderName: profile?.full_name || 'Atendente',
+        timestamp: formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')
       };
-      console.log('📊 Updated messages state for chat:', chatId, updatedMessages[chatId]);
-      return updatedMessages;
-    });
 
-    // Update chat last message
-    setChats(prev => prev.map(chat => {
-      if (chat.id === chatId) {
-        console.log('📝 Updating chat last message for:', chatId);
-        return {
-          ...chat,
-          lastMessage: content,
-          timestamp: tempMessage.timestamp
+      console.log('📝 Adding optimistic message to local state:', tempMessage);
+
+      setMessages(prev => {
+        const currentMessages = prev[chatId] || [];
+        const updatedMessages = {
+          ...prev,
+          [chatId]: [...currentMessages, tempMessage]
         };
-      }
-      return chat;
-    }));
-  }, [profile, callExternalAPI]);
+        console.log('📊 Updated messages state for chat:', chatId, updatedMessages[chatId]);
+        return updatedMessages;
+      });
+
+      // Update chat last message
+      setChats(prev => prev.map(chat => {
+        if (chat.id === chatId) {
+          console.log('📝 Updating chat last message for:', chatId);
+          return {
+            ...chat,
+            lastMessage: content,
+            timestamp: tempMessage.timestamp
+          };
+        }
+        return chat;
+      }));
+    }
+  }, [profile, callExternalAPI, isConnected, wsSendMessage]);
 
   const transferToHuman = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO transferToHuman para chat:', chatId);
