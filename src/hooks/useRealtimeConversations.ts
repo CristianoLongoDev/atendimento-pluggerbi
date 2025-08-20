@@ -427,38 +427,26 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, []);
 
-  const sendMessage = useCallback((chatId: string, content: string) => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket not connected. Cannot send message.');
-      return;
-    }
-
+  const sendMessage = useCallback(async (chatId: string, content: string) => {
     if (!chatId) {
       console.warn('❌ No chat ID provided. Cannot send message.');
       return;
     }
 
     console.log('📤 SENDING MESSAGE to chat:', chatId, 'content:', content);
-    console.log('🌐 WebSocket connection status:', isConnected);
 
-    const messagePayload = {
-      type: 'send_message',
-      data: {
-        conversation_id: chatId,
-        content,
-        sender: 'human',
-        senderName: profile?.full_name || 'Atendente',
-        user_id: profile?.id
-      }
-    };
-
-    console.log('📤 Sending message payload:', messagePayload);
-    
     try {
-      wsSendMessage(messagePayload);
-      console.log('✅ Message sent successfully via WebSocket');
+      const response = await callExternalAPI(
+        `https://atendimento.pluggerbi.com/conversations/${chatId}/send-message`,
+        {
+          content,
+          user_id: profile?.id
+        },
+        'POST'
+      );
+      console.log('✅ Message sent successfully via API:', response);
     } catch (error) {
-      console.error('❌ Error sending message via WebSocket:', error);
+      console.error('❌ Error sending message via API:', error);
       return;
     }
     
@@ -495,7 +483,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       }
       return chat;
     }));
-  }, [isConnected, wsSendMessage, profile]);
+  }, [profile, callExternalAPI]);
 
   const transferToHuman = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO transferToHuman para chat:', chatId);
