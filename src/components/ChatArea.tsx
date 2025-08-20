@@ -96,6 +96,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     );
   }
 
+  // Verificar se todas as conversas estão encerradas
+  const hasActiveConversations = conversations.some(conv => conv.status !== 'closed');
+  const isAllClosed = !hasActiveConversations && conversations.length > 0;
+
   const getChannelBadge = (channel: string) => {
     const channelConfig = {
       whatsapp: { label: 'WhatsApp', color: 'bg-green-500' },
@@ -149,7 +153,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            {selectedChat.status !== 'ai' && (
+            {selectedChat.status !== 'ai' && hasActiveConversations && (
               <Button 
                 variant="destructive"
                 size="sm"
@@ -355,6 +359,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               <UserPlus className="w-4 h-4 mr-2" />
               Atender Conversa
             </Button>
+          </div>
+        ) : isAllClosed ? (
+          // Mostrar mensagem quando todas as conversas estão encerradas
+          <div className="flex justify-center">
+            <div className="text-center text-muted-foreground">
+              <XCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Conversa encerrada</p>
+              <p className="text-xs opacity-70">Não é possível enviar mensagens</p>
+            </div>
           </div>
         ) : (
           // Mostrar campo de mensagem quando humano está atendendo
