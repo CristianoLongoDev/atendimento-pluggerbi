@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAccountData } from '@/hooks/useAccountData';
 import { useChannels } from '@/hooks/useChannels';
 import { useRealtimeConversations } from '@/hooks/useRealtimeConversations';
+import { useNotifications } from '@/hooks/useNotifications';
 import Header from '@/components/Header';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatList from '@/components/ChatList';
@@ -461,6 +462,13 @@ const Index = () => {
   const { chats, messages, isConnected, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
   const { toast } = useToast();
   
+  // Configuração do sistema de notificações
+  const notificationSystem = useNotifications({
+    originalTitle: 'Atendimento',
+    originalFavicon: '/lovable-uploads/d2adec10-008b-4037-9e75-c093dfb45d05.png',
+    alternateTitle: 'Nova Mensagem'
+  });
+  
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -474,6 +482,28 @@ const Index = () => {
   const [channelFormMode, setChannelFormMode] = useState<'create' | 'edit'>('create');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [channelToDelete, setChannelToDelete] = useState<string | null>(null);
+
+  // Monitorar mensagens para notificações
+  useEffect(() => {
+    const humanChats = chats.filter(chat => chat.status === 'human');
+    
+    if (humanChats.length === 0) return;
+
+    // Verificar se há nova mensagem de cliente em conversa com humano
+    humanChats.forEach(chat => {
+      const chatMessages = messages[chat.id] || [];
+      const lastMessage = chatMessages[chatMessages.length - 1];
+      
+      if (lastMessage && 
+          lastMessage.sender === 'customer' && 
+          document.hidden && // Só notifica se a página não está ativa
+          !notificationSystem.isNotifying) {
+        
+        console.log('🔔 Nova mensagem de cliente em atendimento humano - iniciando notificação');
+        notificationSystem.startNotifications();
+      }
+    });
+  }, [messages, chats, notificationSystem]);
   
   // Fetch channels when entering channels section
   useEffect(() => {
