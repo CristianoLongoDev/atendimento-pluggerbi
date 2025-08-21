@@ -106,8 +106,32 @@ serve(async (req) => {
       )
     }
 
+    console.log('✅ User is admin, proceeding with user creation...')
+
     // Parse the request body
-    const { email, password, full_name, role, department } = await req.json()
+    console.log('🔍 Parsing request body...')
+    let requestData;
+    try {
+      requestData = await req.json();
+      console.log('✅ Request body parsed:', { 
+        email: requestData.email, 
+        hasPassword: !!requestData.password,
+        full_name: requestData.full_name,
+        role: requestData.role,
+        department: requestData.department
+      });
+    } catch (parseError) {
+      console.error('❌ JSON parse error:', parseError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
+    const { email, password, full_name, role, department } = requestData;
 
     // Validate required fields
     if (!email || !password || !full_name || !role) {
