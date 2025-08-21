@@ -7,15 +7,20 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('🚀 CREATE-USER FUNCTION STARTED - Method:', req.method, 'URL:', req.url);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight request handled');
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    console.log('🔍 Processing POST request...');
+    
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')
-    console.log('🔍 Authorization header:', authHeader?.substring(0, 20) + '...')
+    console.log('🔍 Authorization header present:', !!authHeader)
     
     if (!authHeader) {
       console.log('❌ Missing authorization header')
