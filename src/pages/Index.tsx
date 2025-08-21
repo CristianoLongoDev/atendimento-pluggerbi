@@ -121,27 +121,24 @@ const UsersTabContent: React.FC = () => {
         });
       } else {
         // Create new user using edge function to avoid session changes
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        const response = await fetch(`https://ohnqbjeopvcpybptkszl.supabase.co/functions/v1/create-user`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke('create-user', {
+          body: {
             email: formData.email,
             password: formData.password,
             full_name: formData.full_name,
             role: formData.role,
             department: formData.department
-          })
+          }
         });
 
-        const result = await response.json();
+        if (error) {
+          console.error('Edge function error:', error);
+          throw new Error(error.message || 'Erro ao criar usuário');
+        }
 
-        if (!response.ok) {
-          throw new Error(result.error || 'Erro ao criar usuário');
+        if (!data?.success) {
+          console.error('Edge function returned error:', data);
+          throw new Error(data?.error || 'Erro ao criar usuário');
         }
 
         toast({
