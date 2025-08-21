@@ -15,7 +15,10 @@ serve(async (req) => {
   try {
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')
+    console.log('🔍 Authorization header:', authHeader?.substring(0, 20) + '...')
+    
     if (!authHeader) {
+      console.log('❌ Missing authorization header')
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { 
@@ -32,17 +35,33 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
 
+    console.log('🔍 Verifying user with token...')
     // Verify the user is authenticated and get their profile
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    if (userError || !user) {
+    
+    if (userError) {
+      console.log('❌ User verification error:', userError)
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
+        JSON.stringify({ error: 'Invalid or expired token: ' + userError.message }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     }
+    
+    if (!user) {
+      console.log('❌ No user found')
+      return new Response(
+        JSON.stringify({ error: 'No user found in token' }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('✅ User verified:', user.email)
 
     // Get the user's profile to check permissions
     const { data: profile, error: profileError } = await supabaseClient
@@ -51,7 +70,19 @@ serve(async (req) => {
       .eq('id', user.id)
       .single()
 
-    if (profileError || !profile) {
+    if (profileError) {
+      console.log('❌ Profile error:', profileError)
+      return new Response(
+        JSON.stringify({ error: 'Profile error: ' + profileError.message }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
+    if (!profile) {
+      console.log('❌ No profile found for user:', user.id)
       return new Response(
         JSON.stringify({ error: 'User profile not found' }),
         { 
@@ -61,8 +92,11 @@ serve(async (req) => {
       )
     }
 
+    console.log('✅ Profile found:', { role: profile.role, account_id: profile.account_id })
+
     // Check if user is admin
     if (profile.role !== 'admin') {
+      console.log('❌ Insufficient permissions. User role:', profile.role)
       return new Response(
         JSON.stringify({ error: 'Only admins can create users' }),
         { 
