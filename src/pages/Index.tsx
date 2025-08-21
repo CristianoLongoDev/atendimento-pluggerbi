@@ -593,7 +593,7 @@ const Index = () => {
             <div className="w-80 border-r border-border bg-card overflow-y-auto">
               <div className="p-4 border-b border-border">
                 <h3 className="font-medium text-sm text-muted-foreground mb-3">
-                  CONVERSAS ATIVAS ({filteredChats.length})
+                  TODAS CONVERSAS ({filteredChats.length})
                 </h3>
               </div>
               <div className="p-2">
