@@ -4,6 +4,7 @@ import { useAccountData } from '@/hooks/useAccountData';
 import { useChannels } from '@/hooks/useChannels';
 import { useRealtimeConversations } from '@/hooks/useRealtimeConversations';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useConversationSearch } from '@/hooks/useConversationSearch';
 import Header from '@/components/Header';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatList from '@/components/ChatList';
@@ -471,10 +472,14 @@ const Index = () => {
   
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchMode, setIsSearchMode] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedConversations, setSelectedConversations] = useState<any[]>([]);
   const [selectedSection, setSelectedSection] = useState('conversations');
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+  
+  // Hook de busca de conversas
+  const { searchConversations, clearResults, results: searchResults, loading: searchLoading, error: searchError } = useConversationSearch();
   
   // Channel management states
   const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
@@ -514,17 +519,45 @@ const Index = () => {
   
   const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
-  const filteredChats = chats.filter(chat => {
+  // Conversas para exibir - busca via API ou WebSocket
+  const displayChats = isSearchMode ? 
+    searchResults.map(result => ({
+      id: result.conversation_id.toString(),
+      customerName: result.contact_name,
+      lastMessage: result.message_preview,
+      timestamp: result.last_message_at,
+      channel: 'whatsapp' as const,
+      status: result.status as 'ai' | 'human' | 'pending' | 'closed' | 'waiting',
+      unreadCount: 0,
+      isActive: false
+    })) : 
+    chats;
+  
+  const filteredChats = displayChats.filter(chat => {
     const matchesFilter = selectedFilter === 'all' || chat.status === selectedFilter;
-    const matchesSearch = chat.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const matchesSearch = !isSearchMode && (
+      chat.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return matchesFilter && (isSearchMode || matchesSearch);
   });
 
   const handleSendMessage = (message: string) => {
     if (selectedChatId) {
       sendMessage(selectedChatId, message);
     }
+  };
+
+  const handleSearchSubmit = async (term: string) => {
+    setIsSearchMode(true);
+    await searchConversations(term);
+  };
+
+  const handleSearchClear = () => {
+    setSearchTerm('');
+    setIsSearchMode(false);
+    clearResults();
+    setSelectedChatId(null);
   };
 
   const handleTransferToHuman = async () => {
@@ -916,6 +949,8 @@ const Index = () => {
           onFilterChange={setSelectedFilter}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          onSearchSubmit={handleSearchSubmit}
+          onSearchClear={handleSearchClear}
           selectedSection={selectedSection}
           onSectionChange={setSelectedSection}
           chats={chats}

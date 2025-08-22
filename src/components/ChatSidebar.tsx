@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MessageSquare, Bot, User, Filter, Search, Plus, Settings, Users, FileText, ShieldCheck, ChevronDown, ChevronRight, Puzzle, Target } from 'lucide-react';
+import { MessageSquare, Bot, User, Filter, Search, Plus, Settings, Users, FileText, ShieldCheck, ChevronDown, ChevronRight, Puzzle, Target, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,8 @@ interface ChatSidebarProps {
   onFilterChange: (filter: string) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  onSearchSubmit: (term: string) => void;
+  onSearchClear: () => void;
   selectedSection: string;
   onSectionChange: (section: string) => void;
   chats: Chat[];
@@ -28,6 +30,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onFilterChange,
   searchTerm,
   onSearchChange,
+  onSearchSubmit,
+  onSearchClear,
   selectedSection,
   onSectionChange,
   chats,
@@ -97,11 +101,25 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder="Buscar conversas..."
+                    placeholder="Buscar conversas... (pressione Enter)"
                     value={searchTerm}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-10"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchTerm.trim()) {
+                        onSearchSubmit(searchTerm.trim());
+                      }
+                    }}
+                    className="pl-10 pr-10"
                   />
+                  {searchTerm && (
+                    <button
+                      onClick={onSearchClear}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      title="Limpar busca"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-1">
