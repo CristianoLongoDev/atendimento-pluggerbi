@@ -251,7 +251,26 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     // Extract data according to API structure
     const message_id = messageData.id;
     const content = messageData.content;
-    const sender = messageData.sender === 'user' ? 'customer' : messageData.sender;
+    const user_id = messageData.user_id;
+    
+    // Determinar o sender corretamente baseado no user_id
+    let sender;
+    let senderName = '';
+    
+    if (user_id) {
+      // Se tem user_id, é uma mensagem de um atendente humano
+      sender = 'human';
+      senderName = messageData.senderName || profile?.full_name || 'Atendente';
+    } else if (messageData.sender === 'user') {
+      // Se sender é 'user' mas não tem user_id, é um cliente
+      sender = 'customer';
+      senderName = messageData.senderName || 'Cliente';
+    } else {
+      // Caso contrário, manter o sender original (bot, etc)
+      sender = messageData.sender;
+      senderName = messageData.senderName || '';
+    }
+    
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
     const message_type = messageData.message_type;
@@ -273,6 +292,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         id: message_id || `msg_${Date.now()}`,
         content: content,
         sender: sender,
+        senderName: senderName,
         timestamp: timestamp ? (() => {
           const date = new Date(timestamp + (timestamp.includes('Z') ? '' : 'Z'));
           return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
