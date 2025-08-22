@@ -257,33 +257,20 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🔍 DEBUG user_id encontrado:', user_id);
     console.log('🔍 DEBUG sender original:', messageData.sender);
     
-    // Determinar o sender corretamente baseado no user_id OU se é um agente logado
+    // Determinar o sender baseado apenas no user_id
     let sender;
     let senderName = '';
     
-    if (user_id || (messageData.sender === 'agent' && profile?.id)) {
-      // Se tem user_id OU se é agent e temos um perfil logado, é uma mensagem de um atendente humano
+    if (user_id) {
+      // Se tem user_id, é uma mensagem de um atendente humano
       sender = 'human';
-      
-      // Se tem user_id específico, usar o senderName fornecido ou user_id truncado
-      if (user_id) {
-        // Sempre buscar o nome do usuário no senderName da API ou usar ID truncado como fallback
-        senderName = messageData.senderName || messageData.sender_name || `Usuário ${user_id.slice(0, 8)}`;
-      } else {
-        senderName = profile?.full_name || 'Atendente';
-      }
-      
-      console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'messageData.senderName:', messageData.senderName, 'senderName final:', senderName);
-    } else if (messageData.sender === 'user') {
-      // Se sender é 'user' mas não tem user_id, é um cliente
-      sender = 'customer';
-      senderName = messageData.senderName || 'Cliente';
-      console.log('✅ Mensagem identificada como CLIENTE');
+      senderName = messageData.senderName || messageData.sender_name || `Usuário ${user_id.slice(0, 8)}`;
+      console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'senderName:', senderName);
     } else {
-      // Caso contrário, manter o sender original (bot, etc)
-      sender = messageData.sender;
-      senderName = messageData.senderName || '';
-      console.log('✅ Mensagem identificada como BOT/AI');
+      // Se não tem user_id, é do bot
+      sender = 'ai';
+      senderName = 'ChatBot';
+      console.log('✅ Mensagem identificada como BOT');
     }
     
     console.log('🎯 SENDER FINAL:', sender, 'SENDERNAME FINAL:', senderName);
