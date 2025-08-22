@@ -517,6 +517,20 @@ const Index = () => {
     }
   }, [selectedSection, fetchChannels]);
   
+  // Atualizar selectedConversations quando chats mudarem
+  useEffect(() => {
+    if (selectedChatId && selectedConversations.length > 0) {
+      const updatedConversations = chats.filter(chat => chat.id === selectedChatId);
+      if (updatedConversations.length > 0 && updatedConversations[0].status !== selectedConversations[0].status) {
+        console.log('🔄 Atualizando selectedConversations devido a mudança no chat:', {
+          oldStatus: selectedConversations[0].status,
+          newStatus: updatedConversations[0].status
+        });
+        setSelectedConversations(updatedConversations);
+      }
+    }
+  }, [chats, selectedChatId]);
+  
   const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
   // Conversas para exibir - busca via API ou WebSocket
