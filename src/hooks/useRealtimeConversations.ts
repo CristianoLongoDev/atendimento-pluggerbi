@@ -130,8 +130,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   // Auto-refresh conversations when WebSocket connects
   useEffect(() => {
     console.log('🔄 EFFECT: WebSocket status changed to:', isConnected);
+    console.log('🔄 Profile account_id:', profile?.account_id);
     
-    if (isConnected) {
+    if (isConnected && profile?.account_id) {
       console.log('🔄 WebSocket conectado, buscando conversas...');
       // Aguarda um pouco para garantir que a conexão está estável
       setTimeout(() => {
@@ -140,10 +141,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           const refreshPayload = {
             type: 'subscribe_conversations',
             data: {
+              account_id: profile.account_id,
               conversation_ids: [] // Empty array = all conversations
             }
           };
-          console.log('📤 ENVIANDO subscribe_conversations:', refreshPayload);
+          console.log('📤 ENVIANDO subscribe_conversations com account_id:', refreshPayload);
           wsSendMessage(refreshPayload);
           console.log('📤 Enviado subscribe_conversations - SUCESSO');
           
@@ -157,9 +159,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         }
       }, 1000);
     } else {
-      console.log('❌ WebSocket não está conectado');
+      console.log('❌ WebSocket não está conectado ou sem account_id:', { isConnected, accountId: profile?.account_id });
     }
-  }, [isConnected, wsSendMessage]);
+  }, [isConnected, wsSendMessage, profile?.account_id]);
 
   const handleNewMessage = useCallback((message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
@@ -672,20 +674,30 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   }, [isConnected, wsSendMessage]);
 
   const refreshConversations = useCallback(() => {
+    console.log('🔄 Refreshing conversations...');
+    console.log('🔄 Profile account_id para refresh:', profile?.account_id);
+    
     if (!isConnected) {
       console.warn('WebSocket not connected. Cannot refresh conversations.');
+      return;
+    }
+
+    if (!profile?.account_id) {
+      console.log('❌ Cannot refresh - No account_id available');
       return;
     }
 
     const refreshPayload = {
       type: 'subscribe_conversations',
       data: {
+        account_id: profile.account_id,
         conversation_ids: [] // Empty array = all conversations
       }
     };
 
+    console.log('📤 Sending subscription with account_id:', refreshPayload);
     wsSendMessage(refreshPayload);
-  }, [isConnected, wsSendMessage]);
+  }, [isConnected, wsSendMessage, profile?.account_id]);
 
   const closeConversation = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO closeConversation para chat:', chatId);
