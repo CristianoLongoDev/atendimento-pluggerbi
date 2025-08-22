@@ -362,7 +362,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
       {/* Message Input / Attend Button */}
       <div className="p-4 border-t border-border bg-card">
-        {selectedChat.status === 'ai' ? (
+        {(() => {
+          console.log('🎯 ChatArea - selectedChat.status:', selectedChat.status);
+          return selectedChat.status === 'ai';
+        })() ? (
           // Mostrar apenas botão "Atender" quando IA está ativa
           <div className="flex justify-center">
             <Button 
