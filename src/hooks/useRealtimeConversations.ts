@@ -595,42 +595,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       }
     }
     
-    // Só adiciona otimisticamente se a mensagem foi enviada com sucesso
-    if (messageSuccessfullySent) {
-      const tempMessage: Message = {
-        id: `temp_${Date.now()}`,
-        content,
-        sender: 'human',
-        senderName: profile?.full_name || 'Atendente',
-        timestamp: formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm')
-      };
+    // Não adicionar mensagem otimística - deixar o WebSocket atualizar
+    console.log('✅ Mensagem enviada com sucesso, aguardando confirmação via WebSocket');
 
-      console.log('📝 Adding optimistic message to local state:', tempMessage);
-
-      setMessages(prev => {
-        const currentMessages = prev[chatId] || [];
-        const updatedMessages = {
-          ...prev,
-          [chatId]: [...currentMessages, tempMessage]
-        };
-        console.log('📊 Updated messages state for chat:', chatId, updatedMessages[chatId]);
-        return updatedMessages;
-      });
-
-      // Update chat last message
-      setChats(prev => prev.map(chat => {
-        if (chat.id === chatId) {
-          console.log('📝 Updating chat last message for:', chatId);
-          return {
-            ...chat,
-            lastMessage: content,
-            timestamp: tempMessage.timestamp
-          };
-        }
-        return chat;
-      }));
-    }
-  }, [profile, callExternalAPI, isConnected, wsSendMessage]);
+  }, [profile, isConnected, wsSendMessage]);
 
   const transferToHuman = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO transferToHuman para chat:', chatId);
