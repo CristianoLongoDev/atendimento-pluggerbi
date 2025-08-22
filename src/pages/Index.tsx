@@ -720,13 +720,21 @@ const Index = () => {
                   sendMessage(mostRecentConv.id, message);
                 }
               }}
-              onTransferToHuman={() => {
+              onTransferToHuman={async () => {
                 // Transferir todas as conversas ativas do grupo
-                selectedConversations.forEach(conv => {
-                  if (conv.status !== 'closed') {
-                    transferToHuman(conv.id);
-                  }
-                });
+                const promises = selectedConversations
+                  .filter(conv => conv.status !== 'closed')
+                  .map(conv => transferToHuman(conv.id));
+                
+                await Promise.all(promises);
+                
+                // Atualizar imediatamente o selectedConversations após sucesso
+                setSelectedConversations(prevConvs => 
+                  prevConvs.map(conv => 
+                    conv.status !== 'closed' ? { ...conv, status: 'human' } : conv
+                  )
+                );
+                
                 toast({
                   title: "Conversas transferidas",
                   description: "As conversas ativas foram transferidas para atendimento humano.",
