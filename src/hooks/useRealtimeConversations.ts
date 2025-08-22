@@ -652,11 +652,11 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         );
         console.log('✅ Status alterado para humano via API REST:', response);
         
-        // Recarregar conversações após sucesso da API para garantir sincronização
+        // Refresh da página após sucesso para garantir sincronização
         setTimeout(() => {
-          console.log('🔄 Recarregando conversações após transferência bem-sucedida');
-          refreshConversations();
-        }, 500);
+          console.log('🔄 Fazendo refresh da página após transferência bem-sucedida');
+          window.location.reload();
+        }, 1000);
         
         return; // Se funcionou, para aqui
       } catch (apiError) {
