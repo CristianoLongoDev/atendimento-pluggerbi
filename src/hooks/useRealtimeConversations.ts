@@ -434,29 +434,19 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           })() : '',
           channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
           status: (() => {
-            // PRIMEIRO: Buscar conversa ativa para este cliente
-            const activeConversation = customerConversations.find((c: any) => c.conversation_status === 'active');
-            
-            if (activeConversation) {
-              // Se há conversa ativa, usar o status dela
-              console.log('🎯 Usando status da conversa ATIVA:', { 
-                conversationId: activeConversation.id, 
-                status: activeConversation.status 
-              });
-              return activeConversation.status === 'human' ? 'human' : 'ai';
-            }
-            
-            // Se não há conversa ativa, usar lógica anterior
+            // Se esta conversa específica está fechada
             if (conv.conversation_status === 'closed') return 'closed';
             
-            // Se a conversa está ativa, verificar quem está atendendo
+            // Se esta conversa específica está ativa, usar seu próprio status
             if (conv.conversation_status === 'active') {
-              if (conv.status === 'ai') return 'ai';
-              if (conv.status === 'human') return 'human';
-              if (conv.status === 'waiting') return 'waiting';
-              return 'ai'; // Default para conversas ativas
+              console.log('📋 Conversa ativa encontrada:', { 
+                conversationId: conv.id, 
+                status: conv.status 
+              });
+              return conv.status === 'human' ? 'human' : 'ai';
             }
             
+            // Para conversas inativas, retornar pending
             return 'pending';
           })(),
           unreadCount: conv.unread_count || 0,
