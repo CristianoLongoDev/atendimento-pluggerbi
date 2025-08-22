@@ -573,6 +573,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const transferToHuman = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO transferToHuman para chat:', chatId);
     
+    // Atualizar status local IMEDIATAMENTE para feedback visual instantâneo
+    console.log('🔄 Atualizando status local IMEDIATAMENTE para feedback visual');
+    setChats(prevChats => prevChats.map(chat => 
+      chat.id === chatId ? { ...chat, status: 'human' } : chat
+    ));
+    
     try {
       // Primeiro tenta via API REST
       try {
@@ -622,18 +628,20 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           console.log('✅ Todas as tentativas de WebSocket enviadas');
         } else {
           console.error('❌ WebSocket não conectado e API REST falhou');
+          // Reverter status local se tudo falhar
+          setChats(prevChats => prevChats.map(chat => 
+            chat.id === chatId ? { ...chat, status: 'ai' } : chat
+          ));
           throw new Error('WebSocket não conectado e API REST falhou');
         }
       }
 
-      // Atualizar status local do chat imediatamente para feedback visual
-      console.log('🔄 Atualizando status local para feedback visual');
-      setChats(prevChats => prevChats.map(chat => 
-        chat.id === chatId ? { ...chat, status: 'human' } : chat
-      ));
-
     } catch (error) {
       console.error('❌ Erro ao transferir para humano:', error);
+      // Reverter status local em caso de erro
+      setChats(prevChats => prevChats.map(chat => 
+        chat.id === chatId ? { ...chat, status: 'ai' } : chat
+      ));
       throw error;
     }
   }, [isConnected, wsSendMessage, callExternalAPI]);
