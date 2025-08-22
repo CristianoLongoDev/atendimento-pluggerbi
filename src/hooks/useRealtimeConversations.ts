@@ -275,6 +275,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     
     console.log('🎯 SENDER FINAL:', sender, 'SENDERNAME FINAL:', senderName);
     
+    // Log adicional para debug
+    console.log('🔍 PROFILE no handleNewMessage:', JSON.stringify(profile, null, 2));
+    
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
     const message_type = messageData.message_type;
