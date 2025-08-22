@@ -253,6 +253,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     const content = messageData.content;
     const user_id = messageData.user_id;
     
+    console.log('🔍 DEBUG messageData completo:', JSON.stringify(messageData, null, 2));
+    console.log('🔍 DEBUG user_id encontrado:', user_id);
+    console.log('🔍 DEBUG sender original:', messageData.sender);
+    
     // Determinar o sender corretamente baseado no user_id
     let sender;
     let senderName = '';
@@ -261,15 +265,20 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       // Se tem user_id, é uma mensagem de um atendente humano
       sender = 'human';
       senderName = messageData.senderName || profile?.full_name || 'Atendente';
+      console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'senderName:', senderName);
     } else if (messageData.sender === 'user') {
       // Se sender é 'user' mas não tem user_id, é um cliente
       sender = 'customer';
       senderName = messageData.senderName || 'Cliente';
+      console.log('✅ Mensagem identificada como CLIENTE');
     } else {
       // Caso contrário, manter o sender original (bot, etc)
       sender = messageData.sender;
       senderName = messageData.senderName || '';
+      console.log('✅ Mensagem identificada como BOT/AI');
     }
+    
+    console.log('🎯 SENDER FINAL:', sender, 'SENDERNAME FINAL:', senderName);
     
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
