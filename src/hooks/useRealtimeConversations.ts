@@ -267,12 +267,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       
       // Se tem user_id específico, usar o senderName fornecido ou user_id truncado
       if (user_id) {
-        senderName = messageData.senderName || `Usuário ${user_id.slice(0, 8)}`;
+        // Sempre buscar o nome do usuário no senderName da API ou usar ID truncado como fallback
+        senderName = messageData.senderName || messageData.sender_name || `Usuário ${user_id.slice(0, 8)}`;
       } else {
         senderName = profile?.full_name || 'Atendente';
       }
       
-      console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'senderName:', senderName);
+      console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'messageData.senderName:', messageData.senderName, 'senderName final:', senderName);
     } else if (messageData.sender === 'user') {
       // Se sender é 'user' mas não tem user_id, é um cliente
       sender = 'customer';
