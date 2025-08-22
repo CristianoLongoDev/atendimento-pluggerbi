@@ -596,7 +596,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         `https://atendimento.pluggerbi.com/conversations/${chatId}/send-message`,
         {
           content,
-          user_id: profile?.id
+          user_id: profile?.id,
+          sender: 'human'
         },
         'POST'
       );
@@ -614,7 +615,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
             data: {
               conversation_id: parseInt(chatId),
               content,
-              user_id: profile?.id
+              user_id: profile?.id,
+              sender: 'human'
             }
           };
           wsSendMessage(wsPayload);
