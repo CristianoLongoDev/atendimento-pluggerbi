@@ -228,6 +228,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   const handleNewMessage = useCallback((message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
+    console.log('🔍 CHECANDO USER_ID na mensagem recebida...');
     
     // Estrutura pode variar - tentar diferentes formatos
     let data = message.data || message;
