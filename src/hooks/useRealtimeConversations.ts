@@ -252,25 +252,35 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     // Extract data according to API structure
     const message_id = messageData.id;
     const content = messageData.content;
-    const user_id = messageData.user_id;
+    // Extrair user_id de diferentes possíveis locais ou assumir se é agent e temos profile
+    const user_id = messageData.user_id || 
+                   messageData.metadata?.user_id || 
+                   (messageData.sender === 'agent' && profile?.id ? profile.id : null);
     
     console.log('🔍 DEBUG messageData completo:', JSON.stringify(messageData, null, 2));
     console.log('🔍 DEBUG user_id encontrado:', user_id);
     console.log('🔍 DEBUG sender original:', messageData.sender);
+    console.log('🔍 DEBUG profile?.id:', profile?.id);
     
-    // Determinar o sender baseado apenas no user_id
+    // Determinar o sender baseado no user_id ou se é agent com profile
     let sender;
     let senderName = '';
     
     if (user_id) {
       // Se tem user_id, é uma mensagem de um atendente humano
       sender = 'human';
-      senderName = messageData.senderName || messageData.sender_name || `Usuário ${user_id.slice(0, 8)}`;
+      
+      // Se o user_id é igual ao profile.id, é o usuário logado
+      if (user_id === profile?.id) {
+        senderName = profile?.email?.split('@')[0] || profile?.full_name || `Usuário ${user_id.slice(0, 8)}`;
+      } else {
+        senderName = messageData.senderName || messageData.sender_name || `Usuário ${user_id.slice(0, 8)}`;
+      }
       console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'senderName:', senderName);
     } else {
       // Se não tem user_id, é do bot
       sender = 'ai';
-      senderName = 'ChatBot';
+      senderName = 'IA';
       console.log('✅ Mensagem identificada como BOT');
     }
     
