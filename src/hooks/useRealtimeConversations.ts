@@ -439,10 +439,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
             
             // Se esta conversa específica está ativa, usar seu próprio status
             if (conv.conversation_status === 'active') {
-              console.log('📋 Conversa ativa encontrada:', { 
-                conversationId: conv.id, 
-                status: conv.status 
-              });
+              console.log('📋 Conversa ativa encontrada ID:', conv.id, 'status:', conv.status);
               return conv.status === 'human' ? 'human' : 'ai';
             }
             
@@ -654,6 +651,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           'PUT'
         );
         console.log('✅ Status alterado para humano via API REST:', response);
+        
+        // Recarregar conversações após sucesso da API para garantir sincronização
+        setTimeout(() => {
+          console.log('🔄 Recarregando conversações após transferência bem-sucedida');
+          refreshConversations();
+        }, 500);
+        
         return; // Se funcionou, para aqui
       } catch (apiError) {
         console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
