@@ -683,10 +683,14 @@ const Index = () => {
             </div>
 
             <ChatArea
-              selectedChat={selectedConversations.length > 0 ? {
-                ...selectedConversations[0],
-                conversationCount: selectedConversations.length
-              } : null}
+              selectedChat={(() => {
+                const chat = selectedConversations.length > 0 ? {
+                  ...selectedConversations[0],
+                  conversationCount: selectedConversations.length
+                } : null;
+                console.log('🎯 ChatArea recebendo selectedChat:', chat?.status);
+                return chat;
+              })()}
               conversations={selectedConversations}
               messages={selectedConversations.length > 0 ? 
                 // Pegar apenas as mensagens da conversa mais recente (primeira do array)

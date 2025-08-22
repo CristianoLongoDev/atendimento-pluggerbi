@@ -651,13 +651,6 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           'PUT'
         );
         console.log('✅ Status alterado para humano via API REST:', response);
-        
-        // Refresh da página após sucesso para garantir sincronização
-        setTimeout(() => {
-          console.log('🔄 Fazendo refresh da página após transferência bem-sucedida');
-          window.location.reload();
-        }, 1000);
-        
         return; // Se funcionou, para aqui
       } catch (apiError) {
         console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
