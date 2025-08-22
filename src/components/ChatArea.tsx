@@ -367,11 +367,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           <div className="flex justify-center">
             <Button 
               className="bg-accent hover:bg-accent/80 text-accent-foreground border-accent px-8" 
-              onClick={() => {
-                onTransferToHuman();
-                // Força uma pequena atualização local para feedback imediato
-                selectedChat.status = 'human';
-              }}
+              onClick={onTransferToHuman}
             >
               <UserPlus className="w-4 h-4 mr-2" />
               Atender Conversa

@@ -565,6 +565,10 @@ const Index = () => {
       try {
         await transferToHuman(selectedChatId);
         
+        // Força re-render do componente após a transferência
+        setSelectedChatId(null);
+        setTimeout(() => setSelectedChatId(selectedChatId), 100);
+        
         toast({
           title: "Atendimento assumido",
           description: "Um humano assumiu o atendimento desta conversa.",
