@@ -261,6 +261,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🔍 DEBUG user_id encontrado:', user_id);
     console.log('🔍 DEBUG sender original:', messageData.sender);
     console.log('🔍 DEBUG profile?.id:', profile?.id);
+    console.log('🔍 DEBUG Comparação user_id === profile?.id:', user_id === profile?.id);
+    console.log('🔍 DEBUG typeof user_id:', typeof user_id);
+    console.log('🔍 DEBUG typeof profile?.id:', typeof profile?.id);
     
     // Determinar o sender baseado no user_id ou se é agent com profile
     let sender;
