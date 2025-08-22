@@ -252,39 +252,31 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     // Extract data according to API structure
     const message_id = messageData.id;
     const content = messageData.content;
-    // Extrair user_id de diferentes possíveis locais ou assumir se é agent e temos profile
-    const user_id = messageData.user_id || 
-                   messageData.metadata?.user_id || 
-                   (messageData.sender === 'agent' && profile?.id ? profile.id : null);
+    const originalSender = messageData.sender; // "customer" ou "agent"
     
     console.log('🔍 DEBUG messageData completo:', JSON.stringify(messageData, null, 2));
-    console.log('🔍 DEBUG user_id encontrado:', user_id);
-    console.log('🔍 DEBUG sender original:', messageData.sender);
-    console.log('🔍 DEBUG profile?.id:', profile?.id);
-    console.log('🔍 DEBUG Comparação user_id === profile?.id:', user_id === profile?.id);
-    console.log('🔍 DEBUG typeof user_id:', typeof user_id);
-    console.log('🔍 DEBUG typeof profile?.id:', typeof profile?.id);
+    console.log('🔍 DEBUG sender original:', originalSender);
+    console.log('🔍 DEBUG profile?.email:', profile?.email);
     
-    // Determinar o sender baseado no user_id ou se é agent com profile
+    // Determinar o sender baseado no campo sender da API
     let sender;
     let senderName = '';
     
-    if (user_id) {
-      // Se tem user_id, é uma mensagem de um atendente humano
+    if (originalSender === 'customer') {
+      // Cliente/Usuário
       sender = 'human';
-      
-      // Se o user_id é igual ao profile.id, é o usuário logado
-      if (user_id === profile?.id) {
-        senderName = profile?.email?.split('@')[0] || profile?.full_name || `Usuário ${user_id.slice(0, 8)}`;
-      } else {
-        senderName = messageData.senderName || messageData.sender_name || `Usuário ${user_id.slice(0, 8)}`;
-      }
-      console.log('✅ Mensagem identificada como HUMANA - user_id:', user_id, 'senderName:', senderName);
-    } else {
-      // Se não tem user_id, é do bot
+      senderName = profile?.email?.split('@')[0] || profile?.full_name || messageData.senderName || 'Cliente';
+      console.log('✅ Mensagem identificada como CLIENTE - senderName:', senderName);
+    } else if (originalSender === 'agent') {
+      // Bot/IA
       sender = 'ai';
-      senderName = 'IA';
-      console.log('✅ Mensagem identificada como BOT');
+      senderName = messageData.metadata?.bot?.agent_name || 'IA';
+      console.log('✅ Mensagem identificada como BOT - senderName:', senderName);
+    } else {
+      // Fallback
+      sender = 'ai';
+      senderName = 'Sistema';
+      console.log('⚠️ Sender desconhecido, usando fallback');
     }
     
     console.log('🎯 SENDER FINAL:', sender, 'SENDERNAME FINAL:', senderName);
