@@ -651,6 +651,14 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           'PUT'
         );
         console.log('✅ Status alterado para humano via API REST:', response);
+        
+        // Forçar atualização do chat específico na lista
+        setChats(prevChats => 
+          prevChats.map(chat => 
+            chat.id === chatId ? { ...chat, status: 'human' } : chat
+          )
+        );
+        
         return; // Se funcionou, para aqui
       } catch (apiError) {
         console.log('⚠️ Falha na API REST, tentando via WebSocket:', apiError);
