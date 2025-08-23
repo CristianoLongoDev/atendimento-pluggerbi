@@ -557,8 +557,14 @@ const Index = () => {
   });
 
   const handleSendMessage = (message: string) => {
+    console.log('📋 Index.tsx - handleSendMessage chamado com:', message);
+    console.log('📋 Index.tsx - selectedChatId:', selectedChatId);
     if (selectedChatId) {
+      console.log('📋 Index.tsx - executando sendMessage...');
       sendMessage(selectedChatId, message);
+      console.log('📋 Index.tsx - sendMessage executado');
+    } else {
+      console.log('📋 Index.tsx - ERRO: selectedChatId é null');
     }
   };
 
