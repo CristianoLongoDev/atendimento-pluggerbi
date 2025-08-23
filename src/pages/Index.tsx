@@ -688,7 +688,9 @@ const Index = () => {
                     
                     // Marcar todas as conversas como lidas e buscar mensagens de todas
                     conversations.forEach(chat => {
+                      console.log('🎯 CALLING markAsRead for chat:', chat.id);
                       markAsRead(chat.id);
+                      console.log('🎯 CALLING fetchMessages for chat:', chat.id);
                       fetchMessages(chat.id);
                     });
                   }}
