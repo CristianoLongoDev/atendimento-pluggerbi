@@ -522,7 +522,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   }, []);
 
   const handleMessagesResponse = useCallback((message: any) => {
-    console.log('Processing messages response:', message);
+    console.log('💬 Processing messages response:', message);
+    console.log('🔍 FULL WebSocket Response Structure:', JSON.stringify(message, null, 2));
     
     if (message.conversation_id && message.data) {
       // Extrair conversation_status se disponível
@@ -535,6 +536,22 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       });
       
       if (message.data.messages) {
+        console.log('📨 RAW Messages from WebSocket:', JSON.stringify(message.data.messages, null, 2));
+        
+        message.data.messages.forEach((msg: any, index: number) => {
+          console.log(`📧 Message ${index + 1} RAW Data:`, {
+            id: msg.id,
+            content: msg.content,
+            sender: msg.sender,
+            user_id: msg.user_id,
+            timestamp: msg.timestamp,
+            channel: msg.channel,
+            message_type: msg.message_type,
+            metadata: msg.metadata,
+            fullMessage: JSON.stringify(msg, null, 2)
+          });
+        });
+        
         const conversationMessages = message.data.messages.map((msg: any): Message => ({
           id: msg.id,
           content: msg.content,
