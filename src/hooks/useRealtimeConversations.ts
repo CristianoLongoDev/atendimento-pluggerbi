@@ -284,6 +284,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     
     // Log adicional para debug
     console.log('🔍 PROFILE no handleNewMessage:', JSON.stringify(profile, null, 2));
+    console.log('🔍 USER_ID na mensagem:', messageData.user_id);
     
     const timestamp = messageData.timestamp;
     const channel = messageData.channel;
@@ -292,7 +293,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     const metadata = messageData.metadata;
     
     console.log('📍 Processing new message for conversation:', conversation_id);
-    console.log('💬 Message details:', { message_id, content, sender, timestamp, channel });
+    console.log('💬 Message details:', { message_id, content, sender, timestamp, channel, user_id: messageData.user_id });
 
     if (!conversation_id) {
       console.error('❌ No conversation_id found - cannot process message');
@@ -314,6 +315,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         channel,
         message_type,
         tokens,
+        user_id: messageData.user_id,
         metadata
       };
       
