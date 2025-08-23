@@ -14,6 +14,7 @@ interface Message {
   channel?: string;
   message_type?: string;
   tokens?: number;
+  user_id?: string;
   metadata?: {
     contact?: {
       id?: string;
@@ -563,6 +564,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           channel: msg.channel,
           message_type: msg.message_type,
           tokens: msg.tokens,
+          user_id: msg.user_id,
           metadata: msg.metadata
         }));
 

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { validateAndSanitizeMessage } from '@/lib/validation';
 import { formatInTimeZone } from 'date-fns-tz';
+import { useUserProfiles } from '@/hooks/useUserProfiles';
 
 interface Message {
   id: string;
@@ -17,6 +18,7 @@ interface Message {
   sender: 'customer' | 'ai' | 'agent' | 'human';
   senderName?: string;
   conversationId?: string;
+  user_id?: string;
 }
 
 interface ChatAreaProps {
@@ -45,6 +47,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   const [messageInput, setMessageInput] = useState('');
   const [openConversations, setOpenConversations] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { fetchUserProfile, getUserName } = useUserProfiles();
 
   // Inverter ordem das mensagens (mais antiga primeiro, mais recente por último)
   const sortedMessages = [...messages].reverse();
@@ -61,6 +64,23 @@ const ChatArea: React.FC<ChatAreaProps> = ({
       }
     }
   }, [conversations]);
+
+  // Buscar nomes dos usuários para mensagens humanas
+  useEffect(() => {
+    const humanMessages = messages.filter(msg => msg.sender === 'human' && msg.user_id);
+    humanMessages.forEach(msg => {
+      if (msg.user_id) {
+        fetchUserProfile(msg.user_id);
+      }
+    });
+
+    // Também buscar para mensagens em allMessages
+    Object.values(allMessages).flat().forEach(msg => {
+      if (msg.sender === 'human' && msg.user_id) {
+        fetchUserProfile(msg.user_id);
+      }
+    });
+  }, [messages, allMessages, fetchUserProfile]);
 
   // Auto-scroll to bottom when messages change or chat is selected
   useEffect(() => {
@@ -241,7 +261,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         <User className="w-3 h-3" />
                       )}
                       <span className="text-xs opacity-80">
-                        {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                        {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.user_id ? getUserName(message.user_id) : message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                       </span>
                     </div>
                   )}
@@ -334,7 +354,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                                   <User className="w-3 h-3" />
                                 )}
                                 <span className="text-xs opacity-80">
-                                  {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                                  {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.user_id ? getUserName(message.user_id) : message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                                 </span>
                               </div>
                             )}
