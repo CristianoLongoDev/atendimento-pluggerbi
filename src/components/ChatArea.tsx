@@ -90,11 +90,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   }, [messages, selectedChat]);
 
   const handleSendMessage = () => {
+    console.log('🎯 ChatArea - handleSendMessage chamado, messageInput:', messageInput);
     if (messageInput.trim()) {
       try {
         const sanitizedMessage = validateAndSanitizeMessage(messageInput);
+        console.log('🎯 ChatArea - mensagem sanitizada:', sanitizedMessage);
+        console.log('🎯 ChatArea - chamando onSendMessage...');
         onSendMessage(sanitizedMessage);
         setMessageInput('');
+        console.log('🎯 ChatArea - onSendMessage executado, input limpo');
       } catch (error) {
         console.error('Invalid message:', error);
         return;
