@@ -609,13 +609,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     let messageSuccessfullySent = false;
 
     try {
+      const payload = {
+        content,
+        user_id: profile?.id,
+        sender: 'human'
+      };
+      console.log('🚀 ENVIANDO VIA API - payload completo:', JSON.stringify(payload, null, 2));
+      
       const response = await callExternalAPI(
         `https://atendimento.pluggerbi.com/conversations/${chatId}/send-message`,
-        {
-          content,
-          user_id: profile?.id,
-          sender: 'human'
-        },
+        payload,
         'POST'
       );
       console.log('✅ Message sent successfully via API:', response);
@@ -636,6 +639,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
               sender: 'human'
             }
           };
+          console.log('🚀 ENVIANDO VIA WEBSOCKET - payload completo:', JSON.stringify(wsPayload, null, 2));
           wsSendMessage(wsPayload);
           console.log('✅ Message sent via WebSocket fallback');
           messageSuccessfullySent = true;
