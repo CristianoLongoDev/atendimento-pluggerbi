@@ -98,6 +98,15 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
       group.conversations.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
       // Atualizar informações baseadas na conversa mais recente após ordenação
       group.latestConversation = group.conversations[0];
+      
+      // Verificar novamente se há conversas fechadas após ordenação
+      group.hasClosedConversations = group.conversations.some(conv => conv.status === 'closed');
+      
+      console.log(`🔍 Group ${group.customerName}-${group.channel}:`, {
+        conversationCount: group.conversationCount,
+        hasClosedConversations: group.hasClosedConversations,
+        conversations: group.conversations.map(c => ({ id: c.id, status: c.status }))
+      });
     });
     
     // Retornar grupos ordenados por timestamp da última mensagem
@@ -226,9 +235,10 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log('🔄 Clicando para carregar mais conversas do grupo:', group.groupKey);
                         onLoadMoreConversations(group.groupKey);
                       }}
-                      className="text-xs text-primary hover:text-primary/80 underline"
+                      className="text-xs text-primary hover:text-primary/80 underline font-medium"
                     >
                       +{group.conversationCount - 1} antigas
                     </button>

@@ -470,16 +470,15 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           })() : '',
           channel: conv.channel === 'whatsapp' ? 'whatsapp' : 'widget',
           status: (() => {
-            // Se esta conversa específica está fechada
-            if (conv.conversation_status === 'closed') return 'closed';
-            
+            // Mapear conversation_status para nosso status
+            if (conv.conversation_status === 'closed') {
+              return 'closed' as const;
+            }
             // Se esta conversa específica está ativa, usar seu próprio status
             if (conv.conversation_status === 'active') {
-              console.log('📋 Conversa ativa encontrada ID:', conv.id, 'status:', conv.status);
               return conv.status === 'human' ? 'human' : 'ai';
             }
-            
-            // Para conversas inativas, retornar pending
+            // Para outras situações, usar pending
             return 'pending';
           })(),
           unreadCount: conv.unread_count || 0,
