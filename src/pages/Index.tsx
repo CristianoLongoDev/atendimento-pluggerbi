@@ -10,6 +10,7 @@ import ChatSidebar from '@/components/ChatSidebar';
 import ChatList from '@/components/ChatList';
 import ChatArea from '@/components/ChatArea';
 import ChatInfo from '@/components/ChatInfo';
+import ConversationHistoryDialog from '@/components/ConversationHistoryDialog';
 import { ChannelForm } from '@/components/ChannelForm';
 import { BotList } from '@/components/BotList';
 import PromptsManagement from '@/pages/PromptsManagement';
@@ -478,6 +479,13 @@ const Index = () => {
   const [selectedSection, setSelectedSection] = useState('conversations');
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   
+  // Estados para histórico de conversas
+  const [conversationHistoryOpen, setConversationHistoryOpen] = useState(false);
+  const [historyGroupKey, setHistoryGroupKey] = useState('');
+  const [historyConversations, setHistoryConversations] = useState<any[]>([]);
+  const [historyCustomerName, setHistoryCustomerName] = useState('');
+  const [historyChannel, setHistoryChannel] = useState('');
+  
   // Hook de busca de conversas
   const { searchConversations, clearResults, results: searchResults, loading: searchLoading, error: searchError } = useConversationSearch();
   
@@ -699,6 +707,22 @@ const Index = () => {
                       console.log('🎯 CALLING fetchMessages for chat:', chat.id);
                       fetchMessages(chat.id);
                     });
+                  }}
+                  onLoadMoreConversations={(groupKey) => {
+                    console.log('Carregando mais conversas para o grupo:', groupKey);
+                    
+                    // Separar customer name e channel
+                    const [customerName, channel] = groupKey.split('-');
+                    const groupConversations = chats.filter(chat => 
+                      chat.customerName === customerName && chat.channel === channel
+                    );
+                    
+                    // Preparar dados para o diálogo
+                    setHistoryGroupKey(groupKey);
+                    setHistoryConversations(groupConversations);
+                    setHistoryCustomerName(customerName);
+                    setHistoryChannel(channel);
+                    setConversationHistoryOpen(true);
                   }}
                 />
               </div>
@@ -996,6 +1020,24 @@ const Index = () => {
         
         {renderMainContent()}
       </div>
+
+      <ConversationHistoryDialog
+        open={conversationHistoryOpen}
+        onOpenChange={setConversationHistoryOpen}
+        conversations={historyConversations}
+        customerName={historyCustomerName}
+        channel={historyChannel}
+        onSelectConversations={(conversations) => {
+          setSelectedChatId(historyGroupKey);
+          setSelectedConversations(conversations);
+          
+          // Buscar mensagens de todas as conversas selecionadas
+          conversations.forEach(chat => {
+            markAsRead(chat.id);
+            fetchMessages(chat.id);
+          });
+        }}
+      />
     </div>
   );
 };

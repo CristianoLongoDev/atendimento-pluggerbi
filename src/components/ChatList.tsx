@@ -34,29 +34,23 @@ interface GroupedChat {
   unreadCount: number;
   conversationCount: number;
   conversations: Chat[];
+  latestConversation: Chat;
+  hasClosedConversations: boolean;
 }
 
 interface ChatListProps {
   chats: Chat[];
   selectedChatId: string | null;
   onChatSelect: (groupKey: string, conversations: Chat[]) => void;
+  onLoadMoreConversations: (groupKey: string) => void;
 }
 
-const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect }) => {
-  // Agrupar conversas por customerName + channel
+const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect, onLoadMoreConversations }) => {
+  // Agrupar conversas por customerName + channel - mostrando apenas a mais recente
   const groupedChats = React.useMemo(() => {
     const groups: { [key: string]: GroupedChat } = {};
     
     chats.forEach(chat => {
-      // Debug para CRISTIANO
-      if (chat.customerName.includes('CRISTIANO')) {
-        console.log('🔍 CHAT LIST DEBUG CRISTIANO:', {
-          customerName: chat.customerName,
-          channel: chat.channel,
-          status: chat.status,
-          isActive: chat.isActive
-        });
-      }
       const groupKey = `${chat.customerName}-${chat.channel}`;
       
       if (!groups[groupKey]) {
@@ -70,44 +64,44 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
           status: chat.status,
           unreadCount: chat.unreadCount,
           conversationCount: 1,
-          conversations: [chat]
+          conversations: [chat],
+          latestConversation: chat,
+          hasClosedConversations: chat.status === 'closed'
         };
       } else {
-        // Atualizar com a conversa mais recente - comparar por string quando já formatado
+        groups[groupKey].conversationCount += 1;
+        groups[groupKey].conversations.push(chat);
+        
+        // Verificar se há conversas encerradas
+        if (chat.status === 'closed') {
+          groups[groupKey].hasClosedConversations = true;
+        }
+        
+        // Atualizar com a conversa mais recente se esta for mais nova
         if (chat.timestamp > groups[groupKey].timestamp) {
           groups[groupKey].lastMessage = chat.lastMessage;
           groups[groupKey].timestamp = chat.timestamp;
           groups[groupKey].status = chat.status;
+          groups[groupKey].latestConversation = chat;
+          groups[groupKey].unreadCount = chat.unreadCount; // Usar apenas da conversa mais recente
+        } else {
+          // Somar unreadCount apenas de conversas ativas
+          if (chat.status !== 'closed') {
+            groups[groupKey].unreadCount += chat.unreadCount;
+          }
         }
-        
-        groups[groupKey].unreadCount += chat.unreadCount;
-        groups[groupKey].conversationCount += 1;
-        groups[groupKey].conversations.push(chat);
       }
     });
     
     // Ordenar conversas dentro de cada grupo por timestamp (mais recente primeiro)
     Object.values(groups).forEach(group => {
       group.conversations.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      // Atualizar informações baseadas na conversa mais recente após ordenação
+      group.latestConversation = group.conversations[0];
     });
     
     // Retornar grupos ordenados por timestamp da última mensagem
-    const finalGroups = Object.values(groups).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-    
-    // Debug final para grupos de CRISTIANO
-    finalGroups.forEach(group => {
-      if (group.customerName.includes('CRISTIANO')) {
-        console.log('🚨 FINAL GROUP CRISTIANO:', {
-          customerName: group.customerName,
-          channel: group.channel,
-          conversationCount: group.conversationCount,
-          hasActiveConversations: group.conversations.some(conv => conv.isActive),
-          conversationsStatus: group.conversations.map(c => ({ id: c.id, isActive: c.isActive, status: c.status }))
-        });
-      }
-    });
-    
-    return finalGroups;
+    return Object.values(groups).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   }, [chats]);
   const getChannelColor = (channel: string) => {
     const colors = {
@@ -163,7 +157,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
           className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
             selectedChatId === group.groupKey ? 'bg-muted' : ''
           }`}
-          onClick={() => onChatSelect(group.groupKey, group.conversations)}
+          onClick={() => onChatSelect(group.groupKey, [group.latestConversation])}
         >
           <div className="flex items-start space-x-3">
             <div className="relative">
@@ -215,7 +209,9 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                 )}
               </div>
               
-              
+              <p className="text-sm text-muted-foreground truncate mb-2">
+                {group.lastMessage}
+              </p>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1">
@@ -225,11 +221,25 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                   </span>
                 </div>
                 
-                {group.unreadCount > 0 && (
-                  <Badge variant="destructive" className="text-xs h-5 min-w-5 flex items-center justify-center">
-                    {group.unreadCount}
-                  </Badge>
-                )}
+                <div className="flex items-center space-x-2">
+                  {group.hasClosedConversations && group.conversationCount > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onLoadMoreConversations(group.groupKey);
+                      }}
+                      className="text-xs text-primary hover:text-primary/80 underline"
+                    >
+                      +{group.conversationCount - 1} antigas
+                    </button>
+                  )}
+                  
+                  {group.unreadCount > 0 && (
+                    <Badge variant="destructive" className="text-xs h-5 min-w-5 flex items-center justify-center">
+                      {group.unreadCount}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
