@@ -509,6 +509,8 @@ const Index = () => {
       return;
     }
 
+    let foundNewMessage = false;
+
     // Verificar se há nova mensagem de cliente em qualquer conversa quando a aba não está focada
     chats.forEach(chat => {
       const chatMessages = messages[chat.id] || [];
@@ -526,22 +528,32 @@ const Index = () => {
       });
       
       if (lastMessage) {
+        const shouldNotify = lastMessage.sender === 'customer' && document.hidden && !notificationSystem.isNotifying;
+        
         console.log('🔍 DEBUG CONDIÇÕES NOTIFICAÇÃO:', {
+          chatId: chat.id,
           isSenderCustomer: lastMessage.sender === 'customer',
           isDocumentHidden: document.hidden,
           isNotNotifying: !notificationSystem.isNotifying,
-          allConditionsMet: lastMessage.sender === 'customer' && document.hidden && !notificationSystem.isNotifying
+          shouldNotify: shouldNotify
         });
         
-        if (lastMessage.sender === 'customer' && 
-            document.hidden && // Só notifica se a página não está ativa
-            !notificationSystem.isNotifying) {
-          
-          console.log('🔔 Nova mensagem de cliente - iniciando notificação (aba não focada)');
+        if (shouldNotify) {
+          console.log('🔔 DISPARANDO NOTIFICAÇÃO para chat:', chat.id);
+          foundNewMessage = true;
           notificationSystem.startNotifications();
         }
       }
     });
+
+    if (!foundNewMessage && document.hidden) {
+      console.log('⚠️ Nenhuma mensagem nova de cliente encontrada');
+    }
+    
+    if (!document.hidden) {
+      console.log('⚠️ Aba está ativa - notificações desabilitadas');
+    }
+
   }, [messages, chats, notificationSystem]);
   
   // Fetch channels when entering channels section
