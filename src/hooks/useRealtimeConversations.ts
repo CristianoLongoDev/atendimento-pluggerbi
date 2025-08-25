@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from './useWebSocket';
+import { useUserProfiles } from './useUserProfiles';
 import { validateAndSanitizeMessage, webSocketMessageSchema, conversationIdSchema, isValidUUID } from '@/lib/validation';
 import { formatInTimeZone } from 'date-fns-tz';
 import { callExternalAPI } from '@/lib/authInterceptor';
@@ -58,6 +59,7 @@ interface UseRealtimeConversationsReturn {
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const { profile } = useAuth();
+  const { fetchUserProfile } = useUserProfiles();
   console.log('🚀 useRealtimeConversations INICIADO');
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
@@ -227,7 +229,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, [isConnected, wsSendMessage, profile?.account_id, refreshConversations]);
 
-  const handleNewMessage = useCallback((message: any) => {
+  const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
     console.log('🔍 CHECANDO USER_ID na mensagem recebida...');
     
@@ -259,26 +261,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🔍 DEBUG sender original:', originalSender);
     console.log('🔍 DEBUG profile?.email:', profile?.email);
     
-    // Determinar o sender baseado no user_id e campo sender da API
+    // Determinar o sender baseado no campo sender da API
     let sender;
     let senderName = '';
-    
-    // Verificar se a mensagem foi enviada pelo usuário logado
-    const isCurrentUser = messageData.user_id && profile?.id && messageData.user_id === profile.id;
     
     console.log('🔍 DEBUG SENDER LOGIC:', {
       originalSender,
       messageUserId: messageData.user_id,
-      profileId: profile?.id,
-      isCurrentUser
+      profileId: profile?.id
     });
     
-    if (isCurrentUser) {
-      // Mensagem enviada pelo usuário logado
-      sender = 'human';
-      senderName = profile?.full_name || profile?.email?.split('@')[0] || 'Você';
-      console.log('✅ Mensagem identificada como USUÁRIO LOGADO - senderName:', senderName);
-    } else if (originalSender === 'customer') {
+    if (originalSender === 'customer') {
       // Cliente/Usuário (não logado)
       sender = 'customer';
       senderName = messageData.metadata?.contact?.name || messageData.senderName || 'Cliente';
@@ -286,13 +279,26 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     } else if (originalSender === 'agent') {
       // Bot/IA
       sender = 'ai';
+      senderName = 'IA';
+      console.log('✅ Mensagem identificada como IA - senderName:', senderName);
+    } else if (originalSender === 'human') {
+      // Mensagem enviada por um humano - usar user_id para buscar o nome
+      sender = 'human';
+      
+      if (messageData.user_id) {
+        // Buscar o nome do usuário usando o user_id
+        const userName = await fetchUserProfile(messageData.user_id);
+        senderName = userName;
+        console.log('✅ Mensagem identificada como HUMANO - user_id:', messageData.user_id, 'senderName:', senderName);
+      } else {
+        senderName = messageData.senderName || 'Atendente';
+        console.log('✅ Mensagem identificada como HUMANO (sem user_id) - senderName:', senderName);
+      }
+    } else {
+      // Fallback - se não conseguir determinar
+      sender = 'ai';
       senderName = messageData.metadata?.bot?.agent_name || 'IA';
       console.log('✅ Mensagem identificada como BOT - senderName:', senderName);
-    } else {
-      // Fallback
-      sender = 'ai';
-      senderName = 'Sistema';
-      console.log('⚠️ Sender desconhecido, usando fallback');
     }
     
     console.log('🎯 SENDER FINAL:', sender, 'SENDERNAME FINAL:', senderName);
@@ -368,7 +374,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('💼 Updated chats with new message');
       return updatedChats;
     });
-  }, []);
+  }, [fetchUserProfile]);
 
   const handleSubscriptionUpdate = useCallback((data: any) => {
     console.log('🔥 Processing subscription update:', data);
