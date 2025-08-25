@@ -271,7 +271,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       profileId: profile?.id
     });
     
-    if (originalSender === 'customer') {
+    if (originalSender === 'customer' || originalSender === 'user') {
       // Cliente/Usuário (não logado)
       sender = 'customer';
       senderName = messageData.metadata?.contact?.name || messageData.senderName || 'Cliente';
