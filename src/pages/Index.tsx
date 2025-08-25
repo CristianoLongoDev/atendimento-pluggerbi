@@ -496,6 +496,9 @@ const Index = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [channelToDelete, setChannelToDelete] = useState<string | null>(null);
 
+  // Controle de mensagens já processadas para notificação
+  const [lastNotifiedMessages, setLastNotifiedMessages] = useState<{[chatId: number]: string}>({});
+
   // Monitorar mensagens para notificações
   useEffect(() => {
     if (chats.length === 0) {
@@ -509,34 +512,29 @@ const Index = () => {
       const chatMessages = messages[chat.id] || [];
       const lastMessage = chatMessages[chatMessages.length - 1];
       
-      if (lastMessage) {
-        const shouldNotify = lastMessage.sender === 'customer' && document.hidden && !notificationSystem.isNotifying;
+      if (lastMessage && lastMessage.sender === 'customer') {
+        const messageKey = `${lastMessage.timestamp}-${lastMessage.content}`;
+        const lastNotifiedKey = lastNotifiedMessages[chat.id];
         
-        console.log('🔍 DEBUG CONDIÇÕES NOTIFICAÇÃO:', {
-          chatId: chat.id,
-          isSenderCustomer: lastMessage.sender === 'customer',
-          isDocumentHidden: document.hidden,
-          isNotNotifying: !notificationSystem.isNotifying,
-          shouldNotify: shouldNotify
-        });
+        // Só notifica se for uma mensagem realmente nova (não processada antes)
+        const isNewMessage = messageKey !== lastNotifiedKey;
+        const shouldNotify = isNewMessage && document.hidden && !notificationSystem.isNotifying;
         
         if (shouldNotify) {
-          console.log('🔔 DISPARANDO NOTIFICAÇÃO para chat:', chat.id);
+          console.log('🔔 NOVA MENSAGEM! Disparando notificação para chat:', chat.id);
           foundNewMessage = true;
           notificationSystem.startNotifications();
+          
+          // Atualizar controle de mensagens processadas
+          setLastNotifiedMessages(prev => ({
+            ...prev,
+            [chat.id]: messageKey
+          }));
         }
       }
     });
 
-    if (!foundNewMessage && document.hidden) {
-      console.log('⚠️ Nenhuma mensagem nova de cliente encontrada');
-    }
-    
-    if (!document.hidden) {
-      console.log('⚠️ Aba está ativa - notificações desabilitadas');
-    }
-
-  }, [messages, chats, notificationSystem]);
+  }, [messages, chats, notificationSystem, lastNotifiedMessages]);
   
   // Fetch channels when entering channels section
   useEffect(() => {
