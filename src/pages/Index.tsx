@@ -33,8 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users, Crown, Briefcase, Shield } from 'lucide-react';
-import DisplayCards from '@/components/ui/display-cards';
+import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users } from 'lucide-react';
 
 // Interfaces para usuários
 interface Profile {
@@ -355,144 +354,105 @@ const UsersTabContent: React.FC = () => {
         </Dialog>
       </div>
 
-      {(() => {
-        // Funções para mapear dados dos usuários para o DisplayCards
-        const getUserIcon = (role: string) => {
-          switch (role) {
-            case 'admin':
-              return <Crown className="size-4 text-yellow-300" />;
-            case 'manager':
-              return <Briefcase className="size-4 text-blue-300" />;
-            case 'agent':
-              return <User className="size-4 text-green-300" />;
-            default:
-              return <Shield className="size-4 text-gray-300" />;
-          }
-        };
-
-        const getUserCards = () => {
-          return users.slice(0, 3).map((user, index) => ({
-            icon: getUserIcon(user.role),
-            title: user.full_name || 'Nome não informado',
-            description: user.department || user.role,
-            date: new Date(user.created_at).toLocaleDateString('pt-BR'),
-            titleClassName: user.role === 'admin' ? 'text-yellow-500' : 
-                           user.role === 'manager' ? 'text-blue-500' : 
-                           'text-green-500',
-            iconClassName: user.role === 'admin' ? 'text-yellow-500' : 
-                           user.role === 'manager' ? 'text-blue-500' : 
-                           'text-green-500',
-            className: index === 0 
-              ? "[grid-area:stack] hover:-translate-y-10 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration:700 hover:grayscale-0 before:left-0 before:top-0"
-              : index === 1 
-              ? "[grid-area:stack] translate-x-12 translate-y-10 hover:-translate-y-1 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 hover:grayscale-0 before:left-0 before:top-0"
-              : "[grid-area:stack] translate-x-24 translate-y-20 hover:translate-y-10"
-          }));
-        };
-
-        return loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-pulse">
-              <DisplayCards />
-            </div>
-          </div>
-        ) : users.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Users className="w-12 h-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhum usuário encontrado</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                Comece criando o primeiro usuário da sua conta.
-              </p>
-              <Button onClick={openForm}>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Criar Primeiro Usuário
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {/* Exibição em cards visuais */}
-            <div className="flex justify-center py-8">
-              <DisplayCards cards={getUserCards()} />
-            </div>
-            
-            {/* Lista completa de usuários */}
-            {users.length > 3 && (
-              <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-center">Todos os Usuários</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {users.map((user) => (
-                    <Card key={user.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <Avatar className="w-10 h-10">
-                              <AvatarImage src={user.avatar_url} />
-                              <AvatarFallback>
-                                {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <CardTitle className="text-sm font-medium truncate">
-                                {user.full_name || 'Nome não informado'}
-                              </CardTitle>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {user.email}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="sm" variant="ghost">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                <Edit className="w-4 h-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleDelete(user)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">Função:</span>
-                            {getRoleBadge(user.role)}
-                          </div>
-                          {user.department && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">Departamento:</span>
-                              <span className="text-xs font-medium">{user.department}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">Criado em:</span>
-                            <span className="text-xs">
-                              {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="pb-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-muted rounded-full"></div>
+                  <div className="space-y-1 flex-1">
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        );
-      })()}
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      ) : users.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Users className="w-12 h-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Nenhum usuário encontrado</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Comece criando o primeiro usuário da sua conta.
+            </p>
+            <Button onClick={openForm}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Criar Primeiro Usuário
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {users.map((user) => (
+            <Card key={user.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={user.avatar_url} />
+                      <AvatarFallback>
+                        {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-sm font-medium truncate">
+                        {user.full_name || 'Nome não informado'}
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEdit(user)}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDelete(user)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Função:</span>
+                    {getRoleBadge(user.role)}
+                  </div>
+                  {user.department && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Departamento:</span>
+                      <span className="text-xs font-medium">{user.department}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Criado em:</span>
+                    <span className="text-xs">
+                      {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </>
   );
 };
