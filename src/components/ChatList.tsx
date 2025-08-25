@@ -159,18 +159,18 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {groupedChats.map((group) => (
         <div
           key={group.groupKey}
-          className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+          className={`p-4 rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
             selectedChatId === group.groupKey ? 'bg-muted' : ''
           }`}
           onClick={() => onChatSelect(group.groupKey, [group.latestConversation])}
         >
-          <div className="flex items-start space-x-3">
+          <div className="flex items-start space-x-4">
             <div className="relative">
-              <Avatar className="w-10 h-10">
+              <Avatar className="w-12 h-12">
                 <AvatarImage src={group.customerAvatar} />
                 <AvatarFallback>{group.customerName.charAt(0)}</AvatarFallback>
               </Avatar>

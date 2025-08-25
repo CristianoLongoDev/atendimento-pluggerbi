@@ -723,7 +723,7 @@ const Index = () => {
 
         return (
           <>
-            <div className="w-80 border-r border-border bg-card overflow-y-auto">
+            <div className="w-96 border-r border-border bg-card overflow-y-auto">
               <div className="p-4 border-b border-border">
                 <h3 className="font-medium text-sm text-muted-foreground mb-3">
                   TODAS CONVERSAS ({filteredChats.length})
