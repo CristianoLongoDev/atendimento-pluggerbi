@@ -49,8 +49,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { fetchUserProfile, getUserName } = useUserProfiles();
 
-  // Inverter ordem das mensagens (mais antiga primeiro, mais recente por último)
-  const sortedMessages = [...messages].reverse();
+  // Manter ordem natural das mensagens (mais antiga primeiro, mais recente por último)
+  const sortedMessages = [...messages];
   
   // Inverter ordem das conversas também (mais antiga primeiro, mais recente por último)
   const sortedConversations = [...conversations].reverse();
