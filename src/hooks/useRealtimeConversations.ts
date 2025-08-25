@@ -134,26 +134,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           break;
         case 'conversation_updated':
         case 'conversation_status_changed':
-          console.log('🔄 Handling conversation update event:', message.type);
-          // Recarregar conversações quando há mudança de status
-          refreshConversations();
+          console.log('🔄 Handling conversation update event (processando via subscription_updated):', message.type);
+          // Não recarregar aqui - o evento subscription_updated já será enviado
           break;
         case 'connection_confirmed':
-          console.log('✅ Connection confirmed - resubscribing to conversations');
-          // Quando conexão é confirmada, reinscrever
-          if (profile?.account_id) {
-            setTimeout(() => {
-              const refreshPayload = {
-                type: 'subscribe_conversations',
-                data: {
-                  account_id: profile.account_id,
-                  conversation_ids: []
-                }
-              };
-              console.log('📤 Resubscribing after connection confirmed:', refreshPayload);
-              wsSendMessage(refreshPayload);
-            }, 1000);
-          }
+          console.log('✅ Connection confirmed - aguardando subscription_updated automático');
+          // Não reinscrever aqui - o servidor já envia subscription_updated automaticamente
           break;
         case 'pong':
           console.log('🏓 Pong received - conexão ativa');
@@ -174,13 +160,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     return unsubscribe;
   }, [subscribe, refreshConversations, profile?.account_id, wsSendMessage]);
 
-  // Auto-refresh conversations when WebSocket connects and periodic refresh
+  // Auto-refresh conversations when WebSocket connects - ONLY ONCE
   useEffect(() => {
     console.log('🔄 EFFECT: WebSocket status changed to:', isConnected);
     console.log('🔄 Profile account_id:', profile?.account_id);
     
     if (isConnected && profile?.account_id) {
-      console.log('🔄 WebSocket conectado, buscando conversas...');
+      console.log('🔄 WebSocket conectado, buscando conversas APENAS UMA VEZ...');
       // Aguarda um pouco para garantir que a conexão está estável
       setTimeout(() => {
         console.log('🔄 TIMEOUT: Verificando se ainda está conectado:', isConnected);
@@ -192,42 +178,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
               conversation_ids: [] // Empty array = all conversations
             }
           };
-          console.log('📤 ENVIANDO subscribe_conversations com account_id:', refreshPayload);
+          console.log('📤 ENVIANDO subscribe_conversations com account_id (INICIAL):', refreshPayload);
           wsSendMessage(refreshPayload);
           console.log('📤 Enviado subscribe_conversations - SUCESSO');
-          
-          // Após conectar, buscar mensagens de conversas ativas uma única vez
-          setTimeout(() => {
-            console.log('🔄 Buscando mensagens iniciais após reconexão...');
-            refreshConversations();
-          }, 1500);
         } else {
           console.log('❌ WebSocket desconectou durante timeout');
         }
       }, 1000);
-
-      // Fallback: polling para garantir que não perdemos atualizações
-      const pollInterval = setInterval(() => {
-        if (isConnected) {
-          console.log('🔄 Polling: Verificando atualizações via WebSocket...');
-          const refreshPayload = {
-            type: 'subscribe_conversations',
-            data: {
-              account_id: profile.account_id,
-              conversation_ids: []
-            }
-          };
-          wsSendMessage(refreshPayload);
-        }
-      }, 30000); // A cada 30 segundos
-
-      return () => {
-        clearInterval(pollInterval);
-      };
     } else {
       console.log('❌ WebSocket não está conectado ou sem account_id:', { isConnected, accountId: profile?.account_id });
     }
-  }, [isConnected, wsSendMessage, profile?.account_id, refreshConversations]);
+  }, [isConnected, wsSendMessage, profile?.account_id]);
 
   const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
