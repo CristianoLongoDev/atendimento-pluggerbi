@@ -9,6 +9,7 @@ interface UserProfile {
 export const useUserProfiles = () => {
   const [userProfiles, setUserProfiles] = useState<{ [userId: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [loadedUserIds, setLoadedUserIds] = useState<Set<string>>(new Set());
 
   const fetchUserProfile = async (userId: string): Promise<string> => {
     // Verificar se já temos o perfil em cache
@@ -26,7 +27,13 @@ export const useUserProfiles = () => {
 
       if (error) {
         console.error('Erro ao buscar perfil do usuário:', error);
-        return 'Atendente';
+        const fallbackName = 'Atendente';
+        setUserProfiles(prev => ({
+          ...prev,
+          [userId]: fallbackName
+        }));
+        setLoadedUserIds(prev => new Set([...prev, userId]));
+        return fallbackName;
       }
 
       const userName = data?.full_name || 'Atendente';
@@ -36,23 +43,32 @@ export const useUserProfiles = () => {
         ...prev,
         [userId]: userName
       }));
+      
+      setLoadedUserIds(prev => new Set([...prev, userId]));
 
       return userName;
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
-      return 'Atendente';
+      const fallbackName = 'Atendente';
+      setUserProfiles(prev => ({
+        ...prev,
+        [userId]: fallbackName
+      }));
+      setLoadedUserIds(prev => new Set([...prev, userId]));
+      return fallbackName;
     } finally {
       setLoading(false);
     }
   };
 
   const getUserName = (userId: string): string => {
-    return userProfiles[userId] || 'Atendente';
+    return userProfiles[userId] || 'Carregando...';
   };
 
   return {
     fetchUserProfile,
     getUserName,
-    loading
+    loading,
+    loadedUserIds: Array.from(loadedUserIds)
   };
 };

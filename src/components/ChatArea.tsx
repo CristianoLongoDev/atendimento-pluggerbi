@@ -46,8 +46,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 }) => {
   const [messageInput, setMessageInput] = useState('');
   const [openConversations, setOpenConversations] = useState<string[]>([]);
+  const [profilesLoaded, setProfilesLoaded] = useState<{ [userId: string]: boolean }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { fetchUserProfile, getUserName } = useUserProfiles();
+  const { fetchUserProfile, getUserName, loadedUserIds } = useUserProfiles();
 
   // Manter ordem natural das mensagens (mais antiga primeiro, mais recente por último)
   const sortedMessages = [...messages];
@@ -67,20 +68,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
   // Buscar nomes dos usuários para mensagens com user_id
   useEffect(() => {
-    const messagesWithUserId = messages.filter(msg => msg.user_id);
-    messagesWithUserId.forEach(msg => {
-      if (msg.user_id) {
-        fetchUserProfile(msg.user_id);
+    const processMessages = async () => {
+      const messagesWithUserId = messages.filter(msg => msg.user_id);
+      const allUserIds = [
+        ...messagesWithUserId.map(msg => msg.user_id!),
+        ...Object.values(allMessages).flat().filter(msg => msg.user_id).map(msg => msg.user_id!)
+      ];
+      
+      const uniqueUserIds = [...new Set(allUserIds)];
+      
+      for (const userId of uniqueUserIds) {
+        if (!profilesLoaded[userId]) {
+          await fetchUserProfile(userId);
+          setProfilesLoaded(prev => ({ ...prev, [userId]: true }));
+        }
       }
-    });
+    };
 
-    // Também buscar para mensagens em allMessages
-    Object.values(allMessages).flat().forEach(msg => {
-      if (msg.user_id) {
-        fetchUserProfile(msg.user_id);
-      }
-    });
-  }, [messages, allMessages, fetchUserProfile]);
+    processMessages();
+  }, [messages, allMessages, fetchUserProfile, profilesLoaded, loadedUserIds]);
 
   // Auto-scroll to bottom when messages change or chat is selected
   useEffect(() => {
