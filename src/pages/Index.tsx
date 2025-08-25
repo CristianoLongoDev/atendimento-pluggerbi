@@ -498,12 +498,10 @@ const Index = () => {
 
   // Monitorar mensagens para notificações
   useEffect(() => {
-    const humanChats = chats.filter(chat => chat.status === 'human');
-    
-    if (humanChats.length === 0) return;
+    if (chats.length === 0) return;
 
-    // Verificar se há nova mensagem de cliente em conversa com humano
-    humanChats.forEach(chat => {
+    // Verificar se há nova mensagem de cliente em qualquer conversa quando a aba não está focada
+    chats.forEach(chat => {
       const chatMessages = messages[chat.id] || [];
       const lastMessage = chatMessages[chatMessages.length - 1];
       
@@ -512,7 +510,7 @@ const Index = () => {
           document.hidden && // Só notifica se a página não está ativa
           !notificationSystem.isNotifying) {
         
-        console.log('🔔 Nova mensagem de cliente em atendimento humano - iniciando notificação');
+        console.log('🔔 Nova mensagem de cliente - iniciando notificação (aba não focada)');
         notificationSystem.startNotifications();
       }
     });
