@@ -259,14 +259,29 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🔍 DEBUG sender original:', originalSender);
     console.log('🔍 DEBUG profile?.email:', profile?.email);
     
-    // Determinar o sender baseado no campo sender da API
+    // Determinar o sender baseado no user_id e campo sender da API
     let sender;
     let senderName = '';
     
-    if (originalSender === 'customer') {
-      // Cliente/Usuário
+    // Verificar se a mensagem foi enviada pelo usuário logado
+    const isCurrentUser = messageData.user_id && profile?.id && messageData.user_id === profile.id;
+    
+    console.log('🔍 DEBUG SENDER LOGIC:', {
+      originalSender,
+      messageUserId: messageData.user_id,
+      profileId: profile?.id,
+      isCurrentUser
+    });
+    
+    if (isCurrentUser) {
+      // Mensagem enviada pelo usuário logado
       sender = 'human';
-      senderName = profile?.email?.split('@')[0] || profile?.full_name || messageData.senderName || 'Cliente';
+      senderName = profile?.full_name || profile?.email?.split('@')[0] || 'Você';
+      console.log('✅ Mensagem identificada como USUÁRIO LOGADO - senderName:', senderName);
+    } else if (originalSender === 'customer') {
+      // Cliente/Usuário (não logado)
+      sender = 'customer';
+      senderName = messageData.metadata?.contact?.name || messageData.senderName || 'Cliente';
       console.log('✅ Mensagem identificada como CLIENTE - senderName:', senderName);
     } else if (originalSender === 'agent') {
       // Bot/IA
