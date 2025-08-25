@@ -65,10 +65,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     }
   }, [conversations]);
 
-  // Buscar nomes dos usuários para mensagens humanas
+  // Buscar nomes dos usuários para mensagens com user_id
   useEffect(() => {
-    const humanMessages = messages.filter(msg => msg.sender === 'human' && msg.user_id);
-    humanMessages.forEach(msg => {
+    const messagesWithUserId = messages.filter(msg => msg.user_id);
+    messagesWithUserId.forEach(msg => {
       if (msg.user_id) {
         fetchUserProfile(msg.user_id);
       }
@@ -76,7 +76,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
     // Também buscar para mensagens em allMessages
     Object.values(allMessages).flat().forEach(msg => {
-      if (msg.sender === 'human' && msg.user_id) {
+      if (msg.user_id) {
         fetchUserProfile(msg.user_id);
       }
     });
@@ -264,9 +264,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                       ) : (
                         <User className="w-3 h-3" />
                       )}
-                      <span className="text-xs opacity-80">
-                        {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.user_id ? getUserName(message.user_id) : message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
-                      </span>
+                       <span className="text-xs opacity-80">
+                         {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                       </span>
                     </div>
                   )}
                   <p className="text-sm leading-relaxed">{message.content}</p>
@@ -357,9 +357,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                                 ) : (
                                   <User className="w-3 h-3" />
                                 )}
-                                <span className="text-xs opacity-80">
-                                  {message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.user_id ? getUserName(message.user_id) : message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
-                                </span>
+                                 <span className="text-xs opacity-80">
+                                   {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                                 </span>
                               </div>
                             )}
                             <p className="text-sm leading-relaxed">{message.content}</p>
