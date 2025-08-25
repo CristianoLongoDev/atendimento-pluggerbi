@@ -498,20 +498,48 @@ const Index = () => {
 
   // Monitorar mensagens para notificações
   useEffect(() => {
-    if (chats.length === 0) return;
+    console.log('🔍 DEBUG NOTIFICAÇÕES - Verificando condições:', {
+      chatsLength: chats.length,
+      documentHidden: document.hidden,
+      isNotifying: notificationSystem.isNotifying
+    });
+    
+    if (chats.length === 0) {
+      console.log('⚠️ Nenhum chat disponível');
+      return;
+    }
 
     // Verificar se há nova mensagem de cliente em qualquer conversa quando a aba não está focada
     chats.forEach(chat => {
       const chatMessages = messages[chat.id] || [];
       const lastMessage = chatMessages[chatMessages.length - 1];
       
-      if (lastMessage && 
-          lastMessage.sender === 'customer' && 
-          document.hidden && // Só notifica se a página não está ativa
-          !notificationSystem.isNotifying) {
+      console.log('🔍 DEBUG CHAT:', {
+        chatId: chat.id,
+        customerName: chat.customerName,
+        messagesCount: chatMessages.length,
+        lastMessage: lastMessage ? {
+          sender: lastMessage.sender,
+          content: lastMessage.content?.substring(0, 50) + '...',
+          timestamp: lastMessage.timestamp
+        } : null
+      });
+      
+      if (lastMessage) {
+        console.log('🔍 DEBUG CONDIÇÕES NOTIFICAÇÃO:', {
+          isSenderCustomer: lastMessage.sender === 'customer',
+          isDocumentHidden: document.hidden,
+          isNotNotifying: !notificationSystem.isNotifying,
+          allConditionsMet: lastMessage.sender === 'customer' && document.hidden && !notificationSystem.isNotifying
+        });
         
-        console.log('🔔 Nova mensagem de cliente - iniciando notificação (aba não focada)');
-        notificationSystem.startNotifications();
+        if (lastMessage.sender === 'customer' && 
+            document.hidden && // Só notifica se a página não está ativa
+            !notificationSystem.isNotifying) {
+          
+          console.log('🔔 Nova mensagem de cliente - iniciando notificação (aba não focada)');
+          notificationSystem.startNotifications();
+        }
       }
     });
   }, [messages, chats, notificationSystem]);
