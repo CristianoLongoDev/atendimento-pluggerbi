@@ -101,12 +101,6 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
       
       // Verificar novamente se há conversas fechadas após ordenação
       group.hasClosedConversations = group.conversations.some(conv => conv.status === 'closed');
-      
-      console.log(`🔍 Group ${group.customerName}-${group.channel}:`, {
-        conversationCount: group.conversationCount,
-        hasClosedConversations: group.hasClosedConversations,
-        conversations: group.conversations.map(c => ({ id: c.id, status: c.status }))
-      });
     });
     
     // Retornar grupos ordenados por timestamp da última mensagem

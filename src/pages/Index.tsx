@@ -498,14 +498,7 @@ const Index = () => {
 
   // Monitorar mensagens para notificações
   useEffect(() => {
-    console.log('🔍 DEBUG NOTIFICAÇÕES - Verificando condições:', {
-      chatsLength: chats.length,
-      documentHidden: document.hidden,
-      isNotifying: notificationSystem.isNotifying
-    });
-    
     if (chats.length === 0) {
-      console.log('⚠️ Nenhum chat disponível');
       return;
     }
 
@@ -515,17 +508,6 @@ const Index = () => {
     chats.forEach(chat => {
       const chatMessages = messages[chat.id] || [];
       const lastMessage = chatMessages[chatMessages.length - 1];
-      
-      console.log('🔍 DEBUG CHAT:', {
-        chatId: chat.id,
-        customerName: chat.customerName,
-        messagesCount: chatMessages.length,
-        lastMessage: lastMessage ? {
-          sender: lastMessage.sender,
-          content: lastMessage.content?.substring(0, 50) + '...',
-          timestamp: lastMessage.timestamp
-        } : null
-      });
       
       if (lastMessage) {
         const shouldNotify = lastMessage.sender === 'customer' && document.hidden && !notificationSystem.isNotifying;
