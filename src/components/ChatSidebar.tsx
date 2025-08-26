@@ -92,10 +92,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               <div className="pl-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-muted-foreground">Filtros</span>
-                  <Button size="sm" variant="outline">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nova
-                  </Button>
                 </div>
                 
                 <div className="relative">
