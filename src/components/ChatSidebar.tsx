@@ -97,7 +97,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder="Buscar conversas... (pressione Enter)"
+                    placeholder="Buscar nas conversas ..."
                     value={searchTerm}
                     onChange={(e) => onSearchChange(e.target.value)}
                     onKeyDown={(e) => {
