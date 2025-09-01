@@ -1,61 +1,48 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import pluggerBiLogo from '@/assets/plugger-bi-logo.png';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Bell, 
-  Settings, 
-  User, 
-  Search,
-  Moon,
-  Sun,
-  LogOut,
-  MessageSquare,
-  FileText,
-  Bot
-} from 'lucide-react';
+import { Bell, Settings, User, Search, Moon, Sun, LogOut, MessageSquare, FileText, Bot } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from 'next-themes';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { runAuthDiagnostics } from '@/lib/authValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
 const Header: React.FC = () => {
-  const { profile, signOut, isAdmin } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const {
+    profile,
+    signOut,
+    isAdmin
+  } = useAuth();
+  const {
+    theme,
+    setTheme
+  } = useTheme();
   const navigate = useNavigate();
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
   };
-
   const handleAuthDiagnostics = async () => {
     console.log('🚀 Executando diagnóstico de autenticação manual...');
     await runAuthDiagnostics();
   };
-
   const copyTokenToClipboard = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (session?.access_token) {
         await navigator.clipboard.writeText(session.access_token);
         toast({
           title: "Token copiado!",
-          description: "Token de acesso copiado para a área de transferência.",
+          description: "Token de acesso copiado para a área de transferência."
         });
       } else {
         toast({
@@ -72,23 +59,14 @@ const Header: React.FC = () => {
       });
     }
   };
-
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
-
-  return (
-    <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between">
+  return <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <img 
-            src="/lovable-uploads/3c727f6b-bf73-4d50-b695-32da2dab5698.png" 
-            alt="Pluggy Logo" 
-            className="w-8 h-8 object-contain"
-          />
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Atendimento
-          </h1>
+          <img src="/lovable-uploads/d2adec10-008b-4037-9e75-c093dfb45d05.png" alt="Plugger BI Logo" className="w-8 h-8 object-contain" />
+          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Pluggy</h1>
         </div>
         
         
@@ -102,10 +80,7 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-3">
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="w-4 h-4" />
-          <Badge 
-            variant="destructive" 
-            className="absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center p-0"
-          >
+          <Badge variant="destructive" className="absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center p-0">
             3
           </Badge>
         </Button>
@@ -154,8 +129,6 @@ const Header: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
