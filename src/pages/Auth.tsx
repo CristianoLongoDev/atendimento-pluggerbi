@@ -87,7 +87,7 @@ const Auth: React.FC = () => {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/9cc51e6f-75e3-4ff6-8bc8-a07fc1fdd41e.png" 
+              src="/lovable-uploads/3c727f6b-bf73-4d50-b695-32da2dab5698.png" 
               alt="Pluggy Logo" 
               className="w-16 h-16"
             />

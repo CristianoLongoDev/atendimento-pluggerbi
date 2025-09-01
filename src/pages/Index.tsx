@@ -466,8 +466,8 @@ const Index = () => {
   
   // Configuração do sistema de notificações
   const notificationSystem = useNotifications({
-    originalTitle: 'Atendimento',
-    originalFavicon: '/lovable-uploads/d2adec10-008b-4037-9e75-c093dfb45d05.png',
+    originalTitle: 'Pluggy',
+    originalFavicon: '/lovable-uploads/3c727f6b-bf73-4d50-b695-32da2dab5698.png',
     alternateTitle: 'Nova Mensagem'
   });
   

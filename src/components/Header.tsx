@@ -82,8 +82,8 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <img 
-            src="/lovable-uploads/d2adec10-008b-4037-9e75-c093dfb45d05.png" 
-            alt="Plugger BI Logo" 
+            src="/lovable-uploads/3c727f6b-bf73-4d50-b695-32da2dab5698.png" 
+            alt="Pluggy Logo" 
             className="w-8 h-8 object-contain"
           />
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
