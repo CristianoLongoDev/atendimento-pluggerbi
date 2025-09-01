@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import pluggerBiLogo from '@/assets/plugger-bi-logo.png';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Settings, User, Search, Moon, Sun, LogOut, MessageSquare, FileText, Bot } from 'lucide-react';
+import { Bell, Settings, User, Search, Moon, Sun, LogOut, MessageSquare, FileText, Bot, Volume2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { runAuthDiagnostics } from '@/lib/authValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { NotificationSoundSelector } from '@/components/NotificationSoundSelector';
+import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 const Header: React.FC = () => {
   const {
     profile,
@@ -23,6 +25,8 @@ const Header: React.FC = () => {
     setTheme
   } = useTheme();
   const navigate = useNavigate();
+  const { settings, updateSoundType } = useNotificationSettings();
+  const [showSoundSelector, setShowSoundSelector] = useState(false);
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -121,6 +125,10 @@ const Header: React.FC = () => {
               <FileText className="mr-2 h-4 w-4" />
               <span>Copiar Token (Postman)</span>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowSoundSelector(!showSoundSelector)}>
+              <Volume2 className="mr-2 h-4 w-4" />
+              <span>Sons de Notificação</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
@@ -128,6 +136,17 @@ const Header: React.FC = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        
+        {showSoundSelector && (
+          <div className="absolute top-16 right-6 z-50">
+            <NotificationSoundSelector
+              currentSound={settings.soundType}
+              customSoundUrl={settings.customSoundUrl}
+              onSoundChange={updateSoundType}
+              onClose={() => setShowSoundSelector(false)}
+            />
+          </div>
+        )}
       </div>
     </header>;
 };

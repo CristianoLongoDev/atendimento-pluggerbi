@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useNotificationSettings } from './useNotificationSettings';
 
 export type SoundType = 'beep' | 'ding' | 'chime' | 'pop' | 'custom' | 'silent';
 
@@ -6,8 +7,6 @@ interface NotificationOptions {
   originalTitle: string;
   originalFavicon: string;
   alternateTitle: string;
-  soundType?: SoundType;
-  customSoundUrl?: string;
 }
 
 export const useNotifications = (options: NotificationOptions) => {
@@ -17,6 +16,7 @@ export const useNotifications = (options: NotificationOptions) => {
   const titleElementRef = useRef<HTMLTitleElement | null>(null);
   const faviconElementRef = useRef<HTMLLinkElement | null>(null);
   const currentStateRef = useRef<'original' | 'alternate'>('original');
+  const { settings } = useNotificationSettings();
 
   // Inicializa elementos DOM
   useEffect(() => {
@@ -30,7 +30,7 @@ export const useNotifications = (options: NotificationOptions) => {
     const setupAudioSource = () => {
       if (!audioRef.current) return;
       
-      const soundType = options.soundType || 'beep';
+      const soundType = settings.soundType;
       
       switch (soundType) {
         case 'beep':
@@ -49,8 +49,8 @@ export const useNotifications = (options: NotificationOptions) => {
           audioRef.current.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAC=';
           break;
         case 'custom':
-          if (options.customSoundUrl) {
-            audioRef.current.src = options.customSoundUrl;
+          if (settings.customSoundUrl) {
+            audioRef.current.src = settings.customSoundUrl;
           }
           break;
         case 'silent':
@@ -68,7 +68,7 @@ export const useNotifications = (options: NotificationOptions) => {
         audioRef.current = null;
       }
     };
-  }, []);
+  }, [settings.soundType, settings.customSoundUrl]);
 
   const alternateDisplay = useCallback(() => {
     if (!titleElementRef.current || !faviconElementRef.current) return;
@@ -92,7 +92,7 @@ export const useNotifications = (options: NotificationOptions) => {
     setIsNotifying(true);
     
     // Toca som de notificação
-    if (audioRef.current && options.soundType !== 'silent') {
+    if (audioRef.current && settings.soundType !== 'silent') {
       audioRef.current.play().catch(e => console.log('Não foi possível tocar o som:', e));
     }
     

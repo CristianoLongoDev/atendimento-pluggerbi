@@ -1,25 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Play, Volume2, VolumeX } from 'lucide-react';
+import { Play, Volume2, VolumeX, X } from 'lucide-react';
 import { SoundType } from '@/hooks/useNotifications';
 
 interface NotificationSoundSelectorProps {
   currentSound: SoundType;
   customSoundUrl?: string;
   onSoundChange: (soundType: SoundType, customUrl?: string) => void;
+  onClose?: () => void;
 }
 
 export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps> = ({
   currentSound,
   customSoundUrl,
-  onSoundChange
+  onSoundChange,
+  onClose
 }) => {
   const [testSound, setTestSound] = useState<SoundType>(currentSound);
   const [customUrl, setCustomUrl] = useState(customSoundUrl || '');
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Fechar quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   const soundOptions = [
     { value: 'beep', label: 'Beep (Padrão)', description: 'Som tradicional de notificação' },
@@ -104,12 +121,19 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card ref={cardRef} className="w-full max-w-md shadow-lg border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Volume2 className="h-5 w-5" />
-          Som de Notificação
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Volume2 className="h-5 w-5" />
+            Som de Notificação
+          </CardTitle>
+          {onClose && (
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <CardDescription>
           Escolha o som que será tocado quando receber novas mensagens
         </CardDescription>
