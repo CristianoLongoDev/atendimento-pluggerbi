@@ -174,11 +174,9 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
                 } flex items-center justify-center`}
               >
                 <div className={`w-2 h-2 rounded-full ${
-                  group.status === 'closed' 
-                    ? 'bg-red-600' 
-                    : group.conversations.some(conv => conv.isActive) 
-                      ? 'bg-green-500' 
-                      : 'bg-red-500'
+                  group.conversations.some(conv => conv.isActive) 
+                    ? 'bg-green-500' 
+                    : 'bg-red-500'
                 }`}></div>
               </div>
             </div>
