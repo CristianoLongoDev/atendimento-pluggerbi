@@ -28,12 +28,25 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
-        onClose?.();
+        // Verificar se o clique foi em um elemento do select (portal)
+        const target = event.target as Element;
+        const isSelectContent = target.closest('[data-radix-select-content]') || 
+                               target.closest('[data-radix-popper-content-wrapper]') ||
+                               target.closest('[role="listbox"]');
+        
+        if (!isSelectContent) {
+          onClose?.();
+        }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    // Delay para evitar fechamento imediato ao abrir
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
     return () => {
+      clearTimeout(timeoutId);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [onClose]);
@@ -111,6 +124,8 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
     } else {
       onSoundChange(soundType);
     }
+    
+    // Não fechar a janela automaticamente para permitir testar o som
   };
 
   const handleCustomUrlChange = (url: string) => {
