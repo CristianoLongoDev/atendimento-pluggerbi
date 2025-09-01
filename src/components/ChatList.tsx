@@ -48,12 +48,20 @@ interface ChatListProps {
 const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect, onLoadMoreConversations }) => {
   // Agrupar conversas por customerName + channel - mostrando apenas a mais recente
   const groupedChats = React.useMemo(() => {
+    // Primeiro ordenar todas as conversas por timestamp (mais recente primeiro)
+    const sortedChats = [...chats].sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
     const groups: { [key: string]: GroupedChat } = {};
     
-    chats.forEach(chat => {
+    sortedChats.forEach(chat => {
       const groupKey = `${chat.customerName}-${chat.channel}`;
       
       if (!groups[groupKey]) {
+        // Primeira conversa do grupo (que já é a mais recente devido ao sort)
         groups[groupKey] = {
           groupKey,
           customerName: chat.customerName,
@@ -69,6 +77,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
           hasClosedConversations: chat.status === 'closed'
         };
       } else {
+        // Adicionar conversa ao grupo existente
         groups[groupKey].conversationCount += 1;
         groups[groupKey].conversations.push(chat);
         
@@ -77,44 +86,19 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
           groups[groupKey].hasClosedConversations = true;
         }
         
-        // Atualizar com a conversa mais recente se esta for mais nova
-        if (chat.timestamp > groups[groupKey].timestamp) {
-          groups[groupKey].lastMessage = chat.lastMessage;
-          groups[groupKey].timestamp = chat.timestamp;
-          groups[groupKey].status = chat.status;
-          groups[groupKey].latestConversation = chat;
-          groups[groupKey].unreadCount = chat.unreadCount; // Usar apenas da conversa mais recente
-        } else {
-          // Somar unreadCount apenas de conversas ativas
-          if (chat.status !== 'closed') {
-            groups[groupKey].unreadCount += chat.unreadCount;
-          }
+        // Somar unreadCount apenas de conversas ativas
+        if (chat.status !== 'closed') {
+          groups[groupKey].unreadCount += chat.unreadCount;
         }
       }
     });
     
-    // Ordenar conversas dentro de cada grupo por timestamp (mais recente primeiro)
-    Object.values(groups).forEach(group => {
-      group.conversations.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-      // Atualizar informações baseadas na conversa mais recente após ordenação
-      group.latestConversation = group.conversations[0];
-      
-      // Atualizar todas as informações com a conversa mais recente
-      group.lastMessage = group.latestConversation.lastMessage;
-      group.timestamp = group.latestConversation.timestamp;
-      group.status = group.latestConversation.status;
-      
-      // Verificar novamente se há conversas fechadas após ordenação
-      group.hasClosedConversations = group.conversations.some(conv => conv.status === 'closed');
-      
-      // Recalcular unreadCount apenas de conversas ativas
-      group.unreadCount = group.conversations
-        .filter(conv => conv.status !== 'closed')
-        .reduce((sum, conv) => sum + conv.unreadCount, 0);
-    });
-    
     // Retornar grupos ordenados por timestamp da última mensagem
-    return Object.values(groups).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    return Object.values(groups).sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      return dateB.getTime() - dateA.getTime();
+    });
   }, [chats]);
   const getChannelColor = (channel: string) => {
     const colors = {
