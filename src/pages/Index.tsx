@@ -620,24 +620,34 @@ const Index = () => {
     setSelectedChatId(null);
   };
 
-  const handleTransferToHuman = async () => {
+  const handleCloseConversation = async () => {
+    console.log('🚀 Index.tsx - handleCloseConversation chamado para:', selectedChatId);
+    
     if (selectedChatId) {
       try {
-        await transferToHuman(selectedChatId);
+        console.log('🔄 Index.tsx - Antes de fechar - selectedConversations:', selectedConversations.map(c => ({ id: c.id, status: c.status })));
         
-        // Força re-render do componente após a transferência
-        setSelectedChatId(null);
-        setTimeout(() => setSelectedChatId(selectedChatId), 100);
+        await closeConversation(selectedChatId);
+        
+        console.log('🔄 Index.tsx - Após fechar - forçando atualização de selectedConversations');
+        
+        // Forçar atualização imediata do selectedConversations
+        setSelectedConversations(prevConvs => 
+          prevConvs.map(conv => 
+            conv.id === selectedChatId ? { ...conv, status: 'closed' } : conv
+          )
+        );
         
         toast({
-          title: "Atendimento assumido",
-          description: "Um humano assumiu o atendimento desta conversa.",
+          title: "Conversa encerrada",
+          description: "A conversa foi encerrada com sucesso.",
         });
       } catch (error) {
+        console.error('❌ Erro ao encerrar conversa:', error);
         toast({
           title: "Erro",
-          description: "Não foi possível assumir o atendimento. Tente novamente.",
-          variant: "destructive",
+          description: "Não foi possível encerrar a conversa.",
+          variant: "destructive"
         });
       }
     }
@@ -766,7 +776,12 @@ const Index = () => {
                   ...selectedConversations[0],
                   conversationCount: selectedConversations.length
                 } : null;
-                console.log('🎯 ChatArea recebendo selectedChat:', chat?.status);
+                console.log('🎯 ChatArea recebendo selectedChat:', {
+                  chatId: chat?.id,
+                  status: chat?.status,
+                  hasSelectedConversations: selectedConversations.length > 0,
+                  selectedConversationsStatus: selectedConversations.map(c => c.status)
+                });
                 return chat;
               })()}
               conversations={selectedConversations}
@@ -804,18 +819,7 @@ const Index = () => {
                   description: "As conversas ativas foram transferidas para atendimento humano.",
                 });
               }}
-              onCloseConversation={() => {
-                // Encerrar todas as conversas ativas do grupo
-                selectedConversations.forEach(conv => {
-                  if (conv.status !== 'closed') {
-                    closeConversation(conv.id);
-                  }
-                });
-                toast({
-                  title: "Conversas encerradas",
-                  description: "As conversas ativas foram encerradas.",
-                });
-              }}
+              onCloseConversation={handleCloseConversation}
               isInfoExpanded={isInfoExpanded}
               onToggleInfoExpanded={() => setIsInfoExpanded(!isInfoExpanded)}
             />
