@@ -621,20 +621,26 @@ const Index = () => {
   };
 
   const handleCloseConversation = async () => {
-    console.log('🚀 Index.tsx - handleCloseConversation chamado para:', selectedChatId);
+    console.log('🚀 Index.tsx - handleCloseConversation chamado para selectedChatId:', selectedChatId);
+    console.log('🚀 Index.tsx - selectedConversations:', selectedConversations);
     
-    if (selectedChatId) {
+    if (selectedChatId && selectedConversations.length > 0) {
       try {
+        // Usar o ID numérico da primeira conversa ativa ao invés do selectedChatId
+        const activeConversation = selectedConversations.find(conv => conv.status !== 'closed');
+        const conversationIdToClose = activeConversation ? activeConversation.id : selectedConversations[0].id;
+        
+        console.log('🔄 Index.tsx - ID da conversa a ser encerrada:', conversationIdToClose);
         console.log('🔄 Index.tsx - Antes de fechar - selectedConversations:', selectedConversations.map(c => ({ id: c.id, status: c.status })));
         
-        await closeConversation(selectedChatId);
+        await closeConversation(conversationIdToClose);
         
         console.log('🔄 Index.tsx - Após fechar - forçando atualização de selectedConversations');
         
         // Forçar atualização imediata do selectedConversations
         setSelectedConversations(prevConvs => 
           prevConvs.map(conv => 
-            conv.id === selectedChatId ? { ...conv, status: 'closed' } : conv
+            conv.id === conversationIdToClose ? { ...conv, status: 'closed' } : conv
           )
         );
         
