@@ -196,7 +196,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            {selectedChat.status !== 'ai' && hasActiveConversations && (
+            {selectedChat.status !== 'ai' && selectedChat.status !== 'closed' && hasActiveConversations && (
               <Button 
                 variant="destructive"
                 size="sm"
@@ -392,10 +392,16 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
       {/* Message Input / Attend Button */}
       <div className="p-4 border-t border-border bg-card">
-        {(() => {
-          console.log('🎯 ChatArea - selectedChat.status:', selectedChat.status);
-          return selectedChat.status === 'ai';
-        })() ? (
+        {selectedChat.status === 'closed' || isAllClosed ? (
+          // Mostrar mensagem quando conversa está encerrada
+          <div className="flex justify-center">
+            <div className="text-center text-muted-foreground">
+              <XCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Conversa encerrada</p>
+              <p className="text-xs opacity-70">Não é possível enviar mensagens</p>
+            </div>
+          </div>
+        ) : selectedChat.status === 'ai' ? (
           // Mostrar apenas botão "Atender" quando IA está ativa
           <div className="flex justify-center">
             <Button 
@@ -405,15 +411,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               <UserPlus className="w-4 h-4 mr-2" />
               Atender Conversa
             </Button>
-          </div>
-        ) : isAllClosed ? (
-          // Mostrar mensagem quando todas as conversas estão encerradas
-          <div className="flex justify-center">
-            <div className="text-center text-muted-foreground">
-              <XCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Conversa encerrada</p>
-              <p className="text-xs opacity-70">Não é possível enviar mensagens</p>
-            </div>
           </div>
         ) : (
           // Mostrar campo de mensagem quando humano está atendendo

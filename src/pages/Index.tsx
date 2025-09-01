@@ -547,15 +547,21 @@ const Index = () => {
   useEffect(() => {
     if (selectedChatId && selectedConversations.length > 0) {
       const updatedConversations = chats.filter(chat => chat.id === selectedChatId);
-      if (updatedConversations.length > 0 && updatedConversations[0].status !== selectedConversations[0].status) {
-        console.log('🔄 Atualizando selectedConversations devido a mudança no chat:', {
-          oldStatus: selectedConversations[0].status,
-          newStatus: updatedConversations[0].status
-        });
-        setSelectedConversations(updatedConversations);
+      if (updatedConversations.length > 0) {
+        const currentStatus = selectedConversations[0]?.status;
+        const newStatus = updatedConversations[0].status;
+        
+        if (currentStatus !== newStatus) {
+          console.log('🔄 Atualizando selectedConversations devido a mudança no chat:', {
+            chatId: selectedChatId,
+            oldStatus: currentStatus,
+            newStatus: newStatus
+          });
+          setSelectedConversations(updatedConversations);
+        }
       }
     }
-  }, [chats, selectedChatId]);
+  }, [chats, selectedChatId, selectedConversations]);
   
   const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
