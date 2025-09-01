@@ -67,48 +67,40 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
   const playTestSound = (soundType: SoundType, customUrl?: string, testRepeatCount?: number) => {
     if (soundType === 'silent') return;
     
-    const audio = new Audio();
     const repeats = testRepeatCount || repeatCount || 1;
+    console.log('🔊 Tocando som:', soundType, 'repetições:', repeats);
+    
+    const playAudioWithRepeats = (audioSrc: string, count: number) => {
+      if (count > 0) {
+        const audio = new Audio(audioSrc);
+        audio.play().catch(e => console.log('Erro ao tocar som:', e));
+        
+        audio.onended = () => {
+          if (count > 1) {
+            setTimeout(() => playAudioWithRepeats(audioSrc, count - 1), 200);
+          }
+        };
+      }
+    };
     
     switch (soundType) {
       case 'beep':
-        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIF';
+        playAudioWithRepeats('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIF', repeats);
         break;
       case 'ding':
-        // Gerar som ding usando Web Audio API
         generateTone(1000, 150, 'sine', repeats);
         return;
       case 'chime':
-        // Gerar som chime usando Web Audio API
         generateTone(800, 300, 'triangle', repeats);
         return;
       case 'pop':
-        // Gerar som pop usando Web Audio API
         generateTone(1500, 100, 'square', repeats);
         return;
       case 'custom':
         if (customUrl) {
-          audio.src = customUrl;
+          playAudioWithRepeats(customUrl, repeats);
         }
         break;
-    }
-    
-    if (audio.src) {
-      // Tocar com repetições
-      const playRepeated = (count: number) => {
-        if (count > 0) {
-          audio.currentTime = 0;
-          audio.play().catch(e => console.log('Erro ao tocar som:', e));
-          
-          audio.onended = () => {
-            if (count > 1) {
-              setTimeout(() => playRepeated(count - 1), 200);
-            }
-          };
-        }
-      };
-      
-      playRepeated(repeats);
     }
   };
 
