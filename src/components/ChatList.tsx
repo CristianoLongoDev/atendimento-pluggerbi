@@ -99,8 +99,18 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
       // Atualizar informações baseadas na conversa mais recente após ordenação
       group.latestConversation = group.conversations[0];
       
+      // Atualizar todas as informações com a conversa mais recente
+      group.lastMessage = group.latestConversation.lastMessage;
+      group.timestamp = group.latestConversation.timestamp;
+      group.status = group.latestConversation.status;
+      
       // Verificar novamente se há conversas fechadas após ordenação
       group.hasClosedConversations = group.conversations.some(conv => conv.status === 'closed');
+      
+      // Recalcular unreadCount apenas de conversas ativas
+      group.unreadCount = group.conversations
+        .filter(conv => conv.status !== 'closed')
+        .reduce((sum, conv) => sum + conv.unreadCount, 0);
     });
     
     // Retornar grupos ordenados por timestamp da última mensagem
