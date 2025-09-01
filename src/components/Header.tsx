@@ -25,7 +25,7 @@ const Header: React.FC = () => {
     setTheme
   } = useTheme();
   const navigate = useNavigate();
-  const { settings, updateSoundType } = useNotificationSettings();
+  const { settings, updateSoundType, updateRepeatCount } = useNotificationSettings();
   const [showSoundSelector, setShowSoundSelector] = useState(false);
   const handleSignOut = async () => {
     await signOut();
@@ -142,7 +142,9 @@ const Header: React.FC = () => {
             <NotificationSoundSelector
               currentSound={settings.soundType}
               customSoundUrl={settings.customSoundUrl}
+              repeatCount={settings.repeatCount}
               onSoundChange={updateSoundType}
+              onRepeatChange={updateRepeatCount}
               onClose={() => setShowSoundSelector(false)}
             />
           </div>

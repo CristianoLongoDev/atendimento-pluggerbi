@@ -4,13 +4,15 @@ import { SoundType } from './useNotifications';
 interface NotificationSettings {
   soundType: SoundType;
   customSoundUrl?: string;
+  repeatCount: number;
 }
 
 const COOKIE_NAME = 'notification_settings';
 
 export const useNotificationSettings = () => {
   const [settings, setSettings] = useState<NotificationSettings>({
-    soundType: 'beep'
+    soundType: 'beep',
+    repeatCount: 1
   });
 
   // Carregar configurações do cookie na inicialização
@@ -34,15 +36,25 @@ export const useNotificationSettings = () => {
 
   const updateSoundType = (soundType: SoundType, customUrl?: string) => {
     const newSettings: NotificationSettings = {
+      ...settings,
       soundType,
       customSoundUrl: customUrl
     };
     updateSettings(newSettings);
   };
 
+  const updateRepeatCount = (repeatCount: number) => {
+    const newSettings: NotificationSettings = {
+      ...settings,
+      repeatCount
+    };
+    updateSettings(newSettings);
+  };
+
   return {
     settings,
-    updateSoundType
+    updateSoundType,
+    updateRepeatCount
   };
 };
 

@@ -91,14 +91,27 @@ export const useNotifications = (options: NotificationOptions) => {
     console.log('🔔 Iniciando notificações');
     setIsNotifying(true);
     
-    // Toca som de notificação
+    // Toca som de notificação repetidas vezes
     if (audioRef.current && settings.soundType !== 'silent') {
-      audioRef.current.play().catch(e => console.log('Não foi possível tocar o som:', e));
+      const playSound = (count: number) => {
+        if (count > 0 && audioRef.current) {
+          audioRef.current.play().catch(e => console.log('Não foi possível tocar o som:', e));
+          
+          // Aguarda o fim do som antes de tocar novamente
+          audioRef.current.onended = () => {
+            if (count > 1) {
+              setTimeout(() => playSound(count - 1), 200); // Pausa de 200ms entre repetições
+            }
+          };
+        }
+      };
+      
+      playSound(settings.repeatCount);
     }
     
     // Inicia alternância visual
     intervalRef.current = setInterval(alternateDisplay, 1000);
-  }, [isNotifying, alternateDisplay]);
+  }, [isNotifying, alternateDisplay, settings.soundType, settings.repeatCount]);
 
   const stopNotifications = useCallback(() => {
     if (!isNotifying) return;

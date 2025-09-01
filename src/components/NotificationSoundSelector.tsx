@@ -10,14 +10,18 @@ import { SoundType } from '@/hooks/useNotifications';
 interface NotificationSoundSelectorProps {
   currentSound: SoundType;
   customSoundUrl?: string;
+  repeatCount: number;
   onSoundChange: (soundType: SoundType, customUrl?: string) => void;
+  onRepeatChange: (count: number) => void;
   onClose?: () => void;
 }
 
 export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps> = ({
   currentSound,
   customSoundUrl,
+  repeatCount,
   onSoundChange,
+  onRepeatChange,
   onClose
 }) => {
   const [testSound, setTestSound] = useState<SoundType>(currentSound);
@@ -60,10 +64,11 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
     { value: 'silent', label: 'Silencioso', description: 'Sem som de notificação' }
   ];
 
-  const playTestSound = (soundType: SoundType, customUrl?: string) => {
+  const playTestSound = (soundType: SoundType, customUrl?: string, testRepeatCount?: number) => {
     if (soundType === 'silent') return;
     
     const audio = new Audio();
+    const repeats = testRepeatCount || repeatCount;
     
     switch (soundType) {
       case 'beep':
@@ -71,15 +76,15 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
         break;
       case 'ding':
         // Gerar som ding usando Web Audio API
-        generateTone(1000, 150, 'sine');
+        generateTone(1000, 150, 'sine', repeats);
         return;
       case 'chime':
         // Gerar som chime usando Web Audio API
-        generateTone(800, 300, 'triangle');
+        generateTone(800, 300, 'triangle', repeats);
         return;
       case 'pop':
         // Gerar som pop usando Web Audio API
-        generateTone(1500, 100, 'square');
+        generateTone(1500, 100, 'square', repeats);
         return;
       case 'custom':
         if (customUrl) {
@@ -89,30 +94,53 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
     }
     
     if (audio.src) {
-      audio.play().catch(e => console.log('Erro ao tocar som:', e));
+      // Tocar com repetições
+      const playRepeated = (count: number) => {
+        if (count > 0) {
+          audio.currentTime = 0;
+          audio.play().catch(e => console.log('Erro ao tocar som:', e));
+          
+          audio.onended = () => {
+            if (count > 1) {
+              setTimeout(() => playRepeated(count - 1), 200);
+            }
+          };
+        }
+      };
+      
+      playRepeated(repeats);
     }
   };
 
-  const generateTone = (frequency: number, duration: number, type: OscillatorType) => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+  const generateTone = (frequency: number, duration: number, type: OscillatorType, repeats: number = 1) => {
+    const playTone = (count: number) => {
+      if (count > 0) {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        oscillator.type = type;
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration / 1000);
+        
+        setTimeout(() => {
+          audioContext.close();
+          if (count > 1) {
+            setTimeout(() => playTone(count - 1), 200);
+          }
+        }, duration);
+      }
+    };
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-    oscillator.type = type;
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration / 1000);
-    
-    setTimeout(() => {
-      audioContext.close();
-    }, duration);
+    playTone(repeats);
   };
 
   const handleSoundChange = (value: string) => {
@@ -189,11 +217,33 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
           </div>
         )}
 
+        <div className="space-y-2">
+          <Label htmlFor="repeat-count">Repetir Som</Label>
+          <Select 
+            value={repeatCount.toString()} 
+            onValueChange={(value) => onRepeatChange(parseInt(value))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Número de repetições" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 vez</SelectItem>
+              <SelectItem value="2">2 vezes</SelectItem>
+              <SelectItem value="3">3 vezes</SelectItem>
+              <SelectItem value="4">4 vezes</SelectItem>
+              <SelectItem value="5">5 vezes</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Quantas vezes tocar o som a cada nova mensagem
+          </p>
+        </div>
+
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => playTestSound(testSound, customUrl)}
+            onClick={() => playTestSound(testSound, customUrl, repeatCount)}
             disabled={testSound === 'silent'}
             className="flex-1"
           >
