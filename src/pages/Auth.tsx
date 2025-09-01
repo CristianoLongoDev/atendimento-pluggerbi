@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus } from 'lucide-react';
 
 const Auth: React.FC = () => {
   const { signIn, signUp } = useAuth();
@@ -86,11 +86,13 @@ const Auth: React.FC = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <MessageSquare className="w-8 h-8 text-primary" />
-            </div>
+            <img 
+              src="/lovable-uploads/9cc51e6f-75e3-4ff6-8bc8-a07fc1fdd41e.png" 
+              alt="Pluggy Logo" 
+              className="w-16 h-16"
+            />
           </div>
-          <CardTitle className="text-2xl">Chat Manager</CardTitle>
+          <CardTitle className="text-2xl">Pluggy</CardTitle>
           <CardDescription>
             Sistema de gerenciamento de conversas multi-canal
           </CardDescription>
