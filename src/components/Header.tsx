@@ -142,7 +142,7 @@ const Header: React.FC = () => {
             <NotificationSoundSelector
               currentSound={settings.soundType}
               customSoundUrl={settings.customSoundUrl}
-              repeatCount={settings.repeatCount}
+              repeatCount={settings.repeatCount || 1}
               onSoundChange={updateSoundType}
               onRepeatChange={updateRepeatCount}
               onClose={() => setShowSoundSelector(false)}

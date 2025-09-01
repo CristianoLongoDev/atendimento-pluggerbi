@@ -68,7 +68,7 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
     if (soundType === 'silent') return;
     
     const audio = new Audio();
-    const repeats = testRepeatCount || repeatCount;
+    const repeats = testRepeatCount || repeatCount || 1;
     
     switch (soundType) {
       case 'beep':
@@ -220,7 +220,7 @@ export const NotificationSoundSelector: React.FC<NotificationSoundSelectorProps>
         <div className="space-y-2">
           <Label htmlFor="repeat-count">Repetir Som</Label>
           <Select 
-            value={repeatCount.toString()} 
+            value={(repeatCount || 1).toString()} 
             onValueChange={(value) => onRepeatChange(parseInt(value))}
           >
             <SelectTrigger>
