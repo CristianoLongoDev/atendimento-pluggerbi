@@ -545,11 +545,19 @@ const Index = () => {
   
   // Atualizar selectedConversations quando chats mudarem
   useEffect(() => {
-    if (selectedChatId && selectedConversations.length > 0) {
+    if (selectedChatId) {
       const updatedConversations = chats.filter(chat => chat.id === selectedChatId);
       if (updatedConversations.length > 0) {
         const currentStatus = selectedConversations[0]?.status;
         const newStatus = updatedConversations[0].status;
+        
+        console.log('🔄 Verificando mudança de status:', {
+          chatId: selectedChatId,
+          hasSelectedConversations: selectedConversations.length > 0,
+          currentStatus: currentStatus,
+          newStatus: newStatus,
+          needsUpdate: currentStatus !== newStatus
+        });
         
         if (currentStatus !== newStatus) {
           console.log('🔄 Atualizando selectedConversations devido a mudança no chat:', {
@@ -561,7 +569,7 @@ const Index = () => {
         }
       }
     }
-  }, [chats, selectedChatId, selectedConversations]);
+  }, [chats, selectedChatId]);
   
   const selectedChat = chats.find(chat => chat.id === selectedChatId);
   
