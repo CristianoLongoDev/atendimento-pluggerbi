@@ -12,7 +12,6 @@ interface NotificationOptions {
 export const useNotifications = (options: NotificationOptions) => {
   const [isNotifying, setIsNotifying] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const titleElementRef = useRef<HTMLTitleElement | null>(null);
   const faviconElementRef = useRef<HTMLLinkElement | null>(null);
   const currentStateRef = useRef<'original' | 'alternate'>('original');
@@ -22,53 +21,51 @@ export const useNotifications = (options: NotificationOptions) => {
   useEffect(() => {
     titleElementRef.current = document.querySelector('title');
     faviconElementRef.current = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
-    
-    // Cria elemento de áudio para notificação
-    audioRef.current = new Audio();
-    
-    // Define o som baseado na opção escolhida
-    const setupAudioSource = () => {
-      if (!audioRef.current) return;
-      
-      const soundType = settings.soundType;
-      
-      switch (soundType) {
-        case 'beep':
-          audioRef.current.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIF';
-          break;
-        case 'ding':
-          // Som mais agudo e rápido
-          audioRef.current.src = 'data:audio/wav;base64,UklGRhwBAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAACIK8dJvwzC+BAemRoSmRrQWe8Wm90c';
-          break;
-        case 'chime':
-          // Som mais suave e melodioso
-          audioRef.current.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAB=';
-          break;
-        case 'pop':
-          // Som tipo "pop" 
-          audioRef.current.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAC=';
-          break;
-        case 'custom':
-          if (settings.customSoundUrl) {
-            audioRef.current.src = settings.customSoundUrl;
-          }
-          break;
-        case 'silent':
-          audioRef.current = null;
-          break;
-        default:
-          audioRef.current.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIF';
-      }
-    };
-    
-    setupAudioSource();
+  }, []);
 
-    return () => {
-      if (audioRef.current) {
-        audioRef.current = null;
+  const generateTone = useCallback((frequency: number, duration: number, type: OscillatorType, repeats: number = 1) => {
+    const playTone = (count: number) => {
+      if (count > 0) {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        oscillator.type = type;
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration / 1000);
+        
+        setTimeout(() => {
+          audioContext.close();
+          if (count > 1) {
+            setTimeout(() => playTone(count - 1), 200);
+          }
+        }, duration);
       }
     };
-  }, [settings.soundType, settings.customSoundUrl]);
+    
+    playTone(repeats);
+  }, []);
+
+  const playAudioWithRepeats = useCallback((audioSrc: string, count: number) => {
+    if (count > 0) {
+      const audio = new Audio(audioSrc);
+      audio.play().catch(e => console.log('Não foi possível tocar o som:', e));
+      
+      audio.onended = () => {
+        if (count > 1) {
+          setTimeout(() => playAudioWithRepeats(audioSrc, count - 1), 200);
+        }
+      };
+    }
+  }, []);
 
   const alternateDisplay = useCallback(() => {
     if (!titleElementRef.current || !faviconElementRef.current) return;
@@ -92,26 +89,33 @@ export const useNotifications = (options: NotificationOptions) => {
     setIsNotifying(true);
     
     // Toca som de notificação repetidas vezes
-    if (audioRef.current && settings.soundType !== 'silent') {
-      const playSound = (count: number) => {
-        if (count > 0 && audioRef.current) {
-          audioRef.current.play().catch(e => console.log('Não foi possível tocar o som:', e));
-          
-          // Aguarda o fim do som antes de tocar novamente
-          audioRef.current.onended = () => {
-            if (count > 1) {
-              setTimeout(() => playSound(count - 1), 200); // Pausa de 200ms entre repetições
-            }
-          };
-        }
-      };
+    if (settings.soundType !== 'silent') {
+      const repeats = settings.repeatCount || 1;
       
-      playSound(settings.repeatCount);
+      switch (settings.soundType) {
+        case 'beep':
+          playAudioWithRepeats('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMdCzeFz/LVdSIF', repeats);
+          break;
+        case 'ding':
+          generateTone(1000, 150, 'sine', repeats);
+          break;
+        case 'chime':
+          generateTone(800, 300, 'triangle', repeats);
+          break;
+        case 'pop':
+          generateTone(1500, 100, 'square', repeats);
+          break;
+        case 'custom':
+          if (settings.customSoundUrl) {
+            playAudioWithRepeats(settings.customSoundUrl, repeats);
+          }
+          break;
+      }
     }
     
     // Inicia alternância visual
     intervalRef.current = setInterval(alternateDisplay, 1000);
-  }, [isNotifying, alternateDisplay, settings.soundType, settings.repeatCount]);
+  }, [isNotifying, alternateDisplay, settings.soundType, settings.repeatCount, settings.customSoundUrl, generateTone, playAudioWithRepeats]);
 
   const stopNotifications = useCallback(() => {
     if (!isNotifying) return;
