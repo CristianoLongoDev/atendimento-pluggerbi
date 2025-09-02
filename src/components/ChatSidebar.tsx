@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+const APP_VERSION = 'v1.0.0';
+
 interface Chat {
   id: string;
   status: 'ai' | 'human' | 'pending' | 'closed' | 'waiting';
@@ -179,6 +181,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Footer com versão */}
+      <div className="p-3 border-t border-border">
+        <div className="text-xs text-muted-foreground text-center">
+          {APP_VERSION}
+        </div>
+      </div>
     </div>
   );
 };
