@@ -37,7 +37,7 @@ export const useBots = () => {
       
       const response = await fetch('https://atendimento.pluggerbi.com/bots', {
         headers,
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        signal: AbortSignal.timeout(30000) // 30 second timeout
       });
       
       console.log('fetchBots - Response status:', response.status);

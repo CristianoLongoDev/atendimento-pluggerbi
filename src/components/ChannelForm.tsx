@@ -254,9 +254,9 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
             <Select
               value={formData.botAgent}
               onValueChange={(value) => setFormData(prev => ({ ...prev, botAgent: value }))}
-              disabled={loading || mode === 'edit'}
+              disabled={loading}
             >
-              <SelectTrigger className={mode === 'edit' ? 'opacity-50 cursor-not-allowed' : ''}>
+              <SelectTrigger>
                 <SelectValue placeholder={
                   bots.length === 0 
                     ? "Carregando bots..." 
