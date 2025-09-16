@@ -539,9 +539,20 @@ const Index = () => {
   // Fetch channels when entering channels section
   useEffect(() => {
     if (selectedSection === 'channels') {
+      console.log('🔍 Index.tsx - Fetching channels para selectedSection:', selectedSection);
       fetchChannels();
     }
   }, [selectedSection, fetchChannels]);
+
+  // Debug do estado dos canais
+  useEffect(() => {
+    console.log('🔍 Index.tsx - Channels state:', { 
+      channels, 
+      channelsLength: channels.length, 
+      channelsLoading,
+      selectedSection 
+    });
+  }, [channels, channelsLoading, selectedSection]);
   
   // Atualizar selectedConversations quando chats mudarem
   useEffect(() => {
@@ -883,6 +894,11 @@ const Index = () => {
         );
 
       case 'channels':
+        console.log('🔍 Index.tsx - Renderizando seção channels:', { 
+          channelsLoading, 
+          channelsLength: channels.length, 
+          channels: channels.slice(0, 2) // Primeiros 2 para debug
+        });
         return (
           <div className="flex-1 p-6">
             <div className="flex justify-between items-center mb-6">
@@ -900,16 +916,16 @@ const Index = () => {
             
             <Card>
               <CardContent className="p-0">
-                {channelsLoading ? (
-                  <div className="p-6">
-                    <div className="space-y-3">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                    </div>
-                  </div>
-                ) : (
-                  <Table>
+                 {channelsLoading ? (
+                   <div className="p-6">
+                     <div className="space-y-3">
+                       <Skeleton className="h-4 w-full" />
+                       <Skeleton className="h-4 w-full" />
+                       <Skeleton className="h-4 w-full" />
+                     </div>
+                   </div>
+                 ) : (
+                   <Table>
                      <TableHeader>
                        <TableRow>
                          <TableHead className="font-medium">ID</TableHead>
@@ -939,11 +955,11 @@ const Index = () => {
                                  {channel.type}
                                </Badge>
                              </TableCell>
-                              <TableCell>
-                                <Badge variant={channel.active ? "success" : "destructive"}>
-                                  {channel.active ? 'Ativo' : 'Desabilitado'}
-                                </Badge>
-                              </TableCell>
+                               <TableCell>
+                                 <Badge variant={Number(channel.active) === 1 ? "success" : "destructive"}>
+                                   {Number(channel.active) === 1 ? 'Ativo' : 'Desabilitado'}
+                                 </Badge>
+                               </TableCell>
                              <TableCell className="text-sm text-muted-foreground">
                                {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
                              </TableCell>

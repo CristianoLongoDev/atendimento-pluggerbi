@@ -7,7 +7,7 @@ export interface Channel {
   name: string;
   config: Record<string, any>;
   bot_id?: string;
-  active?: boolean;
+  active?: boolean | number; // API retorna number (0/1)
   status?: number;
   created_at?: string;
   updated_at?: string;

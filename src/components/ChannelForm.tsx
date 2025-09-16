@@ -54,7 +54,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
         botAgent: channel.bot_id || '',
-        active: channel.active || false,
+        active: Boolean(channel.active),
         phone_number: (channel as any).phone_number || '',
         client_id: '',
         client_secret: '',
