@@ -30,13 +30,11 @@ export const useChannels = () => {
   };
 
   const fetchChannels = useCallback(async () => {
-    console.log('🔍 useChannels - fetchChannels INICIADO');
     setLoading(true);
     setError(null);
     
     try {
       const headers = await getAuthHeaders();
-      console.log('🔍 useChannels - Headers obtidos, fazendo request...');
       
       const response = await fetch('https://atendimento.pluggerbi.com/channels', {
         headers
@@ -47,23 +45,12 @@ export const useChannels = () => {
       }
       
       const data = await response.json();
-      console.log('🔍 useChannels - API Response recebida:', data);
-      console.log('🔍 useChannels - Channels data:', data.channels);
-      
-      if (data.channels && data.channels.length > 0) {
-        console.log('🔍 useChannels - First channel example:', data.channels[0]);
-      }
-      
-      console.log('🔍 useChannels - Definindo channels para:', data.channels || []);
-      
       setChannels(data.channels || []);
       
-      console.log('🔍 useChannels - setChannels executado');
     } catch (err) {
-      console.error('❌ useChannels - Error fetching channels:', err);
+      console.error('❌ useChannels - Error:', err);
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
-      console.log('🔍 useChannels - setLoading(false)');
       setLoading(false);
     }
   }, []);

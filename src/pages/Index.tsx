@@ -894,11 +894,6 @@ const Index = () => {
         );
 
       case 'channels':
-        console.log('🔍 Index.tsx - Renderizando seção channels:', { 
-          channelsLoading, 
-          channelsLength: channels.length, 
-          channels: channels.slice(0, 2) // Primeiros 2 para debug
-        });
         return (
           <div className="flex-1 p-6">
             <div className="flex justify-between items-center mb-6">
@@ -915,65 +910,63 @@ const Index = () => {
             </div>
             
             <Card>
-              <CardContent className="p-0">
-                 {channelsLoading ? (
-                   <div className="p-6">
-                     <div className="space-y-3">
-                       <Skeleton className="h-4 w-full" />
-                       <Skeleton className="h-4 w-full" />
-                       <Skeleton className="h-4 w-full" />
-                     </div>
-                   </div>
-                 ) : (
-                   <Table>
-                     <TableHeader>
-                       <TableRow>
-                         <TableHead className="font-medium">ID</TableHead>
-                         <TableHead className="font-medium">Nome</TableHead>
-                         <TableHead className="font-medium">Tipo</TableHead>
-                         <TableHead className="font-medium">Status</TableHead>
-                         <TableHead className="font-medium">Data Criação</TableHead>
-                         <TableHead className="w-[100px] font-medium">Ações</TableHead>
-                       </TableRow>
-                     </TableHeader>
-                    <TableBody>
-                       {channels.length === 0 ? (
-                         <TableRow>
-                           <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                             Nenhum canal encontrado
-                           </TableCell>
-                         </TableRow>
-                       ) : (
-                         channels.map((channel) => (
-                           <TableRow key={channel.id}>
-                             <TableCell className="font-mono text-sm">
-                               {channel.id ? channel.id.substring(0, 8) + '...' : '-'}
-                             </TableCell>
-                             <TableCell className="font-medium">{channel.name}</TableCell>
-                             <TableCell>
-                               <Badge variant="outline">
-                                 {channel.type}
-                               </Badge>
-                             </TableCell>
-                               <TableCell>
-                                 <Badge variant={Number(channel.active) === 1 ? "success" : "destructive"}>
-                                   {Number(channel.active) === 1 ? 'Ativo' : 'Desabilitado'}
-                                 </Badge>
-                               </TableCell>
-                             <TableCell className="text-sm text-muted-foreground">
-                               {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
-                             </TableCell>
+              <CardContent className="p-6">
+                {channelsLoading ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ) : channels.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    Nenhum canal encontrado
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Data Criação</TableHead>
+                          <TableHead>Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {channels.map((channel) => (
+                          <TableRow key={channel.id}>
+                            <TableCell className="font-mono text-sm">
+                              {channel.id?.substring(0, 8) + '...'}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {channel.name}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {channel.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={Number(channel.active) === 1 ? "default" : "destructive"}>
+                                {Number(channel.active) === 1 ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {channel.created_at ? new Date(channel.created_at).toLocaleDateString('pt-BR') : '-'}
+                            </TableCell>
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <Button variant="ghost" size="sm">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-background border z-50">
+                                <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={() => handleEditChannel(channel)}>
                                     <Edit className="mr-2 h-4 w-4" />
-                                    Alterar
+                                    Editar
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => handleDeleteChannel(channel.id)}
@@ -985,11 +978,11 @@ const Index = () => {
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
-                           </TableRow>
-                         ))
-                       )}
-                    </TableBody>
-                  </Table>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
