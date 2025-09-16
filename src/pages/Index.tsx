@@ -542,7 +542,7 @@ const Index = () => {
       console.log('🔍 Index.tsx - Fetching channels para selectedSection:', selectedSection);
       fetchChannels();
     }
-  }, [selectedSection, fetchChannels]);
+  }, [selectedSection]);
 
   // Debug do estado dos canais
   useEffect(() => {

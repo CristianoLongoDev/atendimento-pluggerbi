@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Channel {
@@ -29,7 +29,7 @@ export const useChannels = () => {
     };
   };
 
-  const fetchChannels = async () => {
+  const fetchChannels = useCallback(async () => {
     console.log('🔍 useChannels - fetchChannels INICIADO');
     setLoading(true);
     setError(null);
@@ -54,7 +54,6 @@ export const useChannels = () => {
         console.log('🔍 useChannels - First channel example:', data.channels[0]);
       }
       
-      console.log('🔍 useChannels - Antes de setChannels, channels atuais:', channels);
       console.log('🔍 useChannels - Definindo channels para:', data.channels || []);
       
       setChannels(data.channels || []);
@@ -67,7 +66,7 @@ export const useChannels = () => {
       console.log('🔍 useChannels - setLoading(false)');
       setLoading(false);
     }
-  };
+  }, []);
 
   const createChannel = async (channelData: Omit<Channel, 'id'>) => {
     setLoading(true);
