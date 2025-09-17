@@ -34,7 +34,7 @@ export const usePrompts = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/prompts`, {
         headers
       });
       
@@ -62,11 +62,11 @@ export const usePrompts = () => {
     try {
       const headers = await getAuthHeaders();
       console.log('=== CREATE PROMPT DEBUG ===');
-      console.log('URL:', `https://atendimento.pluggerbi.com/bots/${promptData.bot_id}/prompts`);
+      console.log('URL:', `https://pluggyapi.pluggerbi.com/bots/${promptData.bot_id}/prompts`);
       console.log('Headers:', headers);
       console.log('Body:', JSON.stringify(promptData, null, 2));
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${promptData.bot_id}/prompts`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${promptData.bot_id}/prompts`, {
         method: 'POST',
         headers,
         body: JSON.stringify(promptData)
@@ -100,11 +100,11 @@ export const usePrompts = () => {
     try {
       const headers = await getAuthHeaders();
       console.log('=== UPDATE PROMPT DEBUG ===');
-      console.log('URL:', `https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}`);
+      console.log('URL:', `https://pluggyapi.pluggerbi.com/bots/${botId}/prompts/${promptId}`);
       console.log('Headers:', headers);
       console.log('Body:', JSON.stringify(promptData, null, 2));
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/prompts/${promptId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(promptData)
@@ -137,7 +137,7 @@ export const usePrompts = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/prompts/${promptId}`, {
         method: 'DELETE',
         headers
       });
@@ -161,7 +161,7 @@ export const usePrompts = () => {
   const fetchPromptFunctions = async (botId: string, promptId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions`, {
         headers
       });
       
@@ -180,7 +180,7 @@ export const usePrompts = () => {
   const addFunctionToPrompt = async (botId: string, promptId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ function_id: functionId })
@@ -200,7 +200,7 @@ export const usePrompts = () => {
   const removeFunctionFromPrompt = async (botId: string, promptId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions/${functionId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/prompts/${promptId}/functions/${functionId}`, {
         method: 'DELETE',
         headers
       });

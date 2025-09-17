@@ -50,7 +50,7 @@ export const useFunctionParameters = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
         headers,
       });
 
@@ -71,7 +71,7 @@ export const useFunctionParameters = () => {
   const createParameter = async (botId: string, functionId: string, parameterData: CreateParameterData) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
         method: 'POST',
         headers,
         body: JSON.stringify(parameterData),
@@ -94,7 +94,7 @@ export const useFunctionParameters = () => {
   const updateParameter = async (botId: string, functionId: string, parameterId: string, parameterData: UpdateParameterData) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters/${parameterId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters/${parameterId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(parameterData),
@@ -117,7 +117,7 @@ export const useFunctionParameters = () => {
   const deleteParameter = async (botId: string, functionId: string, parameterId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters/${parameterId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters/${parameterId}`, {
         method: 'DELETE',
         headers,
       });
@@ -138,7 +138,7 @@ export const useFunctionParameters = () => {
   const createParametersBatch = async (botId: string, functionId: string, parametersData: CreateParameterData[]) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
         method: 'POST',
         headers,
         body: JSON.stringify(parametersData),
@@ -161,7 +161,7 @@ export const useFunctionParameters = () => {
   const deleteParametersBatch = async (botId: string, functionId: string, parameterIds: string[]) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}/parameters`, {
         method: 'DELETE',
         headers,
         body: JSON.stringify({ parameter_ids: parameterIds }),

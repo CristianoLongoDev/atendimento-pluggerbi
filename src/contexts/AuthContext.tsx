@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Tentando criar conta:', { accountId, companyName });
       
       // Criar conta no endpoint externo
-      const accountResponse = await fetch('https://atendimento.pluggerbi.com/accounts', {
+      const accountResponse = await fetch('https://pluggyapi.pluggerbi.com/accounts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

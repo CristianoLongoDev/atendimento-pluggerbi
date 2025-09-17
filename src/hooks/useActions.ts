@@ -36,7 +36,7 @@ export const useActions = () => {
     
     try {
       const headers = await getAuthHeaders();
-      let url = 'https://atendimento.pluggerbi.com/bots/functions/actions';
+      let url = 'https://pluggyapi.pluggerbi.com/bots/functions/actions';
       
       // Add filter for integration_type if provided
       if (integrationType) {

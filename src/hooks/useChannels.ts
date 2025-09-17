@@ -36,7 +36,7 @@ export const useChannels = () => {
     try {
       const headers = await getAuthHeaders();
       
-      const response = await fetch('https://atendimento.pluggerbi.com/channels', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/channels', {
         headers
       });
       
@@ -61,7 +61,7 @@ export const useChannels = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch('https://atendimento.pluggerbi.com/channels', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/channels', {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -97,7 +97,7 @@ export const useChannels = () => {
       console.log('updateChannel - Data being sent:', dataToSend);
       console.log('updateChannel - Channel ID:', id);
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/channels/${id}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/channels/${id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(dataToSend)
@@ -126,7 +126,7 @@ export const useChannels = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/channels/${id}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/channels/${id}`, {
         method: 'DELETE',
         headers
       });

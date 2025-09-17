@@ -35,7 +35,7 @@ export const useBots = () => {
       const headers = await getAuthHeaders();
       console.log('fetchBots - Headers obtained successfully');
       
-      const response = await fetch('https://atendimento.pluggerbi.com/bots', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/bots', {
         headers,
         signal: AbortSignal.timeout(30000) // 30 second timeout
       });
@@ -75,7 +75,7 @@ export const useBots = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch('https://atendimento.pluggerbi.com/bots', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/bots', {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -105,7 +105,7 @@ export const useBots = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${id}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(botData)
@@ -132,7 +132,7 @@ export const useBots = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${id}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${id}`, {
         method: 'DELETE',
         headers
       });
@@ -155,7 +155,7 @@ export const useBots = () => {
   const fetchBotFunctions = async (botId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/used`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/used`, {
         headers,
       });
 
@@ -184,7 +184,7 @@ export const useBots = () => {
   const addFunctionToBot = async (botId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/linked-functions`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ function_id: functionId }),
@@ -206,7 +206,7 @@ export const useBots = () => {
   const removeFunctionFromBot = async (botId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/linked-functions/${functionId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/linked-functions/${functionId}`, {
         method: 'DELETE',
         headers,
       });

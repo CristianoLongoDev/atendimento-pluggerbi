@@ -55,7 +55,7 @@ export const useConversationSearch = () => {
     setError(null);
 
     try {
-      const response = await fetch('https://atendimento.pluggerbi.com/api/conversations/search', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/api/conversations/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

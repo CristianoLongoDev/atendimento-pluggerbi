@@ -45,7 +45,7 @@ export const useAccountData = () => {
         
         // Usar o interceptor para fazer a requisição
         const data = await callExternalAPI(
-          `https://atendimento.pluggerbi.com/accounts/${profile.account_id}`
+          `https://pluggyapi.pluggerbi.com/accounts/${profile.account_id}`
         );
         
         console.log('✅ Dados da conta recebidos:', data);

@@ -48,7 +48,7 @@ export const useFunctions = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions`, {
         headers,
       });
 
@@ -84,7 +84,7 @@ export const useFunctions = () => {
   const createFunction = async (botId: string, functionData: CreateFunctionData) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions`, {
         method: 'POST',
         headers,
         body: JSON.stringify(functionData),
@@ -108,10 +108,10 @@ export const useFunctions = () => {
     try {
       const headers = await getAuthHeaders();
       console.log('updateFunction - Headers:', headers);
-      console.log('updateFunction - URL:', `https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`);
+      console.log('updateFunction - URL:', `https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}`);
       console.log('updateFunction - Body:', JSON.stringify(functionData));
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(functionData),
@@ -134,7 +134,7 @@ export const useFunctions = () => {
   const deleteFunction = async (botId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
         method: 'DELETE',
         headers,
       });

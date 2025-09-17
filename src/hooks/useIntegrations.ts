@@ -37,7 +37,7 @@ export const useIntegrations = () => {
     
     setLoading(true);
     try {
-      const response = await fetch('https://atendimento.pluggerbi.com/integrations', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/integrations', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export const useIntegrations = () => {
     }
 
     try {
-      const response = await fetch('https://atendimento.pluggerbi.com/integrations', {
+      const response = await fetch('https://pluggyapi.pluggerbi.com/integrations', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -96,7 +96,7 @@ export const useIntegrations = () => {
     }
 
     try {
-      const response = await fetch(`https://atendimento.pluggerbi.com/integrations/${id}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/integrations/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -124,7 +124,7 @@ export const useIntegrations = () => {
     }
 
     try {
-      const response = await fetch(`https://atendimento.pluggerbi.com/integrations/${id}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/integrations/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,

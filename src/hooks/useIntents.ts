@@ -34,7 +34,7 @@ export const useIntents = () => {
     try {
       const headers = await getAuthHeaders();
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/intents`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/intents`, {
         method: 'GET',
         headers,
       });
@@ -69,7 +69,7 @@ export const useIntents = () => {
         Object.entries(intentData).filter(([_, value]) => value !== null && value !== undefined)
       );
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${intentData.bot_id}/intents`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${intentData.bot_id}/intents`, {
         method: 'POST',
         headers,
         body: JSON.stringify(cleanedData),
@@ -111,7 +111,7 @@ export const useIntents = () => {
         Object.entries(intentData).filter(([_, value]) => value !== null && value !== undefined)
       );
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(cleanedData),
@@ -141,7 +141,7 @@ export const useIntents = () => {
     try {
       const headers = await getAuthHeaders();
       
-      const response = await fetch(`https://atendimento.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
+      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
         method: 'DELETE',
         headers,
       });
