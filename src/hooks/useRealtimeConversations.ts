@@ -64,7 +64,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
   
-  const { isConnected, sendMessage: wsSendMessage, subscribe } = useWebSocket('wss://atendimento.pluggerbi.com/ws');
+  const { isConnected, sendMessage: wsSendMessage, subscribe } = useWebSocket('wss://pluggyapi.pluggerbi.com/ws');
   
   console.log('🔌 STATUS DO WEBSOCKET:', { isConnected });
 
