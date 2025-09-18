@@ -33,7 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users } from 'lucide-react';
+import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users, Search } from 'lucide-react';
 
 // Interfaces para usuários
 interface Profile {
@@ -745,6 +745,46 @@ const Index = () => {
         return (
           <>
             <div className="w-96 border-r border-border bg-card overflow-y-auto">
+              {/* Conversation search and filters */}
+              <div className="p-4 border-b border-border space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Buscar nas conversas..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant={selectedFilter === 'all' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedFilter('all')}
+                    className="flex-1"
+                  >
+                    Todas
+                  </Button>
+                  <Button
+                    variant={selectedFilter === 'ai' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedFilter('ai')}
+                    className="flex-1"
+                  >
+                    IA
+                  </Button>
+                  <Button
+                    variant={selectedFilter === 'human' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedFilter('human')}
+                    className="flex-1"
+                  >
+                    Humano
+                  </Button>
+                </div>
+              </div>
+              
               <div className="p-4 border-b border-border">
                 <h3 className="font-medium text-sm text-muted-foreground mb-3">
                   TODAS CONVERSAS ({filteredChats.length})
