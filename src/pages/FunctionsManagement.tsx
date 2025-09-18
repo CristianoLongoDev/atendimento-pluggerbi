@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -168,51 +169,53 @@ const FunctionsManagement = () => {
                 </Button>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-medium">ID</TableHead>
-                    <TableHead className="font-medium">Descrição</TableHead>
-                    <TableHead className="font-medium">Atualizado em</TableHead>
-                    <TableHead className="w-[100px] font-medium">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {functions.map((func) => (
-                    <TableRow key={func.function_id}>
-                      <TableCell className="font-mono text-sm">
-                        {func.function_id ? func.function_id.substring(0, 20) + (func.function_id.length > 20 ? '...' : '') : '-'}
-                      </TableCell>
-                      <TableCell className="font-medium">{func.description || '-'}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {func.updated_at ? new Date(func.updated_at).toLocaleDateString('pt-BR') : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditFunction(func)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteClick(func)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+              <ScrollArea className="h-[400px] w-full">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-medium">ID</TableHead>
+                      <TableHead className="font-medium">Descrição</TableHead>
+                      <TableHead className="font-medium">Atualizado em</TableHead>
+                      <TableHead className="w-[100px] font-medium">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {functions.map((func) => (
+                      <TableRow key={func.function_id}>
+                        <TableCell className="font-mono text-sm">
+                          {func.function_id ? func.function_id.substring(0, 20) + (func.function_id.length > 20 ? '...' : '') : '-'}
+                        </TableCell>
+                        <TableCell className="font-medium">{func.description || '-'}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {func.updated_at ? new Date(func.updated_at).toLocaleDateString('pt-BR') : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditFunction(func)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteClick(func)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             )}
           </CardContent>
         </Card>
