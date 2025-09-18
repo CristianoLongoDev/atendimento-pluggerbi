@@ -106,7 +106,7 @@ const PromptsManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
       <PageHeader 
         title="Gerenciar Eventos" 
         description="Configure e gerencie os eventos personalizados para seus bots de atendimento"
@@ -135,8 +135,8 @@ const PromptsManagement = () => {
       </Card>
 
       {selectedBotId && (
-        <Card>
-          <CardHeader>
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <CardHeader className="flex-shrink-0">
             <div className="flex justify-between items-center">
               <CardTitle>Eventos do Bot</CardTitle>
               {prompts.length > 0 && (
@@ -147,7 +147,7 @@ const PromptsManagement = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-hidden">
             {promptsLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
@@ -169,7 +169,7 @@ const PromptsManagement = () => {
                 </Button>
               </div>
             ) : (
-              <ScrollArea className="h-[400px] w-full">
+              <ScrollArea className="h-full w-full">
                 <Table>
                   <TableHeader>
                     <TableRow>

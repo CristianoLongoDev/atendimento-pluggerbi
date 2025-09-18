@@ -106,7 +106,7 @@ const FunctionsManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
       <PageHeader 
         title="Gerenciar Funções" 
         description="Configure e gerencie as funções disponíveis para seus bots de atendimento" 
@@ -135,8 +135,8 @@ const FunctionsManagement = () => {
       </Card>
 
       {selectedBotId && (
-        <Card>
-          <CardHeader>
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <CardHeader className="flex-shrink-0">
             <div className="flex justify-between items-center">
               <CardTitle>Funções do Bot</CardTitle>
               {functions.length > 0 && (
@@ -147,7 +147,7 @@ const FunctionsManagement = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-hidden">
             {functionsLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
@@ -169,7 +169,7 @@ const FunctionsManagement = () => {
                 </Button>
               </div>
             ) : (
-              <ScrollArea className="h-[400px] w-full">
+              <ScrollArea className="h-full w-full">
                 <Table>
                   <TableHeader>
                     <TableRow>

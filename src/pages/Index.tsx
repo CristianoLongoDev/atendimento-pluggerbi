@@ -1025,21 +1025,21 @@ const Index = () => {
 
       case 'prompts':
         return (
-          <div className="flex-1 p-6">
+          <div className="flex-1 h-full overflow-hidden p-6">
             <PromptsManagement />
           </div>
         );
 
       case 'intents':
         return (
-          <div className="flex-1 p-6">
+          <div className="flex-1 h-full overflow-hidden p-6">
             <IntentionsManagement />
           </div>
         );
 
       case 'roles':
         return (
-          <div className="flex-1 p-6">
+          <div className="flex-1 h-full overflow-hidden p-6">
             <FunctionsManagement />
           </div>
         );

@@ -107,7 +107,7 @@ const IntentionsManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
       <PageHeader 
         title="Gerenciar Intenções" 
         description="Configure e gerencie as intenções personalizadas para seus bots de atendimento"
@@ -136,8 +136,8 @@ const IntentionsManagement = () => {
       </Card>
 
       {selectedBotId && (
-        <Card>
-          <CardHeader>
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <CardHeader className="flex-shrink-0">
             <div className="flex justify-between items-center">
               <CardTitle>Intenções do Bot</CardTitle>
               {intents.length > 0 && (
@@ -148,7 +148,7 @@ const IntentionsManagement = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-hidden">
             {intentsLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
@@ -170,7 +170,7 @@ const IntentionsManagement = () => {
                 </Button>
               </div>
             ) : (
-              <ScrollArea className="h-[400px] w-full">
+              <ScrollArea className="h-full w-full">
                 <Table>
                   <TableHeader>
                     <TableRow>
