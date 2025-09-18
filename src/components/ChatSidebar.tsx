@@ -106,26 +106,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       {/* Footer com versão */}
       <div className="p-3 border-t border-border mt-auto">
-        <div className="text-xs text-muted-foreground text-center">
-          {isEditing && isDevelopment ? (
-            <Input
-              value={versionText}
-              onChange={(e) => setVersionText(e.target.value)}
-              onKeyDown={handleVersionSave}
-              onBlur={handleVersionBlur}
-              className="text-xs text-center h-6 bg-transparent border-none focus:border-input"
-              autoFocus
-            />
-          ) : (
-            <div 
-              onClick={handleVersionClick}
-              className={isDevelopment ? "cursor-pointer hover:bg-muted/50 rounded px-2 py-1" : ""}
-              title={isDevelopment ? "Clique para editar (apenas em desenvolvimento)" : ""}
-            >
-              {versionText}
-            </div>
-          )}
-        </div>
+        {isEditing && isDevelopment ? (
+          <Input
+            value={versionText}
+            onChange={(e) => setVersionText(e.target.value)}
+            onKeyDown={handleVersionSave}
+            onBlur={handleVersionBlur}
+            className="text-xs text-center h-auto p-1 bg-transparent border-muted-foreground/20 text-muted-foreground"
+            autoFocus
+          />
+        ) : (
+          <div 
+            onClick={handleVersionClick}
+            className={`text-xs text-muted-foreground text-center ${isDevelopment ? "cursor-pointer hover:bg-muted/50 rounded px-2 py-1 transition-colors" : ""}`}
+            title={isDevelopment ? "Clique para editar" : ""}
+          >
+            {versionText}
+          </div>
+        )}
       </div>
     </div>
   );
