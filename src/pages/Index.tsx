@@ -744,7 +744,7 @@ const Index = () => {
 
         return (
           <>
-            <div className="w-96 border-r border-border bg-card overflow-y-auto">
+            <div className="w-[480px] border-r border-border bg-card overflow-y-auto">
               {/* Conversation search and filters */}
               <div className="p-4 border-b border-border space-y-4">
                 <div className="relative">
