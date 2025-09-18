@@ -50,7 +50,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     { id: 'all', label: 'Todas', icon: MessageSquare, count: unreadChats.length },
     { id: 'ai', label: 'IA Ativa', icon: Bot, count: unreadAiChats.length },
     { id: 'human', label: 'Atendimento Humano', icon: User, count: unreadHumanChats.length },
-    { id: 'pending', label: 'Pendentes', icon: Filter, count: unreadPendingChats.length },
   ];
 
   const configSections = [
