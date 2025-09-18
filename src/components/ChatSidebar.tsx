@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, Bot, User, Settings, Users, FileText, ShieldCheck, Puzzle, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
-const APP_VERSION = 'v1.0.0';
+let APP_VERSION = 'v1.0.0';
 
 interface Chat {
   id: string;
@@ -34,20 +34,40 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   
   const isDevelopment = import.meta.env.DEV;
   
+  // Carregar versão salva do localStorage quando o componente montar
+  useEffect(() => {
+    if (isDevelopment) {
+      const savedVersion = localStorage.getItem('app_version');
+      if (savedVersion) {
+        APP_VERSION = savedVersion;
+        setVersionText(savedVersion);
+      }
+    }
+  }, [isDevelopment]);
+  
   const handleVersionClick = () => {
     if (isDevelopment) {
       setIsEditing(true);
     }
   };
   
+  const saveVersion = () => {
+    if (isDevelopment && versionText !== APP_VERSION) {
+      APP_VERSION = versionText;
+      localStorage.setItem('app_version', versionText);
+      console.log('Versão salva:', versionText);
+    }
+    setIsEditing(false);
+  };
+  
   const handleVersionSave = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      setIsEditing(false);
+      saveVersion();
     }
   };
   
   const handleVersionBlur = () => {
-    setIsEditing(false);
+    saveVersion();
   };
 
   const allSections = [
