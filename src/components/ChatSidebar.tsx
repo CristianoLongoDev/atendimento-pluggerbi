@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageSquare, Bot, User, Settings, Users, FileText, ShieldCheck, Puzzle, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
 const APP_VERSION = 'v1.0.0';
@@ -28,6 +29,27 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   selectedSection,
   onSectionChange,
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [versionText, setVersionText] = useState(APP_VERSION);
+  
+  const isDevelopment = import.meta.env.DEV;
+  
+  const handleVersionClick = () => {
+    if (isDevelopment) {
+      setIsEditing(true);
+    }
+  };
+  
+  const handleVersionSave = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditing(false);
+    }
+  };
+  
+  const handleVersionBlur = () => {
+    setIsEditing(false);
+  };
+
   const allSections = [
     { id: 'conversations', label: 'Conversas', icon: MessageSquare },
     { id: 'account', label: 'Minha Conta', icon: User },
@@ -65,7 +87,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       {/* Footer com versão */}
       <div className="p-3 border-t border-border mt-auto">
         <div className="text-xs text-muted-foreground text-center">
-          {APP_VERSION}
+          {isEditing && isDevelopment ? (
+            <Input
+              value={versionText}
+              onChange={(e) => setVersionText(e.target.value)}
+              onKeyDown={handleVersionSave}
+              onBlur={handleVersionBlur}
+              className="text-xs text-center h-6 bg-transparent border-none focus:border-input"
+              autoFocus
+            />
+          ) : (
+            <div 
+              onClick={handleVersionClick}
+              className={isDevelopment ? "cursor-pointer hover:bg-muted/50 rounded px-2 py-1" : ""}
+              title={isDevelopment ? "Clique para editar (apenas em desenvolvimento)" : ""}
+            >
+              {versionText}
+            </div>
+          )}
         </div>
       </div>
     </div>
