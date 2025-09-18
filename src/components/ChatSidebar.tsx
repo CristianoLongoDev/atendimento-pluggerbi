@@ -42,7 +42,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   return (
     <div className="w-80 bg-card border-r border-border flex flex-col h-full">
       {/* Seções de navegação */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border flex-1">
         <div className="space-y-1">
           {/* Todas as seções como menu simples */}
           {allSections.map((section) => {
@@ -63,7 +63,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       </div>
 
       {/* Footer com versão */}
-      <div className="p-3 border-t border-border">
+      <div className="p-3 border-t border-border mt-auto">
         <div className="text-xs text-muted-foreground text-center">
           {APP_VERSION}
         </div>
