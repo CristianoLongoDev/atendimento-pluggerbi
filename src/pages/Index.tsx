@@ -33,7 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users, Search } from 'lucide-react';
+import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users, Search, Bot } from 'lucide-react';
 
 // Interfaces para usuários
 interface Profile {
@@ -762,25 +762,37 @@ const Index = () => {
                     variant={selectedFilter === 'all' ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedFilter('all')}
-                    className="flex-1"
+                    className="flex-1 justify-start"
                   >
+                    <MessageSquare className="w-4 h-4 mr-2" />
                     Todas
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {displayChats.length}
+                    </Badge>
                   </Button>
                   <Button
                     variant={selectedFilter === 'ai' ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedFilter('ai')}
-                    className="flex-1"
+                    className="flex-1 justify-start"
                   >
+                    <Bot className="w-4 h-4 mr-2" />
                     IA
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {displayChats.filter(chat => chat.status === 'ai').length}
+                    </Badge>
                   </Button>
                   <Button
                     variant={selectedFilter === 'human' ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedFilter('human')}
-                    className="flex-1"
+                    className="flex-1 justify-start"
                   >
+                    <User className="w-4 h-4 mr-2" />
                     Humano
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {displayChats.filter(chat => chat.status === 'human').length}
+                    </Badge>
                   </Button>
                 </div>
               </div>
