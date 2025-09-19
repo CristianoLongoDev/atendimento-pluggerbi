@@ -360,6 +360,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     } else if (originalSender === 'agent') {
       // Bot/IA
       sender = 'ai';
+      console.log('🔍 DEBUG messageData.metadata:', messageData.metadata);
+      console.log('🔍 DEBUG messageData.metadata?.bot:', messageData.metadata?.bot);
+      console.log('🔍 DEBUG messageData.metadata?.bot?.agent_name:', messageData.metadata?.bot?.agent_name);
       senderName = messageData.metadata?.bot?.agent_name || 'IA';
       console.log('✅ Mensagem identificada como IA - senderName:', senderName);
     } else if (originalSender === 'human') {
