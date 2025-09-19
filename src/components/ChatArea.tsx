@@ -259,8 +259,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                       : message.sender === 'ai'
                       ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                       : message.sender === 'human'
-                      ? 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                      : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      ? 'bg-green-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      : 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                   } p-3 shadow-sm`}
                 >
                   {message.sender !== 'customer' && (
@@ -352,8 +352,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                                 : message.sender === 'ai'
                                 ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                                 : message.sender === 'human'
-                                ? 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
-                                : 'bg-primary text-primary-foreground rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                ? 'bg-green-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                : 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                             } p-3 shadow-sm`}
                           >
                             {message.sender !== 'customer' && (
