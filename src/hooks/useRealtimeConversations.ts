@@ -224,6 +224,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         case 'message_update':
           console.log('📩 Handling new message event:', message.type);
           console.log('🔍 RAW message data:', JSON.stringify(message, null, 2));
+          console.log('🚨 ANTES DE CHAMAR handleNewMessage - conversation_id:', (message as any).conversation_id);
+          console.log('🚨 ANTES DE CHAMAR handleNewMessage - data.conversation_id:', message.data?.conversation_id);
           handleNewMessage(message);
           break;
         case 'subscription_updated':
@@ -305,10 +307,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
     console.log('🔍 CHECANDO USER_ID na mensagem recebida...');
+    console.log('🚨 DEBUG ESPECÍFICO - message.conversation_id:', (message as any).conversation_id);
+    console.log('🚨 DEBUG ESPECÍFICO - message.data:', message.data);
+    console.log('🚨 DEBUG ESPECÍFICO - message.data?.conversation_id:', message.data?.conversation_id);
     
     // Estrutura pode variar - tentar diferentes formatos
     let data = message.data || message;
-    let conversation_id = message.conversation_id || data.conversation_id;
+    let conversation_id = (message as any).conversation_id || data.conversation_id;
+    
+    console.log('🚨 DEPOIS DO PROCESSING - data:', data);
+    console.log('🚨 DEPOIS DO PROCESSING - conversation_id:', conversation_id);
     
     if (!data) {
       console.log('❌ No message data found in any format');
