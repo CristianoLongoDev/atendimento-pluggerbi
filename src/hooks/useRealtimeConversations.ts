@@ -633,10 +633,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           messagesByConversation[conversationId] = [];
         }
         
+        // Extrair senderName dos metadados
+        let senderName: string | undefined;
+        if (msg.sender === 'agent' && msg.metadata?.bot?.agent_name) {
+          senderName = msg.metadata.bot.agent_name;
+        }
+        
         messagesByConversation[conversationId].push({
           id: msg.id,
           content: msg.content,
           sender: msg.sender === 'user' ? 'customer' : msg.sender,
+          senderName,
           timestamp: (() => {
             const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
             return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
@@ -686,20 +693,29 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           });
         });
         
-        const conversationMessages = message.data.messages.map((msg: any): Message => ({
-          id: msg.id,
-          content: msg.content,
-          sender: msg.sender === 'user' ? 'customer' : msg.sender,
-          timestamp: (() => {
-            const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
-            return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
-          })(),
-          channel: msg.channel,
-          message_type: msg.message_type,
-          tokens: msg.tokens,
-          user_id: msg.user_id,
-          metadata: msg.metadata
-        }));
+        const conversationMessages = message.data.messages.map((msg: any): Message => {
+          // Extrair senderName dos metadados
+          let senderName: string | undefined;
+          if (msg.sender === 'agent' && msg.metadata?.bot?.agent_name) {
+            senderName = msg.metadata.bot.agent_name;
+          }
+          
+          return {
+            id: msg.id,
+            content: msg.content,
+            sender: msg.sender === 'user' ? 'customer' : msg.sender,
+            senderName,
+            timestamp: (() => {
+              const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
+              return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+            })(),
+            channel: msg.channel,
+            message_type: msg.message_type,
+            tokens: msg.tokens,
+            user_id: msg.user_id,
+            metadata: msg.metadata
+          };
+        });
 
         console.log('📝 Setting messages for conversation:', message.conversation_id, conversationMessages);
 
