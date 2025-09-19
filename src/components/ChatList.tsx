@@ -50,8 +50,27 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
   const groupedChats = React.useMemo(() => {
     // Primeiro ordenar todas as conversas por timestamp (mais recente primeiro)
     const sortedChats = [...chats].sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
+      // Parse do timestamp - pode estar em formato dd/MM/yyyy ou ISO
+      let dateA: Date, dateB: Date;
+      
+      if (a.timestamp.includes('/')) {
+        // Formato dd/MM/yyyy HH:mm - converter para ISO
+        const [datePart, timePart] = a.timestamp.split(' ');
+        const [day, month, year] = datePart.split('/');
+        dateA = new Date(`${year}-${month}-${day}${timePart ? `T${timePart}:00` : 'T00:00:00'}`);
+      } else {
+        dateA = new Date(a.timestamp);
+      }
+      
+      if (b.timestamp.includes('/')) {
+        // Formato dd/MM/yyyy HH:mm - converter para ISO
+        const [datePart, timePart] = b.timestamp.split(' ');
+        const [day, month, year] = datePart.split('/');
+        dateB = new Date(`${year}-${month}-${day}${timePart ? `T${timePart}:00` : 'T00:00:00'}`);
+      } else {
+        dateB = new Date(b.timestamp);
+      }
+      
       return dateB.getTime() - dateA.getTime();
     });
     
@@ -95,8 +114,25 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect
     
     // Retornar grupos ordenados por timestamp da última mensagem
     return Object.values(groups).sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
+      // Parse do timestamp para ordenação correta
+      let dateA: Date, dateB: Date;
+      
+      if (a.timestamp.includes('/')) {
+        const [datePart, timePart] = a.timestamp.split(' ');
+        const [day, month, year] = datePart.split('/');
+        dateA = new Date(`${year}-${month}-${day}${timePart ? `T${timePart}:00` : 'T00:00:00'}`);
+      } else {
+        dateA = new Date(a.timestamp);
+      }
+      
+      if (b.timestamp.includes('/')) {
+        const [datePart, timePart] = b.timestamp.split(' ');
+        const [day, month, year] = datePart.split('/');
+        dateB = new Date(`${year}-${month}-${day}${timePart ? `T${timePart}:00` : 'T00:00:00'}`);
+      } else {
+        dateB = new Date(b.timestamp);
+      }
+      
       return dateB.getTime() - dateA.getTime();
     });
   }, [chats]);
