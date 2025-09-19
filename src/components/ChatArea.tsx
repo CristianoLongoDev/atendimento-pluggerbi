@@ -271,7 +271,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                         <User className="w-3 h-3" />
                       )}
                        <span className="text-xs opacity-80">
-                         {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                         {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? (message.senderName || 'IA') : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                        </span>
                     </div>
                   )}
@@ -364,7 +364,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                                   <User className="w-3 h-3" />
                                 )}
                                  <span className="text-xs opacity-80">
-                                   {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? 'IA' : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                                   {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? (message.senderName || 'IA') : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                                  </span>
                               </div>
                             )}
