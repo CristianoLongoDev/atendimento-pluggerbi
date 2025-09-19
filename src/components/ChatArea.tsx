@@ -256,22 +256,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                   className={`max-w-[70%] ${
                     message.sender === 'customer'
                       ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
-                      : message.sender === 'ai'
-                      ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      : message.sender === 'ai' || message.sender === 'agent'
+                      ? 'bg-black text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                       : message.sender === 'human'
-                      ? 'bg-green-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                      ? 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                       : 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                   } p-3 shadow-sm`}
                 >
                   {message.sender !== 'customer' && (
                     <div className="flex items-center space-x-1 mb-1">
-                      {message.sender === 'ai' ? (
+                      {message.sender === 'ai' || message.sender === 'agent' ? (
                         <Bot className="w-3 h-3" />
                       ) : (
                         <User className="w-3 h-3" />
                       )}
                        <span className="text-xs opacity-80">
-                         {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? (message.senderName || 'IA') : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                         {message.user_id ? getUserName(message.user_id) : (message.sender === 'ai' || message.sender === 'agent') ? (message.senderName || 'IA') : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                        </span>
                     </div>
                   )}
@@ -349,22 +349,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({
                             className={`max-w-[70%] ${
                               message.sender === 'customer'
                                 ? 'bg-muted/80 text-foreground rounded-l-lg rounded-tr-lg rounded-br-sm'
-                                : message.sender === 'ai'
-                                ? 'bg-blue-500 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                : message.sender === 'ai' || message.sender === 'agent'
+                                ? 'bg-black text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                                 : message.sender === 'human'
-                                ? 'bg-green-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
+                                ? 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                                 : 'bg-blue-600 text-white rounded-r-lg rounded-tl-lg rounded-bl-sm'
                             } p-3 shadow-sm`}
                           >
                             {message.sender !== 'customer' && (
                               <div className="flex items-center space-x-1 mb-1">
-                                {message.sender === 'ai' ? (
+                                {message.sender === 'ai' || message.sender === 'agent' ? (
                                   <Bot className="w-3 h-3" />
                                 ) : (
                                   <User className="w-3 h-3" />
                                 )}
                                  <span className="text-xs opacity-80">
-                                   {message.user_id ? getUserName(message.user_id) : message.sender === 'ai' ? (message.senderName || 'IA') : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
+                                   {message.user_id ? getUserName(message.user_id) : (message.sender === 'ai' || message.sender === 'agent') ? (message.senderName || 'IA') : message.sender === 'human' ? (message.senderName || 'Atendente') : (selectedChat.botAgentName || 'Atendente')}
                                  </span>
                               </div>
                             )}
