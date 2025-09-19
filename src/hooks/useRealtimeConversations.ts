@@ -6,6 +6,46 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { callExternalAPI } from '@/lib/authInterceptor';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface ConversationApiResponse {
+  status: string;
+  data: {
+    conversations: Array<{
+      conversation_id: number;
+      status: string;
+      status_attendance: string;
+      started_at: string;
+      ended_at: string | null;
+      message_count: number;
+      last_message: {
+        text: string;
+        sender: string;
+        timestamp: string;
+      };
+      contact: {
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+      };
+      channel: {
+        id: string;
+        name: string;
+        type: string;
+      };
+      bot: {
+        name: string;
+        agent_name: string;
+      };
+    }>;
+    pagination: {
+      limit: number;
+      total: number;
+      include_closed: boolean;
+    };
+    account_id: string;
+  };
+}
+
 interface Message {
   id: string;
   content: string;
@@ -68,31 +108,98 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   
   console.log('🔌 STATUS DO WEBSOCKET:', { isConnected });
 
-  const refreshConversations = useCallback(() => {
-    console.log('🔄 Refreshing conversations...');
-    console.log('🔄 Profile account_id para refresh:', profile?.account_id);
-    
-    if (!isConnected) {
-      console.warn('WebSocket not connected. Cannot refresh conversations.');
+  // Função para carregar conversas iniciais via API REST
+  const loadInitialConversations = useCallback(async () => {
+    if (!profile?.account_id) {
+      console.log('❌ Cannot load conversations - No account_id available');
       return;
     }
 
+    try {
+      console.log('🔄 Loading initial conversations via API REST...');
+      
+      const response: ConversationApiResponse = await callExternalAPI(
+        'https://pluggyapi.pluggerbi.com/api/conversations/recent?limit=50&include_closed=true',
+        undefined,
+        'GET'
+      );
+
+      console.log('✅ Conversas carregadas via API:', response);
+
+      if (response.status === 'success' && response.data.conversations) {
+        // Mapear conversas da API para o formato do estado local
+        const mappedChats: Chat[] = response.data.conversations.map((conv): Chat => ({
+          id: conv.conversation_id.toString(),
+          customerName: conv.contact.name || `Cliente ${conv.conversation_id}`,
+          customerPhone: conv.contact.phone,
+          customerEmail: conv.contact.email,
+          customerAvatar: undefined, // Não disponível na API atual
+          lastMessage: conv.last_message.text || 'Sem mensagens',
+          timestamp: (() => {
+            try {
+              const date = new Date(conv.last_message.timestamp + (conv.last_message.timestamp.includes('Z') ? '' : 'Z'));
+              return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+            } catch (error) {
+              console.error('Error formatting timestamp:', error, conv.last_message.timestamp);
+              return formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+            }
+          })(),
+          channel: conv.channel.type === 'whatsapp' ? 'whatsapp' : 'widget',
+          status: (() => {
+            if (conv.status === 'closed') {
+              return 'closed' as const;
+            }
+            if (conv.status === 'active') {
+              return conv.status_attendance === 'human' ? 'human' : 'ai';
+            }
+            return 'pending';
+          })(),
+          unreadCount: 0, // API não retorna unread count, será atualizado via WebSocket
+          isActive: conv.status === 'active',
+          botAgentName: conv.bot.agent_name,
+          metadata: {
+            contact: conv.contact,
+            bot: conv.bot,
+            channel: conv.channel
+          }
+        }));
+
+        console.log('🔄 Setting initial chats from API:', mappedChats.length, 'conversations');
+        setChats(mappedChats);
+      }
+    } catch (error) {
+      console.error('❌ Error loading initial conversations:', error);
+    }
+  }, [profile?.account_id]);
+
+  const refreshConversations = useCallback(async () => {
+    console.log('🔄 Refreshing conversations via API REST...');
+    console.log('🔄 Profile account_id para refresh:', profile?.account_id);
+    
     if (!profile?.account_id) {
       console.log('❌ Cannot refresh - No account_id available');
       return;
     }
 
-    const refreshPayload = {
-      type: 'subscribe_conversations',
-      data: {
-        account_id: profile.account_id,
-        conversation_ids: [] // Empty array = all conversations
-      }
-    };
+    // Recarregar via API REST
+    await loadInitialConversations();
 
-    console.log('📤 Sending subscription with account_id:', refreshPayload);
-    wsSendMessage(refreshPayload);
-  }, [isConnected, wsSendMessage, profile?.account_id]);
+    // Depois reconectar ao WebSocket para updates
+    if (isConnected) {
+      const refreshPayload = {
+        type: 'subscribe_conversations',
+        data: {
+          account_id: profile.account_id,
+          conversation_ids: [] // Empty array = all conversations
+        }
+      };
+
+      console.log('📤 Sending subscription with account_id:', refreshPayload);
+      wsSendMessage(refreshPayload);
+    } else {
+      console.warn('WebSocket not connected. Cannot subscribe for real-time updates.');
+    }
+  }, [isConnected, wsSendMessage, profile?.account_id, loadInitialConversations]);
 
   // Subscribe to WebSocket messages
   useEffect(() => {
@@ -160,35 +267,40 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     return unsubscribe;
   }, [subscribe, refreshConversations, profile?.account_id, wsSendMessage]);
 
-  // Auto-refresh conversations when WebSocket connects - ONLY ONCE
+  // Auto-refresh conversations when WebSocket connects - Load API first, then WebSocket
   useEffect(() => {
     console.log('🔄 EFFECT: WebSocket status changed to:', isConnected);
     console.log('🔄 Profile account_id:', profile?.account_id);
     
-    if (isConnected && profile?.account_id) {
-      console.log('🔄 WebSocket conectado, buscando conversas APENAS UMA VEZ...');
-      // Aguarda um pouco para garantir que a conexão está estável
-      setTimeout(() => {
-        console.log('🔄 TIMEOUT: Verificando se ainda está conectado:', isConnected);
-        if (isConnected) { // Double check connection is still active
-          const refreshPayload = {
-            type: 'subscribe_conversations',
-            data: {
-              account_id: profile.account_id,
-              conversation_ids: [] // Empty array = all conversations
+    if (profile?.account_id) {
+      // Primeiro carregar conversas via API REST
+      loadInitialConversations().then(() => {
+        // Depois conectar ao WebSocket para updates em tempo real
+        if (isConnected) {
+          console.log('🔄 WebSocket conectado após carregar API, iniciando subscrição...');
+          setTimeout(() => {
+            console.log('🔄 TIMEOUT: Verificando se ainda está conectado:', isConnected);
+            if (isConnected) {
+              const refreshPayload = {
+                type: 'subscribe_conversations',
+                data: {
+                  account_id: profile.account_id,
+                  conversation_ids: [] // Empty array = all conversations
+                }
+              };
+              console.log('📤 ENVIANDO subscribe_conversations com account_id (APÓS API):', refreshPayload);
+              wsSendMessage(refreshPayload);
+              console.log('📤 Enviado subscribe_conversations - SUCESSO');
+            } else {
+              console.log('❌ WebSocket desconectou durante timeout');
             }
-          };
-          console.log('📤 ENVIANDO subscribe_conversations com account_id (INICIAL):', refreshPayload);
-          wsSendMessage(refreshPayload);
-          console.log('📤 Enviado subscribe_conversations - SUCESSO');
-        } else {
-          console.log('❌ WebSocket desconectou durante timeout');
+          }, 1000);
         }
-      }, 1000);
+      });
     } else {
-      console.log('❌ WebSocket não está conectado ou sem account_id:', { isConnected, accountId: profile?.account_id });
+      console.log('❌ Sem account_id:', { accountId: profile?.account_id });
     }
-  }, [isConnected, wsSendMessage, profile?.account_id]);
+  }, [isConnected, wsSendMessage, profile?.account_id, loadInitialConversations]);
 
   const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
