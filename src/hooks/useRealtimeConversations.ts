@@ -310,6 +310,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🚨 DEBUG ESPECÍFICO - message.conversation_id:', (message as any).conversation_id);
     console.log('🚨 DEBUG ESPECÍFICO - message.data:', message.data);
     console.log('🚨 DEBUG ESPECÍFICO - message.data?.conversation_id:', message.data?.conversation_id);
+    console.log('🔍 VERIFICANDO SE É MENSAGEM DE AGENT:', message.data?.sender);
+    console.log('🔍 VERIFICANDO METADATA:', JSON.stringify(message.data?.metadata, null, 2));
     
     // Estrutura pode variar - tentar diferentes formatos
     let data = message.data || message;
@@ -363,8 +365,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('🔍 DEBUG messageData.metadata:', messageData.metadata);
       console.log('🔍 DEBUG messageData.metadata?.bot:', messageData.metadata?.bot);
       console.log('🔍 DEBUG messageData.metadata?.bot?.agent_name:', messageData.metadata?.bot?.agent_name);
-      senderName = messageData.metadata?.bot?.agent_name || 'IA';
-      console.log('✅ Mensagem identificada como IA - senderName:', senderName);
+      const agentName = messageData.metadata?.bot?.agent_name;
+      console.log('🎯 AGENT NAME EXTRAÍDO:', agentName);
+      senderName = agentName || 'IA';
+      console.log('✅ Mensagem identificada como IA - senderName FINAL:', senderName);
     } else if (originalSender === 'human') {
       // Mensagem enviada por um humano - usar user_id para buscar o nome
       sender = 'human';
