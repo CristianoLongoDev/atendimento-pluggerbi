@@ -496,7 +496,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         conversationsByCustomer[customerKey].push(conv);
       });
 
-      // Update chats list - mapping status_attendance to our status
+      // Update chats list - mesclar com conversas existentes para manter as fechadas
       const updatedChats = data.conversations.map((conv: any): Chat => {
         const customerKey = `${conv.customer_name || `Cliente ${conv.id}`}-${conv.channel}`;
         const customerConversations = conversationsByCustomer[customerKey];
@@ -582,7 +582,36 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         };
       });
       
-      setChats(updatedChats);
+      // Mesclar conversas do WebSocket com as existentes, mantendo conversas fechadas
+      setChats(prevChats => {
+        console.log('🔄 Mesclando conversas do WebSocket com existentes...');
+        console.log('🔍 Conversas existentes:', prevChats.length);
+        console.log('🔍 Conversas do WebSocket:', updatedChats.length);
+        
+        // Criar um mapa das conversas existentes
+        const existingChatsMap = new Map(prevChats.map(chat => [chat.id, chat]));
+        
+        // Adicionar/atualizar conversas do WebSocket
+        updatedChats.forEach(newChat => {
+          existingChatsMap.set(newChat.id, newChat);
+        });
+        
+        // Converter de volta para array e ordenar por timestamp
+        const mergedChats = Array.from(existingChatsMap.values()).sort((a, b) => {
+          // Converter timestamp para Date para comparação
+          const dateA = new Date(a.timestamp.split('/').reverse().join('-'));
+          const dateB = new Date(b.timestamp.split('/').reverse().join('-'));
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        console.log('✅ Conversas mescladas:', mergedChats.length);
+        console.log('📊 Status das conversas:', mergedChats.reduce((acc, chat) => {
+          acc[chat.status] = (acc[chat.status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>));
+        
+        return mergedChats;
+      });
     }
 
     if (data.messages) {
