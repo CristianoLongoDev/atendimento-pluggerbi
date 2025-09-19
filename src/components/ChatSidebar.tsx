@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
-let APP_VERSION = 'v1.0.0';
+let APP_VERSION = 'v1.0.3';
 
 interface Chat {
   id: string;
@@ -29,46 +29,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   selectedSection,
   onSectionChange,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [versionText, setVersionText] = useState(APP_VERSION);
-  
-  const isDevelopment = import.meta.env.DEV;
-  
-  // Carregar versão salva do localStorage quando o componente montar
-  useEffect(() => {
-    if (isDevelopment) {
-      const savedVersion = localStorage.getItem('app_version');
-      if (savedVersion) {
-        APP_VERSION = savedVersion;
-        setVersionText(savedVersion);
-      }
-    }
-  }, [isDevelopment]);
-  
-  const handleVersionClick = () => {
-    if (isDevelopment) {
-      setIsEditing(true);
-    }
-  };
-  
-  const saveVersion = () => {
-    if (isDevelopment && versionText !== APP_VERSION) {
-      APP_VERSION = versionText;
-      localStorage.setItem('app_version', versionText);
-      console.log('Versão salva:', versionText);
-    }
-    setIsEditing(false);
-  };
-  
-  const handleVersionSave = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      saveVersion();
-    }
-  };
-  
-  const handleVersionBlur = () => {
-    saveVersion();
-  };
 
   const allSections = [
     { id: 'conversations', label: 'Conversas', icon: MessageSquare },
@@ -106,24 +66,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       {/* Footer com versão */}
       <div className="p-3 border-t border-border mt-auto">
-        {isEditing && isDevelopment ? (
-          <Input
-            value={versionText}
-            onChange={(e) => setVersionText(e.target.value)}
-            onKeyDown={handleVersionSave}
-            onBlur={handleVersionBlur}
-            className="text-xs text-center h-auto p-1 bg-transparent border-muted-foreground/20 text-muted-foreground"
-            autoFocus
-          />
-        ) : (
-          <div 
-            onClick={handleVersionClick}
-            className={`text-xs text-muted-foreground text-center ${isDevelopment ? "cursor-pointer hover:bg-muted/50 rounded px-2 py-1 transition-colors" : ""}`}
-            title={isDevelopment ? "Clique para editar" : ""}
-          >
-            {versionText}
-          </div>
-        )}
+        <div className="text-xs text-muted-foreground text-center">
+          v1.0.3
+        </div>
       </div>
     </div>
   );
