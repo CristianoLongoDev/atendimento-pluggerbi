@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { runAuthDiagnostics, validateCurrentToken } from '@/lib/authValidation';
-import { callExternalAPI } from '@/lib/authInterceptor';
-import { logSecurityEvent } from '@/lib/security';
-import { API_BASE } from '@/lib/apiClient';
+import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 interface AccountData {
   id: string;
@@ -19,62 +16,34 @@ export const useAccountData = () => {
   useEffect(() => {
     const fetchAccountData = async () => {
       if (!user || !profile?.account_id) {
-        console.log('👤 Usuário ou account_id não disponível');
         return;
       }
 
       setLoading(true);
-      
+
       try {
-        console.log('🔍 === INICIANDO BUSCA DE DADOS DA CONTA ===');
-        
-        // Executar diagnóstico de autenticação ANTES da requisição
-        await runAuthDiagnostics();
-        
-        // Validar token atual
-        const tokenInfo = await validateCurrentToken();
-        
-        if (!tokenInfo.isValid) {
-          console.error('❌ Token inválido detectado');
-          setError('Token de autenticação inválido. Faça login novamente.');
-          setLoading(false);
-          return;
+        const headers = await getAuthHeaders();
+
+        const response = await fetch(
+          `${API_BASE}/accounts/${profile.account_id}`,
+          { headers },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Erro ao buscar conta. Status: ${response.status}`);
         }
 
-        console.log('✅ Token validado, fazendo requisição para API externa...');
-        console.log('🎯 Account ID:', profile.account_id);
-        
-        // Usar o interceptor para fazer a requisição
-        const data = await callExternalAPI(
-          `${API_BASE}/accounts/${profile.account_id}`
-        );
-        
-        console.log('✅ Dados da conta recebidos:', data);
+        const data = await response.json();
+        console.log('Resposta GET /accounts:', JSON.stringify(data));
         setAccountData({
-          id: profile.account_id,
-          name: data.account?.name || 'Nome da conta não encontrado'
+          id: data.account?.id || profile.account_id,
+          name: data.account?.name || 'Nome não encontrado',
         });
         setError(null);
-        
       } catch (err: any) {
-        console.error('❌ Erro ao buscar dados da conta:', err);
-        
-        // Tratamento específico para erro 401
-        if (err.status === 401) {
-          setError('Sessão expirada. Por favor, faça login novamente.');
-          logSecurityEvent('ACCOUNT_API_UNAUTHORIZED', { accountId: profile.account_id });
-        } else {
-          setError(err.message || 'Erro ao carregar dados da conta');
-          logSecurityEvent('ACCOUNT_API_ERROR', { 
-            accountId: profile.account_id,
-            error: err.message 
-          });
-        }
-        
-        setAccountData({
-          id: profile.account_id,
-          name: 'Erro ao carregar nome da conta'
-        });
+        console.error('Erro ao buscar dados da conta:', err);
+        setError(err.message || 'Erro ao carregar dados da conta');
+        setAccountData({ id: profile.account_id, name: profile.full_name });
       } finally {
         setLoading(false);
       }

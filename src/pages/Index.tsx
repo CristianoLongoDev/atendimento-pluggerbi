@@ -84,7 +84,7 @@ const UsersTabContent: React.FC = () => {
       const res = await fetch(`${API_BASE}/users`, { headers });
       if (!res.ok) throw new Error(`Erro ${res.status}`);
       const data = await res.json();
-      setUsers(data.users || data || []);
+      setUsers(data.data?.users || []);
     } catch (error: any) {
       console.error('Erro ao carregar usuários:', error);
       toast({

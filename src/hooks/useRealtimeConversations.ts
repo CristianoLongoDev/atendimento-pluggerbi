@@ -120,7 +120,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('🔄 Loading initial conversations via API REST...');
       
       const response: ConversationApiResponse = await callExternalAPI(
-        `${API_BASE}/api/conversations/recent?limit=50&include_closed=true`,
+        `${API_BASE}/conversations?limit=50`,
         undefined,
         'GET'
       );
