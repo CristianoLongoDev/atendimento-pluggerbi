@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 interface UserProfile {
   id: string;
@@ -12,48 +12,33 @@ export const useUserProfiles = () => {
   const [loadedUserIds, setLoadedUserIds] = useState<Set<string>>(new Set());
 
   const fetchUserProfile = async (userId: string): Promise<string> => {
-    // Verificar se já temos o perfil em cache
     if (userProfiles[userId]) {
       return userProfiles[userId];
     }
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .eq('id', userId)
-        .single();
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_BASE}/users/${userId}`, { headers });
 
-      if (error) {
-        console.error('Erro ao buscar perfil do usuário:', error);
+      if (!res.ok) {
         const fallbackName = 'Atendente';
-        setUserProfiles(prev => ({
-          ...prev,
-          [userId]: fallbackName
-        }));
+        setUserProfiles(prev => ({ ...prev, [userId]: fallbackName }));
         setLoadedUserIds(prev => new Set([...prev, userId]));
         return fallbackName;
       }
 
-      const userName = data?.full_name || 'Atendente';
-      
-      // Salvar no cache
-      setUserProfiles(prev => ({
-        ...prev,
-        [userId]: userName
-      }));
-      
+      const data = await res.json();
+      const userName = data?.full_name || data?.user?.full_name || 'Atendente';
+
+      setUserProfiles(prev => ({ ...prev, [userId]: userName }));
       setLoadedUserIds(prev => new Set([...prev, userId]));
 
       return userName;
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       const fallbackName = 'Atendente';
-      setUserProfiles(prev => ({
-        ...prev,
-        [userId]: fallbackName
-      }));
+      setUserProfiles(prev => ({ ...prev, [userId]: fallbackName }));
       setLoadedUserIds(prev => new Set([...prev, userId]));
       return fallbackName;
     } finally {

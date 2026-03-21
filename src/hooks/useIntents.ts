@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 export interface Intent {
   id: string;
@@ -16,16 +16,6 @@ export const useIntents = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeaders = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      throw new Error('Usuário não autenticado');
-    }
-    return {
-      'Authorization': `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-    };
-  };
 
   const fetchIntents = async (botId: string) => {
     setLoading(true);
@@ -34,7 +24,7 @@ export const useIntents = () => {
     try {
       const headers = await getAuthHeaders();
       
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/intents`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/intents`, {
         method: 'GET',
         headers,
       });
@@ -69,7 +59,7 @@ export const useIntents = () => {
         Object.entries(intentData).filter(([_, value]) => value !== null && value !== undefined)
       );
       
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${intentData.bot_id}/intents`, {
+      const response = await fetch(`${API_BASE}/bots/${intentData.bot_id}/intents`, {
         method: 'POST',
         headers,
         body: JSON.stringify(cleanedData),
@@ -111,7 +101,7 @@ export const useIntents = () => {
         Object.entries(intentData).filter(([_, value]) => value !== null && value !== undefined)
       );
       
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/intents/${intentId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(cleanedData),
@@ -141,7 +131,7 @@ export const useIntents = () => {
     try {
       const headers = await getAuthHeaders();
       
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/intents/${intentId}`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/intents/${intentId}`, {
         method: 'DELETE',
         headers,
       });

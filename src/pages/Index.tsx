@@ -32,7 +32,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthHeaders, API_BASE, authenticatedFetch } from '@/lib/apiClient';
 import { MessageSquare, Plus, Edit, Trash2, MoreHorizontal, User, UserPlus, MoreVertical, Users, Search, Bot } from 'lucide-react';
 
 // Interfaces para usuários
@@ -80,14 +80,11 @@ const UsersTabContent: React.FC = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('account_id', profile?.account_id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setUsers(data || []);
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_BASE}/users`, { headers });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      setUsers(data.users || data || []);
     } catch (error: any) {
       console.error('Erro ao carregar usuários:', error);
       toast({
@@ -104,44 +101,40 @@ const UsersTabContent: React.FC = () => {
     e.preventDefault();
     
     try {
+      const headers = await getAuthHeaders();
+
       if (editingUser) {
-        // Update existing user
-        const { error } = await supabase
-          .from('profiles')
-          .update({
+        const res = await fetch(`${API_BASE}/users/${editingUser.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
             full_name: formData.full_name,
             role: formData.role,
             department: formData.department,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingUser.id);
-
-        if (error) throw error;
+          }),
+        });
+        if (!res.ok) throw new Error(`Erro ${res.status}`);
 
         toast({
           title: "Usuário atualizado",
           description: "Dados do usuário foram atualizados com sucesso."
         });
       } else {
-        // Create new user using edge function to avoid session changes
-        const { data, error } = await supabase.functions.invoke('create-user', {
-          body: {
+        const res = await fetch(`${API_BASE}/users`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
             email: formData.email,
             password: formData.password,
             full_name: formData.full_name,
             role: formData.role,
-            department: formData.department
-          }
+            department: formData.department,
+          }),
         });
 
-        if (error) {
-          console.error('Edge function error:', error);
-          throw new Error(error.message || 'Erro ao criar usuário');
-        }
-
-        if (!data?.success) {
-          console.error('Edge function returned error:', data);
-          throw new Error(data?.error || 'Erro ao criar usuário');
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || errorData.error || 'Erro ao criar usuário');
         }
 
         toast({
@@ -190,13 +183,12 @@ const UsersTabContent: React.FC = () => {
     }
 
     try {
-      // First delete the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
 
       toast({
         title: "Usuário excluído",

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE } from '@/lib/apiClient';
 
 interface SearchResult {
   conversation_id: number;
@@ -55,7 +56,7 @@ export const useConversationSearch = () => {
     setError(null);
 
     try {
-      const response = await fetch('https://pluggyapi.pluggerbi.com/api/conversations/search', {
+      const response = await fetch(`${API_BASE}/api/conversations/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

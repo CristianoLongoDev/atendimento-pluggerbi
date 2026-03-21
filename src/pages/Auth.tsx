@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,9 +12,14 @@ import { LogIn, UserPlus } from 'lucide-react';
 const Auth: React.FC = () => {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetSuccess = (location.state as { resetSuccess?: boolean })?.resetSuccess;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(
+    resetSuccess ? 'Senha redefinida com sucesso! Faça login com sua nova senha.' : null,
+  );
 
   // Login state
   const [loginEmail, setLoginEmail] = useState('');
@@ -34,13 +39,7 @@ const Auth: React.FC = () => {
     const { error } = await signIn(loginEmail, loginPassword);
 
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        setError('Email ou senha incorretos');
-      } else if (error.message.includes('Email not confirmed')) {
-        setError('Por favor, confirme seu email antes de fazer login');
-      } else {
-        setError(error.message);
-      }
+      setError(error.message || 'Email ou senha incorretos');
     } else {
       navigate('/');
     }
@@ -63,15 +62,9 @@ const Auth: React.FC = () => {
     const { error } = await signUp(signupEmail, signupPassword, fullName, companyName);
 
     if (error) {
-      if (error.message.includes('User already registered')) {
-        setError('Este email já está cadastrado');
-      } else if (error.message.includes('Password should be at least 6 characters')) {
-        setError('A senha deve ter pelo menos 6 caracteres');
-      } else {
-        setError(error.message);
-      }
+      setError(error.message || 'Erro ao criar conta');
     } else {
-      setSuccess('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
+      setSuccess('Conta criada com sucesso! Faça login para continuar.');
       setSignupEmail('');
       setSignupPassword('');
       setFullName('');
@@ -152,6 +145,15 @@ const Auth: React.FC = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Entrando...' : 'Entrar'}
                 </Button>
+
+                <div className="text-center">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-muted-foreground hover:text-primary"
+                  >
+                    Esqueceu sua senha?
+                  </Link>
+                </div>
               </form>
             </TabsContent>
 

@@ -8,6 +8,22 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      ...Object.fromEntries(
+        ['/auth', '/bots', '/channels', '/users', '/accounts', '/integrations', '/api', '/conversations'].map(
+          (p) => [
+            p,
+            { target: 'https://pluggyapi.pluggerbi.com', changeOrigin: true, secure: false },
+          ],
+        ),
+      ),
+      '/ws': {
+        target: 'wss://pluggyapi.pluggerbi.com',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+    },
   },
   plugins: [
     react(),

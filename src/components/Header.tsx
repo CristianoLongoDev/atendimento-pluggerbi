@@ -3,17 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import pluggerBiLogo from '@/assets/plugger-bi-logo.png';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Settings, User, Search, Moon, Sun, LogOut, MessageSquare, FileText, Bot, Volume2 } from 'lucide-react';
+import { Bell, Settings, User, Search, Moon, Sun, LogOut, MessageSquare, FileText, Bot, Volume2, KeyRound } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from 'next-themes';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { runAuthDiagnostics } from '@/lib/authValidation';
-import { supabase } from '@/integrations/supabase/client';
+import { getAccessToken } from '@/lib/tokenStore';
 import { toast } from '@/hooks/use-toast';
 import { NotificationSoundSelector } from '@/components/NotificationSoundSelector';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
+import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 const Header: React.FC = () => {
   const {
     profile,
@@ -27,6 +28,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const { settings, updateSoundType, updateRepeatCount } = useNotificationSettings();
   const [showSoundSelector, setShowSoundSelector] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -37,13 +39,9 @@ const Header: React.FC = () => {
   };
   const copyTokenToClipboard = async () => {
     try {
-      const {
-        data: {
-          session
-        }
-      } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        await navigator.clipboard.writeText(session.access_token);
+      const token = getAccessToken();
+      if (token) {
+        await navigator.clipboard.writeText(token);
         toast({
           title: "Token copiado!",
           description: "Token de acesso copiado para a área de transferência."
@@ -129,6 +127,10 @@ const Header: React.FC = () => {
               <Volume2 className="mr-2 h-4 w-4" />
               <span>Sons de Notificação</span>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              <span>Alterar Senha</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
@@ -149,6 +151,11 @@ const Header: React.FC = () => {
             />
           </div>
         )}
+
+        <ChangePasswordDialog
+          open={showChangePassword}
+          onOpenChange={setShowChangePassword}
+        />
       </div>
     </header>;
 };

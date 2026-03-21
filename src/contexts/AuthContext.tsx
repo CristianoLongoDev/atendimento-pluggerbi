@@ -1,11 +1,23 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import {
+  AuthUser,
+  saveTokens,
+  saveUser,
+  getAccessToken,
+  getRefreshToken,
+  getStoredUser,
+  clearTokens,
+} from '@/lib/tokenStore';
+import { API_BASE, ensureValidToken } from '@/lib/apiClient';
+
+interface SessionCompat {
+  access_token: string;
+}
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: any | null;
+  user: AuthUser | null;
+  session: SessionCompat | null;
+  profile: AuthUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string, companyName: string) => Promise<{ error: any }>;
@@ -24,152 +36,164 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (data && !error) {
-      setProfile(data);
-    }
+  const session: SessionCompat | null = user ? { access_token: getAccessToken()! } : null;
+
+  const applyLogin = (accessToken: string, refreshToken: string, expiresIn: number, userData: AuthUser) => {
+    saveTokens(accessToken, refreshToken, expiresIn);
+    saveUser(userData);
+    setUser(userData);
   };
 
-  useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Defer profile fetching to avoid deadlock
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-        
-        setLoading(false);
-      }
-    );
+  const loadSession = useCallback(async () => {
+    const storedUser = getStoredUser();
+    const token = getAccessToken();
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        setTimeout(() => {
-          fetchProfile(session.user.id);
-        }, 0);
-      }
-      
+    if (!storedUser || !token) {
+      clearTokens();
+      setUser(null);
       setLoading(false);
-    });
+      return;
+    }
 
-    return () => subscription.unsubscribe();
+    const validToken = await ensureValidToken();
+    if (!validToken) {
+      clearTokens();
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${validToken}` },
+      });
+
+      if (!res.ok) {
+        clearTokens();
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      if (data.status === 'success' && data.user) {
+        const u: AuthUser = {
+          id: data.user.id,
+          email: data.user.email,
+          account_id: data.user.account_id,
+          full_name: data.user.full_name,
+          role: data.user.role,
+        };
+        saveUser(u);
+        setUser(u);
+      } else {
+        clearTokens();
+        setUser(null);
+      }
+    } catch {
+      setUser(storedUser);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    loadSession();
+  }, [loadSession]);
+
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.status !== 'success') {
+        return { error: { message: data.message || data.error || 'Credenciais inválidas' } };
+      }
+
+      const userData: AuthUser = {
+        id: data.user.id,
+        email: data.user.email,
+        account_id: data.user.account_id,
+        full_name: data.user.full_name,
+        role: data.user.role,
+      };
+
+      applyLogin(data.access_token, data.refresh_token, data.expires_in, userData);
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'Erro de conexão' } };
+    }
   };
 
   const signUp = async (email: string, password: string, fullName: string, companyName: string) => {
     try {
-      // Gerar UUID para a conta
       const accountId = crypto.randomUUID();
-      
-      console.log('Tentando criar conta:', { accountId, companyName });
-      
-      // Criar conta no endpoint externo
-      const accountResponse = await fetch('https://pluggyapi.pluggerbi.com/accounts', {
+
+      const accountResponse = await fetch(`${API_BASE}/accounts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: accountId, name: companyName }),
+      });
+
+      if (!accountResponse.ok) {
+        const errorText = await accountResponse.text();
+        throw new Error(`Erro ao criar conta da empresa: ${accountResponse.status} ${errorText}`);
+      }
+
+      const registerRes = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: accountId,
-          name: companyName,
+          email,
+          password,
+          full_name: fullName,
+          role: 'admin',
+          account_id: accountId,
         }),
       });
 
-      console.log('Response status:', accountResponse.status);
-      
-      if (!accountResponse.ok) {
-        const errorText = await accountResponse.text();
-        console.error('Erro na resposta do servidor:', errorText);
-        throw new Error(`Erro ao criar conta da empresa: ${accountResponse.status}`);
+      const registerData = await registerRes.json();
+
+      if (!registerRes.ok || registerData.status !== 'success') {
+        return { error: { message: registerData.message || registerData.error || 'Erro ao criar usuário' } };
       }
 
-      console.log('Conta criada com sucesso, criando usuário no Supabase...');
-
-      // Criar usuário no Supabase
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-            role: 'admin',
-            account_id: accountId,
-          },
-        },
-      });
-      
-      if (error) {
-        console.error('Erro ao criar usuário no Supabase:', error);
-      }
-      
-      return { error };
+      return { error: null };
     } catch (err: any) {
-      console.error('Erro geral:', err);
       return { error: { message: err.message || 'Erro ao criar conta. Verifique sua conexão e tente novamente.' } };
     }
   };
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      // Sempre limpa o estado local, independente se há erro no servidor
-      // Isso garante que o usuário seja deslogado mesmo se a sessão já expirou
-      setUser(null);
-      setSession(null);
-      setProfile(null);
-      
-      if (error && error.message !== 'Session from session_id claim in JWT does not exist') {
-        console.warn('Erro durante logout (mas estado foi limpo):', error.message);
+      const refreshToken = getRefreshToken();
+      if (refreshToken) {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        }).catch(() => {});
       }
-    } catch (err) {
-      console.error('Erro ao fazer logout:', err);
-      // Mesmo com erro, limpa o estado local para garantir que o usuário seja deslogado
+    } finally {
+      clearTokens();
       setUser(null);
-      setSession(null);
-      setProfile(null);
     }
   };
 
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = user?.role === 'admin';
 
-  const value = {
+  const value: AuthContextType = {
     user,
     session,
-    profile,
+    profile: user,
     loading,
     signIn,
     signUp,

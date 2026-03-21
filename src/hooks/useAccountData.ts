@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { runAuthDiagnostics, validateCurrentToken } from '@/lib/authValidation';
 import { callExternalAPI } from '@/lib/authInterceptor';
 import { logSecurityEvent } from '@/lib/security';
+import { API_BASE } from '@/lib/apiClient';
 
 interface AccountData {
   id: string;
@@ -45,7 +46,7 @@ export const useAccountData = () => {
         
         // Usar o interceptor para fazer a requisição
         const data = await callExternalAPI(
-          `https://pluggyapi.pluggerbi.com/accounts/${profile.account_id}`
+          `${API_BASE}/accounts/${profile.account_id}`
         );
         
         console.log('✅ Dados da conta recebidos:', data);

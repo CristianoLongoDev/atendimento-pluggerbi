@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 export interface Action {
   id: number;
@@ -22,13 +22,6 @@ export const useActions = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeaders = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return {
-      'Authorization': `Bearer ${session?.access_token}`,
-      'Content-Type': 'application/json',
-    };
-  };
 
   const fetchActions = useCallback(async (integrationType?: string | null) => {
     setLoading(true);
@@ -36,7 +29,7 @@ export const useActions = () => {
     
     try {
       const headers = await getAuthHeaders();
-      let url = 'https://pluggyapi.pluggerbi.com/bots/functions/actions';
+      let url = `${API_BASE}/bots/functions/actions`;
       
       // Add filter for integration_type if provided
       if (integrationType) {

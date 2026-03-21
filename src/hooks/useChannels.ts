@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 export interface Channel {
   id: string;
@@ -18,16 +18,6 @@ export const useChannels = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeaders = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      throw new Error('Token de acesso não encontrado');
-    }
-    return {
-      'Authorization': `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json'
-    };
-  };
 
   const fetchChannels = useCallback(async () => {
     setLoading(true);
@@ -36,7 +26,7 @@ export const useChannels = () => {
     try {
       const headers = await getAuthHeaders();
       
-      const response = await fetch('https://pluggyapi.pluggerbi.com/channels', {
+      const response = await fetch(`${API_BASE}/channels`, {
         headers
       });
       
@@ -61,7 +51,7 @@ export const useChannels = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch('https://pluggyapi.pluggerbi.com/channels', {
+      const response = await fetch(`${API_BASE}/channels`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -97,7 +87,7 @@ export const useChannels = () => {
       console.log('updateChannel - Data being sent:', dataToSend);
       console.log('updateChannel - Channel ID:', id);
       
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/channels/${id}`, {
+      const response = await fetch(`${API_BASE}/channels/${id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(dataToSend)
@@ -126,7 +116,7 @@ export const useChannels = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/channels/${id}`, {
+      const response = await fetch(`${API_BASE}/channels/${id}`, {
         method: 'DELETE',
         headers
       });

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE } from '@/lib/apiClient';
 
 export interface Integration {
   id: string;
@@ -37,7 +38,7 @@ export const useIntegrations = () => {
     
     setLoading(true);
     try {
-      const response = await fetch('https://pluggyapi.pluggerbi.com/integrations', {
+      const response = await fetch(`${API_BASE}/integrations`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ export const useIntegrations = () => {
     }
 
     try {
-      const response = await fetch('https://pluggyapi.pluggerbi.com/integrations', {
+      const response = await fetch(`${API_BASE}/integrations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -96,7 +97,7 @@ export const useIntegrations = () => {
     }
 
     try {
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/integrations/${id}`, {
+      const response = await fetch(`${API_BASE}/integrations/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -124,7 +125,7 @@ export const useIntegrations = () => {
     }
 
     try {
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/integrations/${id}`, {
+      const response = await fetch(`${API_BASE}/integrations/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,

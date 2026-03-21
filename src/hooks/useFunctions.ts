@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 export interface BotFunction {
   bot_id?: string;
@@ -27,13 +27,6 @@ export const useFunctions = () => {
   const [error, setError] = useState<string | null>(null);
   const [cache, setCache] = useState<Map<string, { data: BotFunction[], timestamp: number }>>(new Map());
 
-  const getAuthHeaders = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return {
-      'Authorization': `Bearer ${session?.access_token}`,
-      'Content-Type': 'application/json',
-    };
-  };
 
   const fetchFunctions = async (botId: string, retryCount = 0) => {
     // Check cache first (valid for 30 seconds)
@@ -48,7 +41,7 @@ export const useFunctions = () => {
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/functions`, {
         headers,
       });
 
@@ -84,7 +77,7 @@ export const useFunctions = () => {
   const createFunction = async (botId: string, functionData: CreateFunctionData) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/functions`, {
         method: 'POST',
         headers,
         body: JSON.stringify(functionData),
@@ -108,10 +101,10 @@ export const useFunctions = () => {
     try {
       const headers = await getAuthHeaders();
       console.log('updateFunction - Headers:', headers);
-      console.log('updateFunction - URL:', `https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}`);
+      console.log('updateFunction - URL:', `${API_BASE}/bots/${botId}/functions/${functionId}`);
       console.log('updateFunction - Body:', JSON.stringify(functionData));
       
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/functions/${functionId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(functionData),
@@ -134,7 +127,7 @@ export const useFunctions = () => {
   const deleteFunction = async (botId: string, functionId: string) => {
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch(`https://pluggyapi.pluggerbi.com/bots/${botId}/functions/${functionId}`, {
+      const response = await fetch(`${API_BASE}/bots/${botId}/functions/${functionId}`, {
         method: 'DELETE',
         headers,
       });

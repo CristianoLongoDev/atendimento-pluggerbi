@@ -5,6 +5,7 @@ import { validateAndSanitizeMessage, webSocketMessageSchema, conversationIdSchem
 import { formatInTimeZone } from 'date-fns-tz';
 import { callExternalAPI } from '@/lib/authInterceptor';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE, WS_BASE } from '@/lib/apiClient';
 
 interface ConversationApiResponse {
   status: string;
@@ -104,7 +105,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
   
-  const { isConnected, sendMessage: wsSendMessage, subscribe } = useWebSocket('wss://pluggyapi.pluggerbi.com/ws');
+  const { isConnected, sendMessage: wsSendMessage, subscribe } = useWebSocket(`${WS_BASE}/ws`);
   
   console.log('🔌 STATUS DO WEBSOCKET:', { isConnected });
 
@@ -119,7 +120,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('🔄 Loading initial conversations via API REST...');
       
       const response: ConversationApiResponse = await callExternalAPI(
-        'https://pluggyapi.pluggerbi.com/api/conversations/recent?limit=50&include_closed=true',
+        `${API_BASE}/api/conversations/recent?limit=50&include_closed=true`,
         undefined,
         'GET'
       );
@@ -764,7 +765,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       console.log('🚀 ENVIANDO VIA API - payload completo:', JSON.stringify(payload, null, 2));
       
       const response = await callExternalAPI(
-        `https://atendimento.pluggerbi.com/conversations/${chatId}/send-message`,
+        `${API_BASE}/conversations/${chatId}/send-message`,
         payload,
         'POST'
       );
@@ -821,7 +822,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       try {
         console.log('📡 Tentando API REST...');
         const response = await callExternalAPI(
-          `https://atendimento.pluggerbi.com/conversations/${chatId}/status`,
+          `${API_BASE}/conversations/${chatId}/status`,
           { status_attendance: "human" },
           'PUT'
         );
@@ -934,7 +935,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       try {
         console.log('📡 Tentando fechar conversa via API REST...');
         const response = await callExternalAPI(
-          `https://atendimento.pluggerbi.com/conversations/${chatId}/close`,
+          `${API_BASE}/conversations/${chatId}/close`,
           { user_id: profile?.id },
           'PUT'
         );
