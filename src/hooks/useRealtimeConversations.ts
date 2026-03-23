@@ -90,6 +90,8 @@ interface UseRealtimeConversationsReturn {
   chats: Chat[];
   messages: { [chatId: string]: Message[] };
   isConnected: boolean;
+  loadingError: string | null;
+  isLoading: boolean;
   sendMessage: (chatId: string, content: string) => void;
   transferToHuman: (chatId: string) => void;
   closeConversation: (chatId: string) => void;
@@ -101,75 +103,68 @@ interface UseRealtimeConversationsReturn {
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const { profile } = useAuth();
   const { fetchUserProfile } = useUserProfiles();
-  console.log('🚀 useRealtimeConversations INICIADO');
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const { isConnected, sendMessage: wsSendMessage, subscribe } = useWebSocket(`${WS_BASE}/ws`);
   
   console.log('🔌 STATUS DO WEBSOCKET:', { isConnected });
 
-  // Função para carregar conversas iniciais via API REST
   const loadInitialConversations = useCallback(async () => {
     if (!profile?.account_id) {
-      console.log('❌ Cannot load conversations - No account_id available');
+      setLoadingError('Sem account_id — perfil não carregado');
+      setIsLoading(false);
       return;
     }
 
-    try {
-      console.log('🔄 Loading initial conversations via API REST...');
-      
-      const response: ConversationApiResponse = await callExternalAPI(
-        `${API_BASE}/conversations?limit=50`,
-        undefined,
-        'GET'
-      );
+    setIsLoading(true);
+    setLoadingError(null);
 
-      console.log('✅ Conversas carregadas via API:', response);
+    const url = `${API_BASE}/conversations?limit=50`;
+
+    try {
+      const response: ConversationApiResponse = await callExternalAPI(url, undefined, 'GET');
 
       if (response.status === 'success' && response.data.conversations) {
-        // Mapear conversas da API para o formato do estado local
         const mappedChats: Chat[] = response.data.conversations.map((conv): Chat => ({
           id: conv.conversation_id.toString(),
           customerName: conv.contact.name || `Cliente ${conv.conversation_id}`,
           customerPhone: conv.contact.phone,
           customerEmail: conv.contact.email,
-          customerAvatar: undefined, // Não disponível na API atual
+          customerAvatar: undefined,
           lastMessage: conv.last_message.text || 'Sem mensagens',
           timestamp: (() => {
             try {
               const date = new Date(conv.last_message.timestamp + (conv.last_message.timestamp.includes('Z') ? '' : 'Z'));
               return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
-            } catch (error) {
-              console.error('Error formatting timestamp:', error, conv.last_message.timestamp);
+            } catch {
               return formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
             }
           })(),
           channel: conv.channel.type === 'whatsapp' ? 'whatsapp' : 'widget',
           status: (() => {
-            if (conv.status === 'closed') {
-              return 'closed' as const;
-            }
-            if (conv.status === 'active') {
-              return conv.status_attendance === 'human' ? 'human' : 'ai';
-            }
+            if (conv.status === 'closed') return 'closed' as const;
+            if (conv.status === 'active') return conv.status_attendance === 'human' ? 'human' : 'ai';
             return 'pending';
           })(),
-          unreadCount: 0, // API não retorna unread count, será atualizado via WebSocket
+          unreadCount: 0,
           isActive: conv.status === 'active',
           botAgentName: conv.bot.agent_name,
-          metadata: {
-            contact: conv.contact,
-            bot: conv.bot,
-            channel: conv.channel
-          }
+          metadata: { contact: conv.contact, bot: conv.bot, channel: conv.channel }
         }));
 
-        console.log('🔄 Setting initial chats from API:', mappedChats.length, 'conversations');
         setChats(mappedChats);
+        setLoadingError(null);
+      } else {
+        setLoadingError(`API retornou status: ${response.status}`);
       }
-    } catch (error) {
-      console.error('❌ Error loading initial conversations:', error);
+    } catch (error: any) {
+      const msg = error?.message || String(error);
+      setLoadingError(`GET ${url} → ${msg}`);
+    } finally {
+      setIsLoading(false);
     }
   }, [profile?.account_id]);
 
@@ -1071,6 +1066,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     chats,
     messages,
     isConnected,
+    loadingError,
+    isLoading,
     sendMessage,
     transferToHuman,
     closeConversation,

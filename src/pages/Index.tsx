@@ -453,7 +453,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
-  const { chats, messages, isConnected, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
+  const { chats, messages, isConnected, loadingError, isLoading, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
   const { toast } = useToast();
   
   // Configuração do sistema de notificações
@@ -711,12 +711,29 @@ const Index = () => {
   const renderMainContent = () => {
     switch (selectedSection) {
       case 'conversations':
-        if (chats.length === 0 && !isConnected) {
+        if (chats.length === 0 && isLoading) {
           return (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
                 <div className="text-lg font-medium text-muted-foreground">Carregando conversas...</div>
-                <div className="text-sm text-muted-foreground">Tentando conectar ao servidor...</div>
+              </div>
+            </div>
+          );
+        }
+
+        if (chats.length === 0 && loadingError) {
+          return (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-3 max-w-md">
+                <div className="text-lg font-medium text-destructive">Erro ao carregar conversas</div>
+                <div className="text-sm text-muted-foreground bg-muted rounded p-3 font-mono break-all">{loadingError}</div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>WebSocket: {isConnected ? '✓ conectado' : '✗ desconectado'}</div>
+                  <div>API: {window.location.origin}</div>
+                </div>
+                <button onClick={refreshConversations} className="text-sm text-primary hover:underline">
+                  Tentar novamente
+                </button>
               </div>
             </div>
           );
