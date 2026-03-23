@@ -1,5 +1,14 @@
 {
   "rewrites": [
-    { "source": "/((?!assets|lovable-uploads).*)", "destination": "/index.html" }
+    { "source": "/auth/:slug", "destination": "https://pluggyapi.pluggerbi.com/auth/:slug" },
+    { "source": "/auth/:slug/:rest*", "destination": "https://pluggyapi.pluggerbi.com/auth/:slug/:rest*" },
+    { "source": "/bots/:path*", "destination": "https://pluggyapi.pluggerbi.com/bots/:path*" },
+    { "source": "/channels/:path*", "destination": "https://pluggyapi.pluggerbi.com/channels/:path*" },
+    { "source": "/users/:path*", "destination": "https://pluggyapi.pluggerbi.com/users/:path*" },
+    { "source": "/accounts/:path*", "destination": "https://pluggyapi.pluggerbi.com/accounts/:path*" },
+    { "source": "/integrations/:path*", "destination": "https://pluggyapi.pluggerbi.com/integrations/:path*" },
+    { "source": "/api/:path*", "destination": "https://pluggyapi.pluggerbi.com/api/:path*" },
+    { "source": "/conversations/:path*", "destination": "https://pluggyapi.pluggerbi.com/conversations/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
