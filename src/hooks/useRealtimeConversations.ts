@@ -130,20 +130,22 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       if (response.status === 'success' && response.data.conversations) {
         const mappedChats: Chat[] = response.data.conversations.map((conv): Chat => ({
           id: conv.conversation_id.toString(),
-          customerName: conv.contact.name || `Cliente ${conv.conversation_id}`,
-          customerPhone: conv.contact.phone,
-          customerEmail: conv.contact.email,
+          customerName: conv.contact?.name || `Cliente ${conv.conversation_id}`,
+          customerPhone: conv.contact?.phone,
+          customerEmail: conv.contact?.email,
           customerAvatar: undefined,
-          lastMessage: conv.last_message.text || 'Sem mensagens',
+          lastMessage: conv.last_message?.text || 'Sem mensagens',
           timestamp: (() => {
             try {
-              const date = new Date(conv.last_message.timestamp + (conv.last_message.timestamp.includes('Z') ? '' : 'Z'));
+              const ts = conv.last_message?.timestamp;
+              if (!ts) return formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+              const date = new Date(ts + (ts.includes('Z') ? '' : 'Z'));
               return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
             } catch {
               return formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
             }
           })(),
-          channel: conv.channel.type === 'whatsapp' ? 'whatsapp' : 'widget',
+          channel: conv.channel?.type === 'whatsapp' ? 'whatsapp' : 'widget',
           status: (() => {
             if (conv.status === 'closed') return 'closed' as const;
             if (conv.status === 'active') return conv.status_attendance === 'human' ? 'human' : 'ai';
@@ -151,7 +153,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           })(),
           unreadCount: 0,
           isActive: conv.status === 'active',
-          botAgentName: conv.bot.agent_name,
+          botAgentName: conv.bot?.agent_name,
           metadata: { contact: conv.contact, bot: conv.bot, channel: conv.channel }
         }));
 
