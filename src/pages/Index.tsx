@@ -81,8 +81,12 @@ const UsersTabContent: React.FC = () => {
     try {
       setLoading(true);
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_BASE}/users`, { headers });
-      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const url = `${API_BASE}/users`;
+      const res = await fetch(url, { headers });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`GET ${url} → ${res.status} ${body}`);
+      }
       const data = await res.json();
       setUsers(data.data?.users || []);
     } catch (error: any) {
@@ -104,7 +108,8 @@ const UsersTabContent: React.FC = () => {
       const headers = await getAuthHeaders();
 
       if (editingUser) {
-        const res = await fetch(`${API_BASE}/users/${editingUser.id}`, {
+        const url = `${API_BASE}/users/${editingUser.id}`;
+        const res = await fetch(url, {
           method: 'PUT',
           headers,
           body: JSON.stringify({
@@ -113,14 +118,18 @@ const UsersTabContent: React.FC = () => {
             department: formData.department,
           }),
         });
-        if (!res.ok) throw new Error(`Erro ${res.status}`);
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          throw new Error(`PUT ${url} → ${res.status} ${body}`);
+        }
 
         toast({
           title: "Usuário atualizado",
           description: "Dados do usuário foram atualizados com sucesso."
         });
       } else {
-        const res = await fetch(`${API_BASE}/users`, {
+        const url = `${API_BASE}/users`;
+        const res = await fetch(url, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -133,8 +142,8 @@ const UsersTabContent: React.FC = () => {
         });
 
         if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.message || errorData.error || 'Erro ao criar usuário');
+          const body = await res.text().catch(() => '');
+          throw new Error(`POST ${url} → ${res.status} ${body}`);
         }
 
         toast({
@@ -184,11 +193,15 @@ const UsersTabContent: React.FC = () => {
 
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+      const url = `${API_BASE}/users/${user.id}`;
+      const res = await fetch(url, {
         method: 'DELETE',
         headers,
       });
-      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`DELETE ${url} → ${res.status} ${body}`);
+      }
 
       toast({
         title: "Usuário excluído",
