@@ -76,10 +76,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         
         setParametersLoading(true);
         fetchParameters(botId, botFunction.function_id || '')
-          .then(() => {
-            // Parameters are now loaded in the hook state
-            const params = parameters?.filter(p => p.function_id === botFunction.function_id) || [];
-            setLocalParameters(params);
+          .then((fetchedParams) => {
+            setLocalParameters(fetchedParams);
           })
           .catch((error) => {
             console.error('Error loading parameters:', error);
@@ -101,7 +99,8 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         setLocalParameters([]);
       }
     }
-  }, [open, mode, botFunction, fetchIntegrations, fetchActions, fetchParameters, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mode, botFunction?.function_id, botId]);
 
   const resetParameterForm = () => {
     setParameterForm({

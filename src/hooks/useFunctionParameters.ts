@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { getAuthHeaders, API_BASE } from '@/lib/apiClient';
 
 export interface FunctionParameter {
@@ -37,7 +37,7 @@ export const useFunctionParameters = () => {
   const [error, setError] = useState<string | null>(null);
 
 
-  const fetchParameters = async (botId: string, functionId: string) => {
+  const fetchParameters = useCallback(async (botId: string, functionId: string): Promise<FunctionParameter[]> => {
     setLoading(true);
     setError(null);
     
@@ -52,14 +52,17 @@ export const useFunctionParameters = () => {
       }
 
       const data = await response.json();
-      setParameters(data.parameters || []);
+      const params = data.parameters || [];
+      setParameters(params);
+      return params;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar parâmetros');
       setParameters([]);
+      return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const createParameter = async (botId: string, functionId: string, parameterData: CreateParameterData) => {
     try {
