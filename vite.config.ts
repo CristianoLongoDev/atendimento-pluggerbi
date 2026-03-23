@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       ...Object.fromEntries(
-        ['/auth', '/bots', '/channels', '/users', '/accounts', '/integrations', '/api', '/conversations'].map(
+        ['/auth/', '/bots', '/channels', '/users', '/accounts', '/integrations', '/api', '/conversations'].map(
           (p) => [
             p,
             { target: 'https://pluggyapi.pluggerbi.com', changeOrigin: true, secure: false },
