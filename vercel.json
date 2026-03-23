@@ -2,12 +2,18 @@
   "rewrites": [
     { "source": "/auth/:slug", "destination": "https://pluggyapi.pluggerbi.com/auth/:slug" },
     { "source": "/auth/:slug/:rest*", "destination": "https://pluggyapi.pluggerbi.com/auth/:slug/:rest*" },
+    { "source": "/bots", "destination": "https://pluggyapi.pluggerbi.com/bots" },
     { "source": "/bots/:path*", "destination": "https://pluggyapi.pluggerbi.com/bots/:path*" },
+    { "source": "/channels", "destination": "https://pluggyapi.pluggerbi.com/channels" },
     { "source": "/channels/:path*", "destination": "https://pluggyapi.pluggerbi.com/channels/:path*" },
+    { "source": "/users", "destination": "https://pluggyapi.pluggerbi.com/users" },
     { "source": "/users/:path*", "destination": "https://pluggyapi.pluggerbi.com/users/:path*" },
+    { "source": "/accounts", "destination": "https://pluggyapi.pluggerbi.com/accounts" },
     { "source": "/accounts/:path*", "destination": "https://pluggyapi.pluggerbi.com/accounts/:path*" },
+    { "source": "/integrations", "destination": "https://pluggyapi.pluggerbi.com/integrations" },
     { "source": "/integrations/:path*", "destination": "https://pluggyapi.pluggerbi.com/integrations/:path*" },
     { "source": "/api/:path*", "destination": "https://pluggyapi.pluggerbi.com/api/:path*" },
+    { "source": "/conversations", "destination": "https://pluggyapi.pluggerbi.com/conversations" },
     { "source": "/conversations/:path*", "destination": "https://pluggyapi.pluggerbi.com/conversations/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

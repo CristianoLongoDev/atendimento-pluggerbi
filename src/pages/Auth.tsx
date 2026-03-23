@@ -215,7 +215,7 @@ const Auth: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
-      <span className="absolute bottom-4 right-4 text-xs text-muted-foreground/50">v1.3</span>
+      <span className="absolute bottom-4 right-4 text-xs text-muted-foreground/50">v1.4</span>
     </div>
   );
 };
