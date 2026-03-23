@@ -106,11 +106,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const loginUrl = `${API_BASE}/auth/login`;
+      console.log('[Auth] signIn request:', loginUrl);
+
+      const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
+
+      const contentType = res.headers.get('content-type') || '';
+      console.log('[Auth] signIn response:', { status: res.status, contentType, url: res.url });
+
+      if (!contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('[Auth] Resposta não-JSON recebida:', text.substring(0, 200));
+        return { error: { message: 'Servidor retornou resposta inválida. Verifique se a API está acessível.' } };
+      }
 
       const data = await res.json();
 
@@ -129,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       applyLogin(data.access_token, data.refresh_token, data.expires_in, userData);
       return { error: null };
     } catch (err: any) {
+      console.error('[Auth] signIn error:', err);
       return { error: { message: err.message || 'Erro de conexão' } };
     }
   };
