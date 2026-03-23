@@ -305,6 +305,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, [isConnected, wsSendMessage, profile?.account_id, loadInitialConversations]);
 
+  // Polling fallback when WebSocket is disconnected
+  useEffect(() => {
+    if (isConnected || !profile?.account_id) return;
+
+    const interval = setInterval(() => {
+      loadInitialConversations();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [isConnected, profile?.account_id, loadInitialConversations]);
+
   const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
     console.log('🔍 CHECANDO USER_ID na mensagem recebida...');
@@ -892,40 +903,82 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, [isConnected, wsSendMessage, callExternalAPI]);
 
-  const fetchMessages = useCallback((conversationId: string | number) => {
-    console.log('🔍 FETCH MESSAGES CALLED for conversation:', conversationId);
-    console.log('🌐 WebSocket connected:', isConnected);
-    
-    // Convert to string if it's a number
+  const fetchMessagesViaRest = useCallback(async (conversationId: string | number) => {
     const conversationIdStr = String(conversationId);
-    
-    // Validate conversation ID
+    try {
+      const response = await callExternalAPI(
+        `${API_BASE}/conversations/${conversationIdStr}/messages?limit=50`,
+        undefined,
+        'GET'
+      );
+
+      if (response.status === 'success' && response.data?.messages) {
+        const conversationMessages = response.data.messages.map((msg: any): Message => {
+          let senderName: string | undefined;
+          if (msg.sender === 'agent' && msg.metadata?.bot?.agent_name) {
+            senderName = msg.metadata.bot.agent_name;
+          }
+          return {
+            id: msg.id,
+            content: msg.content,
+            sender: msg.sender === 'user' ? 'customer' : msg.sender,
+            senderName,
+            timestamp: (() => {
+              const date = new Date(msg.timestamp + (msg.timestamp.includes('Z') ? '' : 'Z'));
+              return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+            })(),
+            channel: msg.channel,
+            message_type: msg.message_type,
+            tokens: msg.tokens,
+            user_id: msg.user_id,
+            metadata: msg.metadata
+          };
+        });
+
+        setMessages(prev => ({
+          ...prev,
+          [conversationIdStr]: conversationMessages
+        }));
+
+        if (response.data.conversation_status) {
+          const isActive = response.data.conversation_status === 'active';
+          setChats(prev => prev.map(chat => {
+            if (chat.id === conversationIdStr) {
+              return { ...chat, isActive, status: isActive ? 'ai' : 'closed' };
+            }
+            return chat;
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error fetching messages via REST:', error);
+    }
+  }, []);
+
+  const fetchMessages = useCallback((conversationId: string | number) => {
+    const conversationIdStr = String(conversationId);
+
     try {
       conversationIdSchema.parse(conversationId);
     } catch (error) {
       console.error('Invalid conversation ID:', error);
       return;
     }
-    
-    if (!isConnected) {
-      console.warn('❌ WebSocket not connected. Cannot fetch messages.');
-      return;
+
+    if (isConnected) {
+      const fetchPayload = {
+        type: 'get_messages',
+        data: {
+          conversation_id: parseInt(conversationIdStr),
+          limit: 50,
+          offset: 0
+        }
+      };
+      wsSendMessage(fetchPayload);
+    } else {
+      fetchMessagesViaRest(conversationId);
     }
-
-    console.log('🔍 FETCHING MESSAGES for conversation:', conversationIdStr);
-    
-    const fetchPayload = {
-      type: 'get_messages',
-      data: {
-        conversation_id: parseInt(conversationIdStr),
-        limit: 50,
-        offset: 0
-      }
-    };
-
-    console.log('📤 Sending get_messages payload:', fetchPayload);
-    wsSendMessage(fetchPayload);
-  }, [isConnected, wsSendMessage]);
+  }, [isConnected, wsSendMessage, fetchMessagesViaRest]);
 
   const closeConversation = useCallback(async (chatId: string) => {
     console.log('🚀 INICIANDO closeConversation para chat:', chatId);

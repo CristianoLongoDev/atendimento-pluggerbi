@@ -711,12 +711,12 @@ const Index = () => {
   const renderMainContent = () => {
     switch (selectedSection) {
       case 'conversations':
-        if (!isConnected) {
+        if (chats.length === 0 && !isConnected) {
           return (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
-                <div className="text-lg font-medium text-destructive">Conexão perdida</div>
-                <div className="text-sm text-muted-foreground">Tentando reconectar...</div>
+                <div className="text-lg font-medium text-muted-foreground">Carregando conversas...</div>
+                <div className="text-sm text-muted-foreground">Tentando conectar ao servidor...</div>
               </div>
             </div>
           );
@@ -736,6 +736,11 @@ const Index = () => {
 
         return (
           <>
+            {!isConnected && (
+              <div className="absolute top-0 left-0 right-0 z-50 bg-yellow-500/90 text-yellow-950 text-xs text-center py-1">
+                Tempo real indisponível — atualizações automáticas pausadas
+              </div>
+            )}
             <div className="w-[480px] border-r border-border bg-card overflow-y-auto">
               {/* Conversation search and filters */}
               <div className="p-4 border-b border-border space-y-4">
