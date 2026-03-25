@@ -90,6 +90,7 @@ interface UseRealtimeConversationsReturn {
   chats: Chat[];
   messages: { [chatId: string]: Message[] };
   isConnected: boolean;
+  wsConnectionInfo: { url: string; error: string | null; closeCode: number | null; closeReason: string; attempts: number };
   loadingError: string | null;
   isLoading: boolean;
   sendMessage: (chatId: string, content: string) => void;
@@ -108,7 +109,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  const { isConnected, sendMessage: wsSendMessage, subscribe } = useWebSocket(`${WS_BASE}/ws`);
+  const { isConnected, sendMessage: wsSendMessage, subscribe, connectionInfo: wsConnectionInfo } = useWebSocket(`${WS_BASE}/ws`);
   
   console.log('🔌 STATUS DO WEBSOCKET:', { isConnected });
 
@@ -1087,6 +1088,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     chats,
     messages,
     isConnected,
+    wsConnectionInfo,
     loadingError,
     isLoading,
     sendMessage,

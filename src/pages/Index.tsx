@@ -466,7 +466,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
-  const { chats, messages, isConnected, loadingError, isLoading, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
+  const { chats, messages, isConnected, wsConnectionInfo, loadingError, isLoading, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
   const { toast } = useToast();
   
   // Configuração do sistema de notificações
@@ -769,6 +769,9 @@ const Index = () => {
             {!isConnected && (
               <div className="absolute top-0 left-0 right-0 z-50 bg-yellow-500/90 text-yellow-950 text-xs text-center py-1">
                 Tempo real indisponível — atualizações automáticas pausadas
+                <span className="ml-2 font-mono opacity-80">
+                  [URL: {wsConnectionInfo.url} | Erro: {wsConnectionInfo.error || 'nenhum'} | Close: {wsConnectionInfo.closeCode ?? '-'} {wsConnectionInfo.closeReason || ''} | Tentativas: {wsConnectionInfo.attempts}]
+                </span>
               </div>
             )}
             <div className="w-[480px] border-r border-border bg-card overflow-y-auto">

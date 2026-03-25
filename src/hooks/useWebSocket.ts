@@ -11,12 +11,16 @@ interface UseWebSocketReturn {
   lastMessage: WebSocketMessage | null;
   sendMessage: (message: WebSocketMessage) => void;
   subscribe: (callback: (message: WebSocketMessage) => void) => () => void;
+  connectionInfo: { url: string; error: string | null; closeCode: number | null; closeReason: string; attempts: number };
 }
 
 export const useWebSocket = (url: string): UseWebSocketReturn => {
   const { session } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [closeCode, setCloseCode] = useState<number | null>(null);
+  const [closeReason, setCloseReason] = useState('');
   const ws = useRef<WebSocket | null>(null);
   const subscribers = useRef<((message: WebSocketMessage) => void)[]>([]);
   const reconnectAttempts = useRef(0);
@@ -35,6 +39,9 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
       ws.current.onopen = () => {
         console.log('WebSocket connected');
         setIsConnected(true);
+        setConnectionError(null);
+        setCloseCode(null);
+        setCloseReason('');
         reconnectAttempts.current = 0;
         reconnectDelay.current = 1000;
 
@@ -91,6 +98,8 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
       ws.current.onclose = (event) => {
         console.log('WebSocket disconnected:', event.code, event.reason);
         setIsConnected(false);
+        setCloseCode(event.code);
+        setCloseReason(event.reason || `code ${event.code}`);
 
         // Attempt to reconnect if it wasn't a manual close
         if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
@@ -108,10 +117,12 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
 
       ws.current.onerror = (error) => {
         console.error('WebSocket error:', error);
+        setConnectionError('Erro de conexão WebSocket');
       };
 
     } catch (error) {
       console.error('Error creating WebSocket connection:', error);
+      setConnectionError(error instanceof Error ? error.message : 'Erro ao criar conexão');
     }
   }, [url, session?.access_token]);
 
@@ -170,6 +181,7 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
     isConnected,
     lastMessage,
     sendMessage,
-    subscribe
+    subscribe,
+    connectionInfo: { url, error: connectionError, closeCode, closeReason, attempts: reconnectAttempts.current }
   };
 };
