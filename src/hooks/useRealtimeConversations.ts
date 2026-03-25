@@ -922,8 +922,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         'GET'
       );
 
-      if (response.status === 'success' && response.data?.messages) {
-        const conversationMessages = response.data.messages.map((msg: any): Message => {
+      const messagesArray = response.data?.messages || response.messages;
+      if (response.status === 'success' && messagesArray) {
+        const conversationMessages = messagesArray.map((msg: any): Message => {
           let senderName: string | undefined;
           if (msg.sender === 'agent' && msg.metadata?.bot?.agent_name) {
             senderName = msg.metadata.bot.agent_name;
@@ -950,8 +951,9 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           [conversationIdStr]: conversationMessages
         }));
 
-        if (response.data.conversation_status) {
-          const isActive = response.data.conversation_status === 'active';
+        const convStatus = response.data?.conversation_status || response.conversation_status;
+        if (convStatus) {
+          const isActive = convStatus === 'active';
           setChats(prev => prev.map(chat => {
             if (chat.id === conversationIdStr) {
               return { ...chat, isActive, status: isActive ? 'ai' : 'closed' };

@@ -834,17 +834,11 @@ const Index = () => {
                   chats={filteredChats}
                   selectedChatId={selectedChatId}
                   onChatSelect={(groupKey, conversations) => {
-                    console.log('🎯 GROUP SELECTED:', groupKey, conversations);
-                    console.log('🎯 CONV IDs e TIPOS:', conversations.map(c => ({ id: c.id, type: typeof c.id })));
-                    console.log('🎯 MESSAGES KEYS ANTES DO FETCH:', Object.keys(messages));
-                    console.log('🎯 WS CONNECTED:', isConnected);
                     setSelectedChatId(groupKey);
                     setSelectedConversations(conversations);
                     
                     conversations.forEach(chat => {
-                      console.log('🎯 CALLING markAsRead for chat:', chat.id, 'type:', typeof chat.id);
                       markAsRead(chat.id);
-                      console.log('🎯 CALLING fetchMessages for chat:', chat.id, 'type:', typeof chat.id);
                       fetchMessages(chat.id);
                     });
                   }}
@@ -868,56 +862,17 @@ const Index = () => {
               </div>
             </div>
 
-            {/* DEBUG PANEL - REMOVER DEPOIS */}
-            {selectedConversations.length > 0 && (() => {
-              const convId = selectedConversations[0].id;
-              const convIdStr = String(convId);
-              const directLookup = messages[convId];
-              const stringLookup = messages[convIdStr];
-              const allKeys = Object.keys(messages);
-              const debugInfo = {
-                convId,
-                convIdType: typeof convId,
-                directFound: !!directLookup,
-                directLen: directLookup?.length ?? 0,
-                strFound: !!stringLookup,
-                strLen: stringLookup?.length ?? 0,
-                msgKeys: allKeys.join(', '),
-                totalKeys: allKeys.length,
-                wsConnected: isConnected,
-                selectedChatId,
-                convStatus: selectedConversations[0]?.status
-              };
-              return (
-                <div style={{
-                  position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-                  zIndex: 9999, background: '#1a1a2e', color: '#0f0', fontSize: '11px',
-                  padding: '8px 16px', borderRadius: '8px 8px 0 0', maxWidth: '90vw',
-                  fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-                  border: '1px solid #0f0', boxShadow: '0 0 10px rgba(0,255,0,0.3)'
-                }}>
-                  <strong>DEBUG (copie e cole)</strong>{'\n'}
-                  {JSON.stringify(debugInfo, null, 2)}
-                </div>
-              );
-            })()}
-
             <ChatArea
-              selectedChat={(() => {
-                const chat = selectedConversations.length > 0 ? {
-                  ...selectedConversations[0],
-                  conversationCount: selectedConversations.length
-                } : null;
-                return chat;
-              })()}
+              selectedChat={selectedConversations.length > 0 ? {
+                ...selectedConversations[0],
+                conversationCount: selectedConversations.length
+              } : null}
               conversations={selectedConversations}
-              messages={(() => {
-                if (selectedConversations.length === 0) return [];
-                const convId = selectedConversations[0].id;
-                const convIdStr = String(convId);
-                const found = messages[convId] || messages[convIdStr] || [];
-                return [...found].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-              })()}
+              messages={selectedConversations.length > 0 ? 
+                (messages[selectedConversations[0].id] || messages[String(selectedConversations[0].id)] || [])
+                  .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+                : []
+              }
               allMessages={messages}
               onSendMessage={(message) => {
                 // Enviar para a conversa mais recente do grupo
