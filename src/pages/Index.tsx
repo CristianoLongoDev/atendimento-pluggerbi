@@ -835,14 +835,16 @@ const Index = () => {
                   selectedChatId={selectedChatId}
                   onChatSelect={(groupKey, conversations) => {
                     console.log('🎯 GROUP SELECTED:', groupKey, conversations);
+                    console.log('🎯 CONV IDs e TIPOS:', conversations.map(c => ({ id: c.id, type: typeof c.id })));
+                    console.log('🎯 MESSAGES KEYS ANTES DO FETCH:', Object.keys(messages));
+                    console.log('🎯 WS CONNECTED:', isConnected);
                     setSelectedChatId(groupKey);
                     setSelectedConversations(conversations);
                     
-                    // Marcar todas as conversas como lidas e buscar mensagens de todas
                     conversations.forEach(chat => {
-                      console.log('🎯 CALLING markAsRead for chat:', chat.id);
+                      console.log('🎯 CALLING markAsRead for chat:', chat.id, 'type:', typeof chat.id);
                       markAsRead(chat.id);
-                      console.log('🎯 CALLING fetchMessages for chat:', chat.id);
+                      console.log('🎯 CALLING fetchMessages for chat:', chat.id, 'type:', typeof chat.id);
                       fetchMessages(chat.id);
                     });
                   }}
@@ -874,6 +876,7 @@ const Index = () => {
                 } : null;
                 console.log('🎯 ChatArea recebendo selectedChat:', {
                   chatId: chat?.id,
+                  chatIdType: typeof chat?.id,
                   status: chat?.status,
                   hasSelectedConversations: selectedConversations.length > 0,
                   selectedConversationsStatus: selectedConversations.map(c => c.status)
@@ -881,12 +884,28 @@ const Index = () => {
                 return chat;
               })()}
               conversations={selectedConversations}
-              messages={selectedConversations.length > 0 ? 
-                // Pegar apenas as mensagens da conversa mais recente (primeira do array)
-                (messages[selectedConversations[0].id] || [])
-                  .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-                : []
-              }
+              messages={(() => {
+                if (selectedConversations.length === 0) return [];
+                const convId = selectedConversations[0].id;
+                const convIdStr = String(convId);
+                const directLookup = messages[convId];
+                const stringLookup = messages[convIdStr];
+                const allKeys = Object.keys(messages);
+                console.log('🔍 DEBUG MESSAGES LOOKUP:', {
+                  convId,
+                  convIdType: typeof convId,
+                  convIdStr,
+                  directLookupFound: !!directLookup,
+                  directLookupLength: directLookup?.length,
+                  stringLookupFound: !!stringLookup,
+                  stringLookupLength: stringLookup?.length,
+                  allMessageKeys: allKeys,
+                  allMessageKeysTypes: allKeys.map(k => typeof k),
+                  totalKeysInMessages: allKeys.length
+                });
+                const found = directLookup || stringLookup || [];
+                return [...found].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+              })()}
               allMessages={messages}
               onSendMessage={(message) => {
                 // Enviar para a conversa mais recente do grupo

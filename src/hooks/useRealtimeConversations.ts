@@ -674,6 +674,15 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const handleMessagesResponse = useCallback((message: any) => {
     console.log('💬 Processing messages response:', message);
     console.log('🔍 FULL WebSocket Response Structure:', JSON.stringify(message, null, 2));
+    console.log('🔑 DEBUG KEYS:', {
+      hasConversationId: 'conversation_id' in message,
+      conversationId: message.conversation_id,
+      conversationIdType: typeof message.conversation_id,
+      hasData: 'data' in message,
+      hasDataMessages: !!message.data?.messages,
+      dataMessagesLength: message.data?.messages?.length,
+      condition: !!(message.conversation_id && message.data)
+    });
     
     if (message.conversation_id && message.data) {
       // Extrair conversation_status se disponível
@@ -726,12 +735,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           };
         });
 
-        console.log('📝 Setting messages for conversation:', message.conversation_id, conversationMessages);
+        console.log('📝 Setting messages for conversation:', message.conversation_id, 'type:', typeof message.conversation_id, 'count:', conversationMessages.length);
 
-        setMessages(prev => ({
-          ...prev,
-          [message.conversation_id]: conversationMessages
-        }));
+        setMessages(prev => {
+          const newState = {
+            ...prev,
+            [message.conversation_id]: conversationMessages
+          };
+          console.log('📝 MESSAGES STATE UPDATED - keys:', Object.keys(newState), 'key types:', Object.keys(newState).map(k => typeof k));
+          return newState;
+        });
       }
       
       // Atualizar o status da conversa baseado no conversation_status
@@ -954,11 +967,13 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
   const fetchMessages = useCallback((conversationId: string | number) => {
     const conversationIdStr = String(conversationId);
+    console.log('📨 fetchMessages CHAMADO:', { conversationId, type: typeof conversationId, conversationIdStr, isConnected });
 
     try {
       conversationIdSchema.parse(conversationId);
+      console.log('✅ fetchMessages - validação OK para:', conversationId);
     } catch (error) {
-      console.error('Invalid conversation ID:', error);
+      console.error('❌ fetchMessages - VALIDAÇÃO FALHOU para:', conversationId, 'tipo:', typeof conversationId, 'erro:', error);
       return;
     }
 
@@ -971,8 +986,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           offset: 0
         }
       };
+      console.log('📤 fetchMessages - enviando via WS:', fetchPayload);
       wsSendMessage(fetchPayload);
     } else {
+      console.log('📡 fetchMessages - WS desconectado, usando REST para:', conversationIdStr);
       fetchMessagesViaRest(conversationId);
     }
   }, [isConnected, wsSendMessage, fetchMessagesViaRest]);
