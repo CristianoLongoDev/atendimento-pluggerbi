@@ -868,19 +868,46 @@ const Index = () => {
               </div>
             </div>
 
+            {/* DEBUG PANEL - REMOVER DEPOIS */}
+            {selectedConversations.length > 0 && (() => {
+              const convId = selectedConversations[0].id;
+              const convIdStr = String(convId);
+              const directLookup = messages[convId];
+              const stringLookup = messages[convIdStr];
+              const allKeys = Object.keys(messages);
+              const debugInfo = {
+                convId,
+                convIdType: typeof convId,
+                directFound: !!directLookup,
+                directLen: directLookup?.length ?? 0,
+                strFound: !!stringLookup,
+                strLen: stringLookup?.length ?? 0,
+                msgKeys: allKeys.join(', '),
+                totalKeys: allKeys.length,
+                wsConnected: isConnected,
+                selectedChatId,
+                convStatus: selectedConversations[0]?.status
+              };
+              return (
+                <div style={{
+                  position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+                  zIndex: 9999, background: '#1a1a2e', color: '#0f0', fontSize: '11px',
+                  padding: '8px 16px', borderRadius: '8px 8px 0 0', maxWidth: '90vw',
+                  fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                  border: '1px solid #0f0', boxShadow: '0 0 10px rgba(0,255,0,0.3)'
+                }}>
+                  <strong>DEBUG (copie e cole)</strong>{'\n'}
+                  {JSON.stringify(debugInfo, null, 2)}
+                </div>
+              );
+            })()}
+
             <ChatArea
               selectedChat={(() => {
                 const chat = selectedConversations.length > 0 ? {
                   ...selectedConversations[0],
                   conversationCount: selectedConversations.length
                 } : null;
-                console.log('🎯 ChatArea recebendo selectedChat:', {
-                  chatId: chat?.id,
-                  chatIdType: typeof chat?.id,
-                  status: chat?.status,
-                  hasSelectedConversations: selectedConversations.length > 0,
-                  selectedConversationsStatus: selectedConversations.map(c => c.status)
-                });
                 return chat;
               })()}
               conversations={selectedConversations}
@@ -888,22 +915,7 @@ const Index = () => {
                 if (selectedConversations.length === 0) return [];
                 const convId = selectedConversations[0].id;
                 const convIdStr = String(convId);
-                const directLookup = messages[convId];
-                const stringLookup = messages[convIdStr];
-                const allKeys = Object.keys(messages);
-                console.log('🔍 DEBUG MESSAGES LOOKUP:', {
-                  convId,
-                  convIdType: typeof convId,
-                  convIdStr,
-                  directLookupFound: !!directLookup,
-                  directLookupLength: directLookup?.length,
-                  stringLookupFound: !!stringLookup,
-                  stringLookupLength: stringLookup?.length,
-                  allMessageKeys: allKeys,
-                  allMessageKeysTypes: allKeys.map(k => typeof k),
-                  totalKeysInMessages: allKeys.length
-                });
-                const found = directLookup || stringLookup || [];
+                const found = messages[convId] || messages[convIdStr] || [];
                 return [...found].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
               })()}
               allMessages={messages}
