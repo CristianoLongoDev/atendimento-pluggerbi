@@ -71,7 +71,7 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
         setFormData({
           id: botFunction.function_id || '',
           description: botFunction.description || '',
-          action: botFunction.action || null,
+          action: botFunction.action ? String(botFunction.action) : null,
         });
         
         setParametersLoading(true);
@@ -101,6 +101,16 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mode, botFunction?.function_id, botId]);
+
+  // Re-apply action after actions load so the Select displays correctly
+  useEffect(() => {
+    if (open && mode === 'edit' && botFunction?.action && actions.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        action: String(botFunction.action),
+      }));
+    }
+  }, [actions.length, open, mode, botFunction]);
 
   const resetParameterForm = () => {
     setParameterForm({

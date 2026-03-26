@@ -48,7 +48,7 @@ const IntentForm: React.FC<IntentFormProps> = ({
         name: intent.name || '',
         intention: intent.intention || '',
         prompt: intent.prompt || '',
-        function_id: intent.function_id || 'none',
+        function_id: intent.function_id ? String(intent.function_id) : 'none',
         active: intent.active ?? true,
       });
     } else {
@@ -65,17 +65,20 @@ const IntentForm: React.FC<IntentFormProps> = ({
   useEffect(() => {
     if (open && botId) {
       console.log('Fetching functions for bot:', botId);
-      const timeoutId = setTimeout(() => {
-        fetchFunctions(botId);
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
+      fetchFunctions(botId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, botId]);
 
+  // Re-apply function_id after functions load so the Select displays correctly
   useEffect(() => {
-    console.log('Functions updated:', functions);
-  }, [functions]);
+    if (open && mode === 'edit' && intent?.function_id && functions.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        function_id: String(intent.function_id),
+      }));
+    }
+  }, [functions.length, open, mode, intent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
