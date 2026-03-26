@@ -33,17 +33,23 @@ const IntentForm: React.FC<IntentFormProps> = ({
   const { createIntent, updateIntent, loading } = useIntents();
   const { functions, fetchFunctions } = useFunctions();
   
-  const [formData, setFormData] = useState({
+  const defaultFormData = {
     name: '',
     intention: '',
     prompt: '',
-    function_id: '',
+    function_id: 'none',
     active: true,
-  });
+  };
 
-  useEffect(() => {
-    if (intent && mode === 'edit') {
-      console.log('Setting form data for edit mode:', intent);
+  const [formData, setFormData] = useState(defaultFormData);
+
+  // Track previous props to detect changes during render (React recommended pattern)
+  const [prevSyncKey, setPrevSyncKey] = useState('');
+  const syncKey = `${open}-${mode}-${intent?.id || ''}`;
+
+  if (syncKey !== prevSyncKey) {
+    setPrevSyncKey(syncKey);
+    if (open && intent && mode === 'edit') {
       setFormData({
         name: intent.name || '',
         intention: intent.intention || '',
@@ -51,20 +57,13 @@ const IntentForm: React.FC<IntentFormProps> = ({
         function_id: intent.function_id ? String(intent.function_id) : 'none',
         active: intent.active ?? true,
       });
-    } else {
-      setFormData({
-        name: '',
-        intention: '',
-        prompt: '',
-        function_id: 'none',
-        active: true,
-      });
+    } else if (open && mode === 'create') {
+      setFormData(defaultFormData);
     }
-  }, [intent, mode, open]);
+  }
 
   useEffect(() => {
     if (open && botId) {
-      console.log('Fetching functions for bot:', botId);
       fetchFunctions(botId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

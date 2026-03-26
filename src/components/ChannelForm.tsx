@@ -28,7 +28,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   const { toast } = useToast();
   const { bots, fetchBots } = useBots();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const defaultFormData = {
     type: 'whatsapp',
     name: '',
     botAgent: '',
@@ -37,20 +37,16 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     client_id: '',
     client_secret: '',
     access_token: ''
-  });
+  };
+  const [formData, setFormData] = useState(defaultFormData);
 
-  // Fetch bots when component opens
-  useEffect(() => {
-    if (open) {
-      fetchBots();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  // Track previous props to detect changes during render (React recommended pattern)
+  const [prevSyncKey, setPrevSyncKey] = useState('');
+  const syncKey = `${open}-${mode}-${channel?.id || ''}`;
 
-  // Update form data when channel changes
-  useEffect(() => {
-    if (mode === 'edit' && channel) {
-      console.log('ChannelForm - Loading channel for edit:', channel);
+  if (syncKey !== prevSyncKey) {
+    setPrevSyncKey(syncKey);
+    if (open && mode === 'edit' && channel) {
       setFormData({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
@@ -61,19 +57,18 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         client_secret: '',
         access_token: ''
       });
-    } else if (mode === 'create') {
-      setFormData({
-        type: 'whatsapp',
-        name: '',
-        botAgent: '',
-        active: true,
-        phone_number: '',
-        client_id: '',
-        client_secret: '',
-        access_token: ''
-      });
+    } else if (open && mode === 'create') {
+      setFormData(defaultFormData);
     }
-  }, [channel, mode, open]);
+  }
+
+  // Fetch bots when component opens
+  useEffect(() => {
+    if (open) {
+      fetchBots();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Re-apply botAgent after bots load so the Select displays the correct value
   useEffect(() => {

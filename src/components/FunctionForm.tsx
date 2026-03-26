@@ -41,11 +41,12 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
   const { integrations, fetchIntegrations } = useIntegrations();
   const { actions, fetchActions, loading: actionsLoading } = useActions();
   
-  const [formData, setFormData] = useState({
+  const defaultFormData = {
     id: '',
     description: '',
     action: null as string | null,
-  });
+  };
+  const [formData, setFormData] = useState(defaultFormData);
   const [loading, setLoading] = useState(false);
   const [parametersLoading, setParametersLoading] = useState(false);
   const [localParameters, setLocalParameters] = useState<FunctionParameter[]>([]);
@@ -61,19 +62,31 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
     permited_values: '',
   });
 
-  // Load data when dialog opens
+  // Track previous props to detect changes during render (React recommended pattern)
+  const [prevSyncKey, setPrevSyncKey] = useState('');
+  const syncKey = `${open}-${mode}-${botFunction?.function_id || ''}`;
+
+  if (syncKey !== prevSyncKey) {
+    setPrevSyncKey(syncKey);
+    if (open && mode === 'edit' && botFunction) {
+      setFormData({
+        id: botFunction.function_id || '',
+        description: botFunction.description || '',
+        action: botFunction.action ? String(botFunction.action) : null,
+      });
+    } else if (open) {
+      setFormData(defaultFormData);
+      setLocalParameters([]);
+    }
+  }
+
+  // Load async data when dialog opens
   useEffect(() => {
     if (open) {
       fetchIntegrations();
       fetchActions();
-      
+
       if (mode === 'edit' && botFunction) {
-        setFormData({
-          id: botFunction.function_id || '',
-          description: botFunction.description || '',
-          action: botFunction.action ? String(botFunction.action) : null,
-        });
-        
         setParametersLoading(true);
         fetchParameters(botId, botFunction.function_id || '')
           .then((fetchedParams) => {
@@ -91,11 +104,6 @@ const FunctionForm: React.FC<FunctionFormProps> = ({
             setParametersLoading(false);
           });
       } else {
-        setFormData({
-          id: '',
-          description: '',
-          action: null,
-        });
         setLocalParameters([]);
       }
     }
