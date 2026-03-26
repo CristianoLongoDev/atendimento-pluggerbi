@@ -44,7 +44,8 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     if (open) {
       fetchBots();
     }
-  }, [open, fetchBots]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Update form data when channel changes
   useEffect(() => {
@@ -53,7 +54,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       setFormData({
         type: channel.type || 'whatsapp',
         name: channel.name || '',
-        botAgent: channel.bot_id || '',
+        botAgent: String(channel.bot_id || ''),
         active: Boolean(channel.active),
         phone_number: (channel as any).phone_number || '',
         client_id: '',
@@ -73,6 +74,16 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       });
     }
   }, [channel, mode, open]);
+
+  // Re-apply botAgent after bots load so the Select displays the correct value
+  useEffect(() => {
+    if (open && mode === 'edit' && channel?.bot_id && bots.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        botAgent: String(channel.bot_id)
+      }));
+    }
+  }, [bots.length, open, mode, channel]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
