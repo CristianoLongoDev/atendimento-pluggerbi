@@ -413,18 +413,22 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
       return;
     }
 
+    const conversationIdStr = String(conversation_id);
+
+    const formattedTimestamp = timestamp ? (() => {
+      const date = new Date(timestamp + (timestamp.includes('Z') ? '' : 'Z'));
+      return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+    })() : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+
     // Add new message to the messages state
     setMessages(prev => {
-      const currentMessages = prev[conversation_id] || [];
+      const currentMessages = prev[conversationIdStr] || [];
       const newMessage: Message = {
         id: message_id || `msg_${Date.now()}`,
         content: content,
         sender: sender,
         senderName: senderName,
-        timestamp: timestamp ? (() => {
-          const date = new Date(timestamp + (timestamp.includes('Z') ? '' : 'Z'));
-          return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
-        })() : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
+        timestamp: formattedTimestamp,
         channel,
         message_type,
         tokens,
@@ -432,38 +436,51 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         metadata
       };
       
-      console.log('🔄 Adding message to conversation:', conversation_id, newMessage);
-      console.log('📚 Current messages count:', currentMessages.length);
+      console.log('🔄 Adding message to conversation:', conversationIdStr, newMessage);
       
-      const updatedMessages = {
+      return {
         ...prev,
-        [conversation_id]: [...currentMessages, newMessage]
+        [conversationIdStr]: [...currentMessages, newMessage]
       };
-      
-      console.log('📝 Updated messages state:', updatedMessages[conversation_id]);
-      return updatedMessages;
     });
 
-    // Update chat list with new last message
+    // Update chat list with new last message and reorder
     setChats(prev => {
-      const updatedChats = prev.map(chat => {
-        if (chat.id === conversation_id) {
-          console.log('🔄 Updating chat:', chat.id, 'with new message');
-          return {
-            ...chat,
-            lastMessage: content,
-            timestamp: timestamp ? (() => {
-              const date = new Date(timestamp + (timestamp.includes('Z') ? '' : 'Z'));
-              return formatInTimeZone(date, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
-            })() : formatInTimeZone(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm'),
-            unreadCount: chat.unreadCount + 1,
-            status: sender === 'customer' || sender === 'user' ? 'pending' : chat.status
-          };
-        }
-        return chat;
-      });
-      
-      console.log('💼 Updated chats with new message');
+      const chatExists = prev.some(chat => chat.id === conversationIdStr);
+
+      let updatedChats: Chat[];
+      if (chatExists) {
+        updatedChats = prev.map(chat => {
+          if (chat.id === conversationIdStr) {
+            return {
+              ...chat,
+              lastMessage: content,
+              timestamp: formattedTimestamp,
+              unreadCount: chat.unreadCount + 1,
+              status: sender === 'customer' || sender === 'user' ? 'pending' as const : chat.status
+            };
+          }
+          return chat;
+        });
+      } else {
+        const newChat: Chat = {
+          id: conversationIdStr,
+          customerName: messageData.metadata?.contact?.name || senderName || `Cliente ${conversationIdStr}`,
+          customerPhone: messageData.metadata?.contact?.phone,
+          customerEmail: messageData.metadata?.contact?.email,
+          customerAvatar: undefined,
+          lastMessage: content,
+          timestamp: formattedTimestamp,
+          channel: (channel === 'whatsapp' ? 'whatsapp' : 'widget') as Chat['channel'],
+          status: 'pending',
+          unreadCount: 1,
+          isActive: true,
+          botAgentName: messageData.metadata?.bot?.agent_name,
+          metadata: messageData.metadata
+        };
+        updatedChats = [newChat, ...prev];
+      }
+
       return updatedChats;
     });
   }, [fetchUserProfile]);
