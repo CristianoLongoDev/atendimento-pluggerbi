@@ -559,6 +559,19 @@ const Index = () => {
     });
   }, [channels, channelsLoading, selectedSection]);
   
+  // Polling para mensagens da conversa ativa
+  useEffect(() => {
+    if (!selectedConversations.length || selectedSection !== 'conversations') return;
+
+    const interval = setInterval(() => {
+      selectedConversations.forEach(chat => {
+        fetchMessages(chat.id);
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [selectedConversations, selectedSection, fetchMessages]);
+
   // Atualizar selectedConversations quando chats mudarem
   useEffect(() => {
     if (selectedChatId) {

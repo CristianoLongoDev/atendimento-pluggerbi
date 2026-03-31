@@ -307,16 +307,19 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, [isConnected, wsSendMessage, profile?.account_id, loadInitialConversations]);
 
-  // Polling fallback when WebSocket is disconnected
+  // Polling para manter lista de conversas atualizada
+  // Roda sempre (WS new_message broadcast do backend é instável)
   useEffect(() => {
-    if (isConnected || !profile?.account_id) return;
+    if (!profile?.account_id) return;
 
+    const pollInterval = isConnected ? 8000 : 15000;
     const interval = setInterval(() => {
+      addDebug(`Polling conversas (${isConnected ? 'WS on' : 'WS off'})`);
       loadInitialConversations();
-    }, 15000);
+    }, pollInterval);
 
     return () => clearInterval(interval);
-  }, [isConnected, profile?.account_id, loadInitialConversations]);
+  }, [isConnected, profile?.account_id, loadInitialConversations, addDebug]);
 
   const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
