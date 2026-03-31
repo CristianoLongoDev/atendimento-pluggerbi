@@ -171,8 +171,10 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         }));
 
         setChats(mappedChats);
+        addDebug(`REST carregou ${mappedChats.length} chats | IDs: [${mappedChats.slice(0, 5).map(c => c.id).join(',')}]`);
         setLoadingError(null);
       } else {
+        addDebug(`REST falhou: status=${response.status}`);
         setLoadingError(`API retornou status: ${response.status}`);
       }
     } catch (error: any) {
@@ -181,7 +183,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [profile?.account_id]);
+  }, [profile?.account_id, addDebug]);
 
   const refreshConversations = useCallback(async () => {
     console.log('🔄 Refreshing conversations via API REST...');
