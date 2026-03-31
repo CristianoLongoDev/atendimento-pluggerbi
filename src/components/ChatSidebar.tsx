@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
-let APP_VERSION = 'v1.1.0';
+let APP_VERSION = 'v1.1.1';
 
 interface Chat {
   id: string;
