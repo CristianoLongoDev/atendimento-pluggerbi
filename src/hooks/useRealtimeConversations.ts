@@ -534,7 +534,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
       // Update chats list - mesclar com conversas existentes para manter as fechadas
       const updatedChats = data.conversations.map((conv: any): Chat => {
-        const customerKey = `${conv.customer_name || `Cliente ${conv.id}`}-${conv.channel}`;
+        const convId = String(conv.id);
+        const customerKey = `${conv.customer_name || `Cliente ${convId}`}-${conv.channel}`;
         const customerConversations = conversationsByCustomer[customerKey];
         
         // Verificar se há pelo menos uma conversa ativa para este cliente
@@ -564,8 +565,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
          }
         
         return {
-          id: conv.id,
-          customerName: conv.customer_name || `Cliente ${conv.id}`,
+          id: convId,
+          customerName: conv.customer_name || `Cliente ${convId}`,
           customerPhone: conv.metadata?.contact?.phone,
           customerEmail: conv.metadata?.contact?.email,
           customerAvatar: conv.metadata?.contact?.avatar,

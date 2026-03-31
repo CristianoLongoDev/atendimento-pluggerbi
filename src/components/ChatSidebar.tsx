@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
-let APP_VERSION = 'v1.0.3';
+let APP_VERSION = 'v1.1.0';
 
 interface Chat {
   id: string;
@@ -67,7 +67,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       {/* Footer com versão */}
       <div className="p-3 border-t border-border mt-auto">
         <div className="text-xs text-muted-foreground text-center">
-          v1.0.3
+          {APP_VERSION}
         </div>
       </div>
     </div>
