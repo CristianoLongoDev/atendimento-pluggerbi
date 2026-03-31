@@ -466,7 +466,7 @@ const Index = () => {
   const { profile, isAdmin } = useAuth();
   const { accountData, loading: accountLoading } = useAccountData();
   const { channels, loading: channelsLoading, fetchChannels, createChannel, updateChannel, deleteChannel } = useChannels();
-  const { chats, messages, isConnected, wsConnectionInfo, loadingError, isLoading, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead } = useRealtimeConversations();
+  const { chats, messages, isConnected, wsConnectionInfo, loadingError, isLoading, sendMessage, transferToHuman, closeConversation, refreshConversations, fetchMessages, markAsRead, debugLogs } = useRealtimeConversations();
   const { toast } = useToast();
   
   // Configuração do sistema de notificações
@@ -914,6 +914,21 @@ const Index = () => {
                 selectedChat={selectedChat} 
                 isExpanded={isInfoExpanded} 
               />
+            )}
+
+            {/* DEBUG PANEL - remover após testes */}
+            {debugLogs.length > 0 && (
+              <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-black/90 text-green-400 text-[10px] font-mono p-2 max-h-[200px] overflow-y-auto border-t-2 border-green-500">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-green-300 font-bold">WS DEBUG v1.1.0</span>
+                  <span className="text-yellow-400">chats: {chats.length} | IDs: [{chats.slice(0, 5).map(c => `${c.id}(${typeof c.id})`).join(', ')}]</span>
+                </div>
+                {debugLogs.map((log, i) => (
+                  <div key={i} className="border-b border-green-900 py-0.5">
+                    <span className="text-green-600">[{log.time}]</span> {log.text}
+                  </div>
+                ))}
+              </div>
             )}
           </>
         );

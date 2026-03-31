@@ -86,6 +86,11 @@ interface Chat {
   metadata?: any;
 }
 
+interface DebugLog {
+  time: string;
+  text: string;
+}
+
 interface UseRealtimeConversationsReturn {
   chats: Chat[];
   messages: { [chatId: string]: Message[] };
@@ -99,6 +104,7 @@ interface UseRealtimeConversationsReturn {
   refreshConversations: () => void;
   fetchMessages: (conversationId: string | number) => void;
   markAsRead: (chatId: string) => void;
+  debugLogs: DebugLog[];
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
@@ -106,6 +112,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const { fetchUserProfile } = useUserProfiles();
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
+
+  const addDebug = useCallback((text: string) => {
+    const time = new Date().toLocaleTimeString('pt-BR');
+    setDebugLogs(prev => [{ time, text }, ...prev].slice(0, 15));
+  }, []);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -206,14 +218,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🌐 WEBSOCKET: isConnected =', isConnected);
     
     const unsubscribe = subscribe((message) => {
-      console.log('🔥 WEBSOCKET MESSAGE RECEIVED:', message.type, message);
-      console.log('📊 Message data:', JSON.stringify(message, null, 2));
-      
-      console.log('📨 RAW WEBSOCKET MESSAGE RECEIVED:', {
-        type: message.type,
-        hasData: !!message.data,
-        fullMessage: message
-      });
+      addDebug(`WS evento: ${message.type}`);
 
       switch (message.type) {
         case 'new_message':
@@ -221,15 +226,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         case 'message_created':
         case 'conversation_message':
         case 'message_update':
-          console.log('📩 Handling new message event:', message.type);
-          console.log('🔍 RAW message data:', JSON.stringify(message, null, 2));
-          console.log('🚨 ANTES DE CHAMAR handleNewMessage - conversation_id:', (message as any).conversation_id);
-          console.log('🚨 ANTES DE CHAMAR handleNewMessage - data.conversation_id:', message.data?.conversation_id);
+          addDebug(`new_message conv_id=${(message as any).conversation_id || message.data?.conversation_id} tipo=${typeof ((message as any).conversation_id || message.data?.conversation_id)}`);
           handleNewMessage(message);
           break;
         case 'subscription_updated':
         case 'conversations_updated':
-          console.log('📊 Handling subscription update event:', message.type);
+          addDebug(`subscription_updated: ${message.data?.conversations?.length || 0} conversas`);
           handleSubscriptionUpdate(message.data);
           break;
         case 'messages_response':
@@ -446,12 +448,15 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
     // Update chat list with new last message and reorder
     setChats(prev => {
+      const chatIds = prev.map(c => `${c.id}(${typeof c.id})`).join(', ');
       const chatExists = prev.some(chat => chat.id === conversationIdStr);
+      addDebug(`setChats: buscando "${conversationIdStr}" | encontrou=${chatExists} | ids=[${chatIds}]`);
 
       let updatedChats: Chat[];
       if (chatExists) {
         updatedChats = prev.map(chat => {
           if (chat.id === conversationIdStr) {
+            addDebug(`MATCH! chat ${chat.id} atualizado com: ${content?.substring(0, 30)}`);
             return {
               ...chat,
               lastMessage: content,
@@ -463,6 +468,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return chat;
         });
       } else {
+        addDebug(`Chat NAO encontrado - criando novo para conv ${conversationIdStr}`);
         const newChat: Chat = {
           id: conversationIdStr,
           customerName: messageData.metadata?.contact?.name || senderName || `Cliente ${conversationIdStr}`,
@@ -483,7 +489,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
       return updatedChats;
     });
-  }, [fetchUserProfile]);
+  }, [fetchUserProfile, addDebug]);
 
   const handleSubscriptionUpdate = useCallback((data: any) => {
     console.log('🔥 Processing subscription update:', data);
@@ -1114,6 +1120,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     closeConversation,
     refreshConversations,
     fetchMessages,
-    markAsRead
+    markAsRead,
+    debugLogs
   };
 };
