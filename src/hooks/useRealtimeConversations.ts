@@ -86,11 +86,6 @@ interface Chat {
   metadata?: any;
 }
 
-interface DebugLog {
-  time: string;
-  text: string;
-}
-
 interface UseRealtimeConversationsReturn {
   chats: Chat[];
   messages: { [chatId: string]: Message[] };
@@ -104,7 +99,6 @@ interface UseRealtimeConversationsReturn {
   refreshConversations: () => void;
   fetchMessages: (conversationId: string | number) => void;
   markAsRead: (chatId: string) => void;
-  debugLogs: DebugLog[];
 }
 
 export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
@@ -112,12 +106,6 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
   const { fetchUserProfile } = useUserProfiles();
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
-  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
-
-  const addDebug = useCallback((text: string) => {
-    const time = new Date().toLocaleTimeString('pt-BR');
-    setDebugLogs(prev => [{ time, text }, ...prev].slice(0, 15));
-  }, []);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -171,10 +159,8 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
         }));
 
         setChats(mappedChats);
-        addDebug(`REST carregou ${mappedChats.length} chats | IDs: [${mappedChats.slice(0, 5).map(c => c.id).join(',')}]`);
         setLoadingError(null);
       } else {
-        addDebug(`REST falhou: status=${response.status}`);
         setLoadingError(`API retornou status: ${response.status}`);
       }
     } catch (error: any) {
@@ -183,7 +169,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [profile?.account_id, addDebug]);
+  }, [profile?.account_id]);
 
   const refreshConversations = useCallback(async () => {
     console.log('🔄 Refreshing conversations via API REST...');
@@ -220,20 +206,16 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     console.log('🌐 WEBSOCKET: isConnected =', isConnected);
     
     const unsubscribe = subscribe((message) => {
-      addDebug(`WS evento: ${message.type}`);
-
       switch (message.type) {
         case 'new_message':
         case 'message_received':
         case 'message_created':
         case 'conversation_message':
         case 'message_update':
-          addDebug(`new_message conv_id=${(message as any).conversation_id || message.data?.conversation_id} tipo=${typeof ((message as any).conversation_id || message.data?.conversation_id)}`);
           handleNewMessage(message);
           break;
         case 'subscription_updated':
         case 'conversations_updated':
-          addDebug(`subscription_updated: ${message.data?.conversations?.length || 0} conversas`);
           handleSubscriptionUpdate(message.data);
           break;
         case 'messages_response':
@@ -307,19 +289,17 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     }
   }, [isConnected, wsSendMessage, profile?.account_id, loadInitialConversations]);
 
-  // Polling para manter lista de conversas atualizada
-  // Roda sempre (WS new_message broadcast do backend é instável)
+  // Polling fallback para manter lista de conversas atualizada
   useEffect(() => {
     if (!profile?.account_id) return;
 
-    const pollInterval = isConnected ? 8000 : 15000;
+    const pollInterval = isConnected ? 30000 : 10000;
     const interval = setInterval(() => {
-      addDebug(`Polling conversas (${isConnected ? 'WS on' : 'WS off'})`);
       loadInitialConversations();
     }, pollInterval);
 
     return () => clearInterval(interval);
-  }, [isConnected, profile?.account_id, loadInitialConversations, addDebug]);
+  }, [isConnected, profile?.account_id, loadInitialConversations]);
 
   const handleNewMessage = useCallback(async (message: any) => {
     console.log('🔔 NEW MESSAGE RECEIVED - FULL MESSAGE:', JSON.stringify(message, null, 2));
@@ -453,15 +433,12 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
     // Update chat list with new last message and reorder
     setChats(prev => {
-      const chatIds = prev.map(c => `${c.id}(${typeof c.id})`).join(', ');
       const chatExists = prev.some(chat => chat.id === conversationIdStr);
-      addDebug(`setChats: buscando "${conversationIdStr}" | encontrou=${chatExists} | ids=[${chatIds}]`);
 
       let updatedChats: Chat[];
       if (chatExists) {
         updatedChats = prev.map(chat => {
           if (chat.id === conversationIdStr) {
-            addDebug(`MATCH! chat ${chat.id} atualizado com: ${content?.substring(0, 30)}`);
             return {
               ...chat,
               lastMessage: content,
@@ -473,7 +450,6 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
           return chat;
         });
       } else {
-        addDebug(`Chat NAO encontrado - criando novo para conv ${conversationIdStr}`);
         const newChat: Chat = {
           id: conversationIdStr,
           customerName: messageData.metadata?.contact?.name || senderName || `Cliente ${conversationIdStr}`,
@@ -494,7 +470,7 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
 
       return updatedChats;
     });
-  }, [fetchUserProfile, addDebug]);
+  }, [fetchUserProfile]);
 
   const handleSubscriptionUpdate = useCallback((data: any) => {
     console.log('🔥 Processing subscription update:', data);
@@ -1125,7 +1101,6 @@ export const useRealtimeConversations = (): UseRealtimeConversationsReturn => {
     closeConversation,
     refreshConversations,
     fetchMessages,
-    markAsRead,
-    debugLogs
+    markAsRead
   };
 };
